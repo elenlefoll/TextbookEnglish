@@ -1,6 +1,6 @@
 ## Textbook English
 
-Welcome to the companion website to my PhD thesis!
+Welcome to the companion website to my PhD thesis! **Please note that this website is in construction!**
 
 You can use the [editor on GitHub](https://github.com/elenlefoll/TextbookEnglish/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
 
