@@ -4,9 +4,10 @@ You can use the [editor on GitHub](https://github.com/elenlefoll/TextbookEnglish
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Markdown
+### Literature review
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+This is a <a href="LitReview_table.html" title="Literature review table">tabular overview</a> of all the Textbook English studies I examined as part of my literature review.
+
 
 ```markdown
 Syntax highlighted code block
