@@ -8,7 +8,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 ### Literature review
 
-This is a <a href="LitReview_table.html" title="Literature review table">tabular overview</a> of all the Textbook English studies I examined as part of my literature review.
+This is a <a href="LitReviewTable.html" title="Literature review table">tabular overview</a> of all the Textbook English studies I examined as part of my literature review.
 
 
 ```markdown
