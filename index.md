@@ -1,4 +1,4 @@
-## Textbook English
+# Textbook English
 
 Welcome to the companion website to my PhD thesis! **Please note that this website is under construction!**
 
@@ -6,9 +6,15 @@ You can use the [editor on GitHub](https://github.com/elenlefoll/TextbookEnglish
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Literature review
+## 1. Introduction
+
+## 2. Literature review
 
 This is a <a href="LitReviewTable.html" title="Literature review table">tabular overview</a> of all the Textbook English studies I examined as part of my literature review.
+
+## 3. Research aims and corpus data
+
+## 4. Progressives in Textbook English
 
 
 ```markdown
