@@ -10,12 +10,19 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 ## 2. Literature review
 
-This is a <a href="LitReviewTable.html" title="Literature review table">tabular overview</a> of all the Textbook English studies I examined as part of my literature review.
+This is a <a href="LitReviewTable.html" title="Literature review table" target="_blank" rel="noopener noreferrer">tabular overview</a> of all the Textbook English studies I examined as part of my literature review.
 
 ## 3. Research aims and corpus data
 
 ## 4. Progressives in Textbook English
 
+Pre-annotation script
+
+<a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Progressives in Textbook Conversation" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Conversation</a>
+
+<a href="4_Prog_Fiction_Morphosyntactic_Analysis.html" title="Progressives in Textbook Fiction" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Fiction</a>
+
+<a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Semantic and lexical analyses" target="_blank" rel="noopener noreferrer">The semantic and lexical analysis of progressives in Textbook Conversation and Fiction</a>
 
 ```markdown
 Syntax highlighted code block
