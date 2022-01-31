@@ -18,7 +18,7 @@ This is a <a href="LitReviewTable.html" title="Literature review table" target="
 
 Pre-annotation script
 
-<a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Progressives in Textbook Conversation" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Conversation</a>
+<a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Progressives in Textbook Conversation">The morphosyntactic analysis of progressives in Textbook Conversation</a>
 
 <a href="4_Prog_Fiction_Morphosyntactic_Analysis.html" title="Progressives in Textbook Fiction" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Fiction</a>
 
