@@ -22,7 +22,7 @@ Pre-annotation script
 
 <a href="4_Prog_Fiction_Morphosyntactic_Analysis.html" title="Progressives in Textbook Fiction" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Fiction</a>
 
-<a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Semantic and lexical analyses" target="_blank" rel="noopener noreferrer">The semantic and lexical analysis of progressives in Textbook Conversation and Fiction</a>
+<a href="4_Prog_Semantic_Collostructional_Analysis.html" title="Semantic and collostructional analyses" target="_blank" rel="noopener noreferrer">The semantic and collostructional analysis of progressives in Textbook Conversation and Fiction</a>
 
 ```markdown
 Syntax highlighted code block
