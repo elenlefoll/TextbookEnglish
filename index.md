@@ -12,7 +12,9 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 ## 1. Introduction
 
-The opening chapter features a word cloud of the some of the most frequent lemma collocates of the lemma textbook as found in the EnTenTen20 corpus. This word cloud can be interactively explored at: <a href="https://ske.li/textbook" title="Collocates of TEXTBOOK" target="_blank" rel="noopener noreferrer">https://ske.li/textbook</a>. 
+The opening chapter features a word cloud of the some of the most frequent lemma collocates of the lemma textbook as found in the EnTenTen20 corpus. This word cloud was created using the Word Sketch function on sketchengine.eu and can be interactively explored at: <a href="https://ske.li/textbook" title="Collocates of TEXTBOOK" target="_blank" rel="noopener noreferrer">https://ske.li/textbook</a>. The following settings were used to create the version of the word cloud printed in Chapter 1:
+
+<img src="1_TextbookWordSketchSettings.png" class="img-responsive" alt=""> </div>
 
 ## 2. Literature review
 
