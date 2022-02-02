@@ -4,7 +4,7 @@ Welcome to the companion website to my PhD thesis! **Please note that this websi
 
 This is the online appendix. It includes the full code for all the analyses and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under ???. The plots and tables are all licensed under CC-BY 4.0.
 
-The thesis itself is available upon request.
+The thesis itself is not yet published but is available upon request.
 
 You can use the [editor on GitHub](https://github.com/elenlefoll/TextbookEnglish/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
 
@@ -14,15 +14,33 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 The opening chapter features a word cloud of the some of the most frequent lemma collocates of the lemma textbook as found in the EnTenTen20 corpus. This word cloud was created using the Word Sketch function on sketchengine.eu and can be interactively explored at: <a href="https://ske.li/textbook" title="Collocates of TEXTBOOK" target="_blank" rel="noopener noreferrer">https://ske.li/textbook</a>. The following settings were used to create the version of the word cloud printed in Chapter 1:
 
-<img src="1_TextbookWordSketchSettings.png" class="img-responsive" alt=""> </div>
+<img src="1_TextbookWordSketchSettings.png" class="img-responsive" alt="">
 
 ## 2. Literature review
 
 This is a <a href="LitReviewTable.html" title="Literature review table" target="_blank" rel="noopener noreferrer">tabular overview</a> of all the Textbook English studies I examined as part of my literature review.
 
+Picture of top of table?
+
+Graph of publication years?
+
+Word cloud of titles?
+
 ## 3. Research aims and corpus data
 
-## 4. Exploring the progressive in Textbook English
+# Textbook English Corpus (TEC)
+
+Zenodo TEC
+
+# Reference corpora
+
+Youth Fiction metadata
+
+Info Teens metadata
+
+Spoken BNC2014 link
+
+## 4. What are you doing? Exploring the progressive in Textbook English
 
 Pre-annotation script
 
@@ -32,13 +50,33 @@ Pre-annotation script
 
 <a href="4_Prog_Semantic_Collostructional_Analysis.html" title="Semantic and collostructional analyses" target="_blank" rel="noopener noreferrer">The semantic and collostructional analysis of progressives in Textbook Conversation and Fiction</a>
 
-## 5. MAKE sense of MAKE in Textbook English
+## 5. Making sense of MAKE in Textbook English
 
-## 6. Additive MDAs
+## 6. Modelling Textbook English using additive MDA
+
+Link to MAT
+
+Data
+
+Code + plots
 
 ## 7. A new multi-dimensional model of Textbook English
 
+Link to MFTE
+
+Data
+
+Code + plots
+
 ## 8. Summary and pedagogical implications
+
+
+
+# Acknowledgements
+
+# R packagages and python libraries
+
+# Bibliography?
 
 ```markdown
 Syntax highlighted code block
