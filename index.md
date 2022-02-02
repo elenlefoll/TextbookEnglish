@@ -2,7 +2,7 @@
 
 Welcome to the companion website to my PhD thesis! **Please note that this website is under construction!**
 
-This is the online appendix. It includes the full code for all the analysis and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under ???. The plots and tables are all licensed under CC-BY 4.0.
+This is the online appendix. It includes the full code for all the analyses and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under ???. The plots and tables are all licensed under CC-BY 4.0.
 
 The thesis itself is available upon request.
 
