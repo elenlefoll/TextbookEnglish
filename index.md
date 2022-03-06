@@ -1,13 +1,14 @@
 # Textbook English
 
-Welcome to the companion website to my PhD thesis! **Please note that this website is under construction!**
+Welcome to the companion website to my PhD thesis! 
+
+**Please note that this online appendix is under construction!**
 
 This is the Online Appendix. It includes the full code for all the analyses and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
 
-The thesis was submitted on 7 March 2022 but has not yet been defended. It is therefore not yet published but can be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a>.
+The thesis was submitted on 7 March 2022 but has not yet been defended. It can be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a>.
 
 <a href="link" target="_blank" rel="noopener noreferrer">text</a>
-
 
 ## Chapter 1: Introduction
 
@@ -51,7 +52,7 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 ## Chapter 4: Exploring the progressive in Textbook English
 
 ### Appendix 4.1
-<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/4_Progressives" target="_blank" rel="noopener noreferrer">Data and code for entire chapter</a>
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/4_Progressives" target="_blank" rel="noopener noreferrer">Data and code for all the analyses</a>
 
 ### Appendix 4.1
 <a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/4_Progressives/4_Pre-Annotation_Progressives.Rmd" target="_blank" rel="noopener noreferrer">R script for the automatic pre-annotation of concordance lines</a>
@@ -60,61 +61,64 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 <a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/4_Progressives/4_prog_semantics_full.csv" target="_blank" rel="noopener noreferrer">List of verbs and their (main) semantic domains</a>
 
 ### Appendix 4.3
-<a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Progressives in Textbook Conversation" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Conversation (in HTML format)</a>
+<a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Progressives in Textbook Conversation" target="_blank" rel="noopener noreferrer">R notebook for the morphosyntactic analysis of progressives in Textbook Conversation (in HTML format)</a>
 
 ### Appendix 4.4
-<a href="4_Prog_Fiction_Morphosyntactic_Analysis.html" title="Progressives in Textbook Fiction" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Fiction (in HTML format)</a>
+<a href="4_Prog_Fiction_Morphosyntactic_Analysis.html" title="Progressives in Textbook Fiction" target="_blank" rel="noopener noreferrer">R notebook for morphosyntactic analysis of progressives in Textbook Fiction (in HTML format)</a>
 
 ### Appendix 4.5
-<a href="4_Prog_Semantic_Collostructional_Analysis.html" title="Semantic and collostructional analyses" target="_blank" rel="noopener noreferrer">The semantic and collostructional analysis of progressives in Textbook Conversation and Fiction (in HTML format)</a>
+<a href="4_Prog_Semantic_Collostructional_Analysis.html" title="Semantic and collostructional analyses" target="_blank" rel="noopener noreferrer">R notebook for the semantic and collostructional analysis of progressives in Textbook Conversation and Fiction (in HTML format)</a>
 
 ## Chapter 5: Making sense of MAKE in Textbook English
 
 ### Appendix 5.1
-<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/5_MAKE" target="_blank" rel="noopener noreferrer">Data and code for entire chapter</a>
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/5_MAKE" target="_blank" rel="noopener noreferrer">Data and code for all the analyses</a>
 
 ### Appendix 5.2
-<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/5_MAKE/5_MAKE_Data_analysis.html" target="_blank" rel="noopener noreferrer">Data analysis script in HTML format</a>
+<a href="5_MAKE_Data_analysis.html" target="_blank" rel="noopener noreferrer">R notebook for the progressive analyses in HTML format</a>
 
 ## Chapter 6: A multi-dimensional description of Textbook English
 
 ### Appendix 6.1
 
-<a href="https://sites.google.com/site/multidimensionaltagger" target="_blank" rel="noopener noreferrer">More information about the MAT (the Multidimensional Analysis Tagger) by Andrea Nini</a>
+<a href="https://sites.google.com/site/multidimensionaltagger" target="_blank" rel="noopener noreferrer">More information about the Multidimensional Analysis Tagger (MAT) by Andrea Nini</a>
 
 <a href="https://github.com/andreanini/multidimensionalanalysistagger" target="_blank" rel="noopener noreferrer">Link to the GitHub repository of the MAT</a>
 
 ### Appendix 6.2
-<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_MDAs" target="_blank" rel="noopener noreferrer">Data and code for entire chapter</a>
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses</a>
 
 ### Appendix 6.3
-<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/6_7_MDAs/6_AdditiveMDA_code.html" target="_blank" rel="noopener noreferrer">R script for the analyses of the additive MDAs based on Biber's (1988) model of General Spoken and Written English (in HTML format)</a>
+<a href="6_AdditiveMDA_code.html" target="_blank" rel="noopener noreferrer">R notebook for the analyses of the additive MDAs based on Biber's (1988) model of General Spoken and Written English (in HTML format)</a>
 
 ## Chapter 7. Towards a new multi-dimensional understanding of Textbook English
 
 ### Appendix 7.1
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Link to MFTE + list of features
+<a href="https://github.com/elenlefoll/MultiFeatureTaggerEnglish" target="_blank" rel="noopener noreferrer">Link to the GitHub repository of the Multi-Feature Tagger of English (MFTE)</a>
+
+<a href="https://github.com/elenlefoll/MultiFeatureTaggerEnglish/blob/main/tables/ListFullMDAFeatures_3.1.pdf" target="_blank" rel="noopener noreferrer">Full list of features tagged by the MFTE</a>
 
 ### Appendix 7.2
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Data + Code + plots
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses</a>
 
 ### Appendix 7.3
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Evaluation of the MFTE
+<a href="7_TaggerEvaluation.html" target="_blank" rel="noopener noreferrer">R notebook for the evaluation of the MFTE for the present study (HTML format)</a>
 
 ### Appendix 7.4
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Analysis of intra-textbook linguistic variation
+<a href="7_TEC_data_prep.html" target="_blank" rel="">R notebook to prepare the TEC data for MDA</a>
 
 ### Appendix 7.5
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Analysis of Textbook English vs. 'real-life' English variation
+<a href="7_Ref_data_prep.html" target="_blank" rel="">R notebook to prepare the reference data for MDA</a>
+
+### Appendix 7.6
+<a href="7_MD_Model_Intra-textbook_Variation.html" target="_blank" rel="noopener noreferrer">R notebook for the analysis of intra-textbook linguistic variation</a>
+
+### Appendix 7.5
+<a href="7_MD_Model_TextbookEnglish.html" target="_blank" rel="noopener noreferrer">R notebook for the Textbook English vs. 'real-life' English analysis</a>
 
 ## Chapter 8: Summary and general discussion
 
-Links to corpora and corpus tools mentioned in the pedagogical implications section:
+Links to the corpora and corpus tools mentioned in the pedagogical implications section:
 <a href="link" target="_blank" rel="noopener noreferrer">text</a>
 <a href="link" target="_blank" rel="noopener noreferrer">text</a>
 <a href="link" target="_blank" rel="noopener noreferrer">text</a>
