@@ -1,21 +1,19 @@
-# Textbook English
+# Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain
 
 Welcome to the companion website to my PhD thesis! 
 
 **Please note that this online appendix is under construction!**
 
-This is the Online Appendix. It includes the full code for all the analyses and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
+This is the Online Appendix. It includes the full code for all the analyses, tables and figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
 
 The thesis was submitted on 7 March 2022 but has not yet been defended. It can be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a>.
 
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-
 ## Chapter 1: Introduction
 
-- _Where is Brian?_
-- _Brian is in the kitchen._
-- _Where is Jenny, the sister of Brian?_
-- _Jenny is in the bathroom._
+\- _Where is Brian?_
+\- _Brian is in the kitchen._
+\- _Where is Jenny, the sister of Brian?_
+\- _Jenny is in the bathroom._
 
 More information on the context of this textbook dialogue can be found here: <a href="https://fr.wikipedia.org/wiki/Where_is_Brian%3F" target="_blank" rel="noopener noreferrer">https://fr.wikipedia.org/wiki/Where_is_Brian%3F</a>
 
@@ -104,10 +102,10 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 <a href="7_TaggerEvaluation.html" target="_blank" rel="noopener noreferrer">R notebook for the evaluation of the MFTE for the present study (HTML format)</a>
 
 ### Appendix 7.4
-<a href="7_TEC_data_prep.html" target="_blank" rel="">R notebook to prepare the TEC data for MDA</a>
+<a href="7_TEC_data_prep.html" target="_blank" rel="">R notebook to prepare the TEC data for the MDAs</a>
 
 ### Appendix 7.5
-<a href="7_Ref_data_prep.html" target="_blank" rel="">R notebook to prepare the reference data for MDA</a>
+<a href="7_Ref_data_prep.html" target="_blank" rel="">R notebook to prepare the reference data for the MDAs</a>
 
 ### Appendix 7.6
 <a href="7_MD_Model_Intra-textbook_Variation.html" target="_blank" rel="noopener noreferrer">R notebook for the analysis of intra-textbook linguistic variation</a>
@@ -128,11 +126,9 @@ Links to the corpora and corpus tools mentioned in the pedagogical implications 
 
 
 
+----
 
-
-
-
-# Manual
+# Editing manual
 
 ```markdown
 Syntax highlighted code block
