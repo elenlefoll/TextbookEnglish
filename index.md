@@ -40,7 +40,6 @@ Note that, for copyright reasons, the corpus itself cannot be published.
 
 The original corpus files of the Spoken BNC2014 can be downloaded for free for research purposes from: <a href="http://corpora.lancs.ac.uk/bnc2014/signup.php" target="_blank" rel="noopener noreferrer">http://corpora.lancs.ac.uk/bnc2014/signup.php</a>
 
-
 <a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/3_Data/BNCspoken_nomark-up_JackJill.R" target="_blank" rel="noopener noreferrer">R script used to pre-process the untagged XML version of the Spoken BNC2014</a>
 
 ### Appendix 3.4
@@ -54,19 +53,19 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 ### Appendix 4.1
 <a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/4_Progressives" target="_blank" rel="noopener noreferrer">Data and code for all the analyses</a>
 
-### Appendix 4.1
+### Appendix 4.2
 <a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/4_Progressives/4_Pre-Annotation_Progressives.Rmd" target="_blank" rel="noopener noreferrer">R script for the automatic pre-annotation of concordance lines</a>
 
-### Appendix 4.2
+### Appendix 4.3
 <a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/4_Progressives/4_prog_semantics_full.csv" target="_blank" rel="noopener noreferrer">List of verbs and their (main) semantic domains</a>
 
-### Appendix 4.3
+### Appendix 4.4
 <a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Progressives in Textbook Conversation" target="_blank" rel="noopener noreferrer">R notebook for the morphosyntactic analysis of progressives in Textbook Conversation (in HTML format)</a>
 
-### Appendix 4.4
+### Appendix 4.5
 <a href="4_Prog_Fiction_Morphosyntactic_Analysis.html" title="Progressives in Textbook Fiction" target="_blank" rel="noopener noreferrer">R notebook for morphosyntactic analysis of progressives in Textbook Fiction (in HTML format)</a>
 
-### Appendix 4.5
+### Appendix 4.6
 <a href="4_Prog_Semantic_Collostructional_Analysis.html" title="Semantic and collostructional analyses" target="_blank" rel="noopener noreferrer">R notebook for the semantic and collostructional analysis of progressives in Textbook Conversation and Fiction (in HTML format)</a>
 
 ## Chapter 5: Making sense of MAKE in Textbook English
@@ -86,7 +85,7 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 <a href="https://github.com/andreanini/multidimensionalanalysistagger" target="_blank" rel="noopener noreferrer">Link to the GitHub repository of the MAT</a>
 
 ### Appendix 6.2
-<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses</a>
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses in this and following chapter</a>
 
 ### Appendix 6.3
 <a href="6_AdditiveMDA_code.html" target="_blank" rel="noopener noreferrer">R notebook for the analyses of the additive MDAs based on Biber's (1988) model of General Spoken and Written English (in HTML format)</a>
@@ -113,7 +112,7 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 ### Appendix 7.6
 <a href="7_MD_Model_Intra-textbook_Variation.html" target="_blank" rel="noopener noreferrer">R notebook for the analysis of intra-textbook linguistic variation</a>
 
-### Appendix 7.5
+### Appendix 7.7
 <a href="7_MD_Model_TextbookEnglish.html" target="_blank" rel="noopener noreferrer">R notebook for the Textbook English vs. 'real-life' English analysis</a>
 
 ## Chapter 8: Summary and general discussion
