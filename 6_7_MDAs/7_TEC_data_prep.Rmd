@@ -1,0 +1,411 @@
+---
+title: "TEC data preparation for full MDAs"
+author: "Elen Le Foll"
+date: "09/11/2021"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+  editor_options: 
+    markdown: 
+      wrap: sentence
+
+---
+
+# Set-up
+
+*Built with R `r getRversion()`*  
+*Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
+
+```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache = TRUE)
+
+library(caret) # For its confusion matrix function
+library(dplyr)
+library(here) # For dynamic file paths
+library(ggplot2) 
+library(PerformanceAnalytics)
+library(purrr) # For data wrangling
+library(psych) # For various useful stats function
+library(suffrager) # For pretty feminist colour palettes :)
+library(tidyr)
+library(tibble)
+
+```
+
+
+# Multidimensional modal of intra-textbook variation
+
+## TEC data import from MFTE output
+
+```{r TxBcounts}
+
+# Textbook Corpus
+TxBcounts <- read.delim(here("MFTE", "Outputs", "TxB900MDA_3.1_normed_complex_counts.tsv"), header = TRUE, stringsAsFactors = TRUE)
+TxBcounts <- TxBcounts %>% filter(Filename!=".DS_Store") %>% droplevels(.)
+str(TxBcounts) # Check sanity of data
+nrow(TxBcounts) # Should be 2014 files
+
+# Adding a textbook proficiency level
+TxBLevels <- read.delim(here("metadata", "TxB900MDA_ProficiencyLevels.csv"), sep = ",")
+TxBcounts <- full_join(TxBcounts, TxBLevels, by = "Filename") %>% 
+  mutate(Level = as.factor(Level)) %>% 
+  mutate(Filename = as.factor(Filename))
+summary(TxBcounts$Level) # Check distribution and that there are no NAs
+TxBcounts %>% select(Filename, Level) %>% sample_n(20) # Check matching on random sample
+
+# Adding a register variable from the file names
+TxBcounts$Register <- as.factor(stringr::str_extract(TxBcounts$Filename, "Spoken|Narrative|Other|Personal|Informative|Instructional|Poetry")) # Add a variable for Textbook Register
+summary(TxBcounts$Register)
+TxBcounts$Register <- car::recode(TxBcounts$Register, "'Narrative' = 'Fiction'; 'Spoken' = 'Conversation'")
+colnames(TxBcounts) # Check all the variables make sense
+
+# Adding a textbook series variable from the file names
+TxBcounts$Filename <- stringr::str_replace(TxBcounts$Filename, "English_In_Mind|English_in_Mind", "EIM") 
+TxBcounts$Filename <- stringr::str_replace(TxBcounts$Filename, "New_GreenLine", "NGL") # Otherwise the regex for GreenLine will override New_GreenLine
+TxBcounts$Filename <- stringr::str_replace(TxBcounts$Filename, "Piece_of_cake", "POC")
+TxBcounts$Series <- as.factor(stringr::str_extract(TxBcounts$Filename, "Access|Achievers|EIM|GreenLine|HT|NB|NM|POC|JTT|NGL|Solutions"))
+summary(TxBcounts$Series)
+
+# Including the French textbooks for the first year of Lycée to their corresponding publisher series from collège
+TxBcounts$Series <-car::recode(TxBcounts$Series, "c('NB', 'JTT') = 'JTT'; c('NM', 'HT') = 'HT'")
+summary(TxBcounts$Series)
+
+# Adding a textbook country of use variable from the series variable
+TxBcounts$Country <- TxBcounts$Series
+TxBcounts$Country <- car::recode(TxBcounts$Series, "c('Access', 'GreenLine', 'NGL') = 'Germany'; c('Achievers', 'EIM', 'Solutions') = 'Spain'; c('HT', 'NB', 'NM', 'POC', 'JTT') = 'France'")
+summary(TxBcounts$Country)
+
+# Re-order variables
+colnames(TxBcounts)
+TxBcounts <- TxBcounts %>% 
+  select(order(names(.))) %>% # Order alphabetically first
+  select(Filename, Country, Series, Level, Register, Words, everything())
+
+TxBcounts %>% 
+  group_by(Register) %>% 
+  summarise(totaltexts = n(), totalwords = sum(Words), mean = as.integer(mean(Words)), sd = as.integer(sd(Words)), TTRmean = mean(TTR))
+
+#saveRDS(TxBcounts, here("FullMDA", "TxBcounts.rds")) # Last saved 3 December 2021
+
+```
+
+## Data preparation
+
+### Plotting the distributions of all the features 
+
+```{r distribution-viz, fig.height = 40}
+
+#TxBcounts <- readRDS(here("FullMDA", "TxBcounts.rds"))
+colnames(TxBcounts)
+
+TxBcounts %>%
+  select(-Words) %>% 
+  keep(is.numeric) %>% 
+  gather() %>% # This function from tidyr converts a selection of variables into two variables: a key and a value. The key contains the names of the original variable and the value the data. This means we can then use the facet_wrap function from ggplot2
+  ggplot(aes(value)) +
+    theme_bw() +
+    facet_wrap(~ key, scales = "free", ncol = 4) +
+    scale_x_continuous(expand=c(0,0)) +
+    geom_histogram(bins = 30, colour= "darkred", fill = "darkred", alpha = 0.5)
+
+#ggsave(here("Plots", "TEC-HistogramPlotsAllVariablesTEC-only.svg"), width = 20, height = 45)
+
+```
+
+### Feature removal I
+
+```{r feature-removal, warning=FALSE}
+
+# Removing Poetry
+#TxBcounts <- readRDS(here("FullMDA", "TxBcounts.rds")) 
+
+nrow(TxBcounts)
+TxBcounts <- TxBcounts %>% 
+  filter(Register!="Poetry") %>% 
+  droplevels(.)
+nrow(TxBcounts)
+
+summary(TxBcounts$Register)
+
+# Removal of meaningless features:
+# CD because numbers as digits were mostly removed from the textbooks
+# LIKE and SO because they are "bin" features designed to ensure that the counts for these two words don't inflate other categories due to mistags.
+TxBcounts <- TxBcounts %>% 
+  select(-c(CD, LIKE, SO))
+
+zero_features <- as.data.frame(round(colSums(TxBcounts==0)/nrow(TxBcounts)*100, 2)) # Percentage of texts with 0 occurrences of each feature
+colnames(zero_features) <- "Percentage_with_zero"
+zero_features %>% 
+  filter(!is.na(zero_features)) %>% 
+  rownames_to_column() %>% 
+  arrange(Percentage_with_zero) %>% 
+  filter(Percentage_with_zero > 66.6)
+
+# Combine low frequency features into meaningful groups whenever this makes linguistic sense
+TxBcounts <- TxBcounts %>% 
+  mutate(JJPR = JJPR + ABLE, ABLE = NULL) %>% 
+  mutate(PASS = PGET + PASS, PGET = NULL)
+
+zero_features <- as.data.frame(round(colSums(TxBcounts>0)/nrow(TxBcounts)*100, 2)) # Percentage of texts >0 occurrences of each feature
+colnames(zero_features) <- "Percentage_above_zero"
+zero_features %>% rownames_to_column() %>% filter(!is.na(zero_features)) %>% arrange(desc(Percentage_above_zero)) 
+
+docfreq.too.low <- zero_features %>% filter(!is.na(zero_features)) %>% subset(Percentage_above_zero < 33.3) %>% rownames_to_column() %>% select(rowname) # Select all variables with a document frequency of at least 33%.
+docfreq.too.low
+
+TxBcounts <- select(TxBcounts, -one_of(docfreq.too.low$rowname)) # Drop these variables
+colnames(TxBcounts)
+ncol(TxBcounts)-6 # Number of linguistic features remaining
+
+#saveRDS(TxBcounts, here("FullMDA", "TxBcounts2.rds")) # Last saved 6 December 2021
+
+```
+
+### Standardising normalised counts and identifying potential outliers
+
+"As an alternative to removing very sparse feature, we apply a signed logarithmic transformation to deskew the feature distributions." (Neumann & Evert)
+
+```{r z-standardisation-outliers, warning=FALSE}
+
+#TxBcounts <- readRDS(here("FullMDA", "TxBcounts2.rds")) # Last saved 6 December 2021
+
+# First scale the normalised counts (z-standardisation) to be able to compare the various features
+TxBcounts %>%
+  select(-Words) %>% 
+  keep(is.numeric) %>% 
+  scale() ->
+  TxBzcounts
+
+boxplot(TxBzcounts, las = 3, main = "z-scores") # Slow to open!
+
+# If necessary, remove any outliers at this stage.
+
+TxBdata <- cbind(TxBcounts[,1:6], as.data.frame(TxBzcounts))
+str(TxBdata)
+nrow(TxBdata)
+
+outliers <- TxBdata %>% 
+  select(-c(Words, LD, TTR)) %>% 
+  filter(if_any(where(is.numeric), ~ .x > 8)) %>% 
+  select(Filename)
+
+outliers
+
+TxBcounts <- TxBcounts %>% 
+  filter(!Filename %in% outliers$Filename)
+
+nrow(TxBcounts)
+
+TxBcounts %>%
+  select(-Words) %>% 
+  keep(is.numeric) %>% 
+  scale() ->
+  TxBzcounts
+
+nrow(TxBzcounts)
+
+boxplot(TxBzcounts, las = 3, main = "z-scores") # Slow to open!
+
+#saveRDS(TxBcounts, here("FullMDA", "TxBcounts3.rds")) # Last saved 6 December 2021
+```
+
+
+```{r z-transformed-distributions, fig.height = 40, warning=FALSE}
+
+TxBzcounts %>%
+  as.data.frame() %>% 
+  gather() %>% # This function from tidyr converts a selection of variables into two variables: a key and a value. The key contains the names of the original variable and the value the data. This means we can then use the facet_wrap function from ggplot2
+  ggplot(aes(value)) +
+    theme_bw() +
+    facet_wrap(~ key, scales = "free", ncol = 4) +
+    scale_x_continuous(expand=c(0,0)) +
+    geom_histogram(bins = 30, colour= "darkred", fill = "darkred", alpha = 0.5)
+
+#ggsave(here("Plots", "TEC-zscores-HistogramsAllVariablesTEC-only.svg"), width = 20, height = 45)
+
+```
+
+### Transforming the features to (partially) deskew these distributions
+
+Signed log transformation function inspired by the SignedLog function proposed in https://cran.r-project.org/web/packages/DataVisualizations/DataVisualizations.pdf
+
+```{r signed.log.transformation}
+
+# All features are signed log-transformed (this is also what Neumann & Evert 2021 do)
+signed.log <- function(x) {
+  sign(x) * log(abs(x) + 1)
+  }
+
+TxBzlogcounts <- signed.log(TxBzcounts) # Standardise first, then signed log transform
+
+# The function above would only transform the most skewed variables. This is what Lee suggests doing but it makes the interpretation of the correlations quite tricky so I abandonned this idea.
+# TxBzlogcounts2 <- TxBzcounts %>%
+#   as.data.frame() %>% 
+#     mutate(across(.cols = c(AMP, ASPECT, CAUSE, COND, CUZ, DMA, EMPH, EX, EXIST, FPP1P, FPP1S, FPUH, FREQ, HDG, MDCA, MDCO, MDNE, MDWO, MDWS, OCCUR, PASS, PEAS, PLACE, POLITE, PROG, QUPR, RP, SPLIT, STPR, THATD, THRC, THSC, TPP3P, TPP3S, VBD, VBG, VBN, VIMP, WHQU, WHSC, YNQU),
+#         .fns = signed.log)) %>% 
+#     rename_with(.cols = c(AMP, ASPECT, CAUSE, COND, CUZ, DMA, EMPH, EX, EXIST, FPP1P, FPP1S, FPUH, FREQ, HDG, MDCA, MDCO, MDNE, MDWO, MDWS, OCCUR, PASS, PEAS, PLACE, POLITE, PROG, QUPR, RP, SPLIT, STPR, THATD, THRC, THSC, TPP3P, TPP3S, VBD, VBG, VBN, VIMP, WHQU, WHSC, YNQU),
+#                 .fn = ~paste0(., '_signedlog'))
+
+boxplot(TxBzlogcounts, las=3, main="log-transformed z-scores")
+
+#saveRDS(TxBzlogcounts, here("FullMDA", "TxBzlogcounts.rds")) # Last saved 6 December
+```
+
+
+```{r signed.log.transformation-distributions, fig.height = 40}
+
+TxBzlogcounts %>%
+  as.data.frame() %>% 
+  gather() %>% # This function from tidyr converts a selection of variables into two variables: a key and a value. The key contains the names of the original variable and the value the data. This means we can then use the facet_wrap function from ggplot2
+  ggplot(aes(value)) +
+  theme_bw() +
+  facet_wrap(~ key, scales = "free", ncol = 4) +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_y_continuous(limits = c(0,NA)) +
+  geom_histogram(aes(y = ..density..), bins = 30, colour= "black", fill = "grey") +
+  geom_density(colour = "darkred", weight = 2, fill="darkred", alpha = .4)
+
+#ggsave(here("Plots", "DensityPlotsAllVariablesSignedLog-TEC-only.svg"), width = 15, height = 49)
+
+```
+
+These plots serve to illustrate the effects of the variable transformations performed in the above chunks. 
+
+```{r example-correlation-plots, fig.height=30}
+
+# This is a slightly amended version of the PerformanceAnalytics::chart.Correlation() function. It simply removes the significance stars that are meaningless with this many data points (see commented out lines below)
+
+chart.Correlation.nostars <- function (R, histogram = TRUE, method = c("pearson", "kendall", "spearman"), ...) {
+  x = checkData(R, method = "matrix")
+  if (missing(method)) 
+    method = method[1]
+  panel.cor <- function(x, y, digits = 2, prefix = "", use = "pairwise.complete.obs", method = "pearson", cex.cor, ...) {
+    usr <- par("usr")
+    on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- cor(x, y, use = use, method = method)
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste(prefix, txt, sep = "")
+    if (missing(cex.cor)) 
+      cex <- 0.8/strwidth(txt)
+    test <- cor.test(as.numeric(x), as.numeric(y), method = method)
+    # Signif <- symnum(test$p.value, corr = FALSE, na = FALSE, 
+    #                  cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), symbols = c("***", 
+    #                                                                           "**", "*", ".", " "))
+    text(0.5, 0.5, txt, cex = cex * (abs(r) + 0.3)/1.3)
+    # text(0.8, 0.8, Signif, cex = cex, col = 2)
+  }
+  f <- function(t) {
+    dnorm(t, mean = mean(x), sd = sd.xts(x))
+  }
+  dotargs <- list(...)
+  dotargs$method <- NULL
+  rm(method)
+  hist.panel = function(x, ... = NULL) {
+    par(new = TRUE)
+    hist(x, col = "light gray", probability = TRUE, 
+         axes = FALSE, main = "", breaks = "FD")
+    lines(density(x, na.rm = TRUE), col = "red", lwd = 1)
+    rug(x)
+  }
+  if (histogram) 
+    pairs(x, gap = 0, lower.panel = panel.smooth, upper.panel = panel.cor, 
+          diag.panel = hist.panel)
+  else pairs(x, gap = 0, lower.panel = panel.smooth, upper.panel = panel.cor)
+}
+
+# Example plot without any variable transformation
+example1 <- TxBcounts %>%
+  select(NN,PROG,SPLIT,ACT,FPP1S)
+
+#png(here("Plots", "CorrChart-TEC-examples-normedcounts.png"), width = 20, height = 20, units = "cm", res = 300)
+chart.Correlation.nostars(example1, histogram=TRUE, pch=19)
+dev.off()
+
+# Example plot with transformed variables
+example2 <- TxBzlogcounts %>%
+  as.data.frame() %>% 
+  select(NN,PROG,SPLIT,ACT,FPP1S)
+
+#png(here("Plots", "CorrChart-TEC-examples-zsignedlogcounts.png"), width = 20, height = 20, units = "cm", res = 300)
+chart.Correlation.nostars(example2, histogram=TRUE, pch=19)
+dev.off()
+```
+
+#### Correlation plot (not used in the PhD chapter)
+
+```{r corrsimple-function, eval=FALSE, fig.height=30}
+
+# From: https://towardsdatascience.com/how-to-create-a-correlation-matrix-with-too-many-variables-309cc0c0a57
+## Function adapated to my needs ##
+
+corr <- cor(TxBcounts[9:ncol(TxBcounts)])
+#prepare to drop duplicates and correlations of 1     
+corr[lower.tri(corr,diag=TRUE)] <- NA 
+#drop perfect correlations
+corr[corr == 1] <- NA   
+#turn into a 3-column table
+corr <- as.data.frame(as.table(corr))
+#remove the NA values from above 
+corr <- na.omit(corr)   
+
+#Uninteresting variable correlations?
+lowcor <- subset(corr, abs(Freq) < 0.3)
+#lowcor %>% filter(Var2=="CC"|Var1=="CC") %>% round(Freq, 2)
+#select significant correlations 
+corr <- subset(corr, abs(Freq) > 0.3)
+#sort by highest correlation
+corr <- corr[order(-abs(corr$Freq)),]   
+#see which variables will be eliminated: the ones with correlation > 0.3
+eliminate <- as.data.frame((summary(corr$Var1) + summary(corr$Var2)))
+(LowcCommunality <- eliminate %>% filter(`(summary(corr$Var1) + summary(corr$Var2))`==0))
+
+# Combine features with low communality into meaningful groups whenever this makes linguistic sense
+
+# Potentially problematic collinear variables that may need to be removed:
+highcor <- subset(corr, abs(Freq) > 0.9)
+highcor
+
+#variables which are retained
+corr$Var1 <- droplevels(corr$Var1)
+corr$Var2 <- droplevels(corr$Var2)
+features <- unique(c(levels(corr$Var1), levels(corr$Var2))) 
+features # 68 variables
+#turn corr back into matrix in order to plot with corrplot
+mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  
+#plot correlations in a manageable way
+library(corrplot)
+plot.margin=unit(c(0,0,0,0), "mm")
+corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ", tl.cex = 0.5)
+#save as SVG with Rstudio e.g. 1000 x 1000
+```
+
+### Visualisation of feature correlations
+
+```{r heatmap, fig.height=30}
+
+# Simple heatmap in base R (inspired by Stephanie Evert's SIGIL code)
+cor.colours <- c(
+  hsv(h=2/3, v=1, s=(10:1)/10), # blue = negative correlation 
+  rgb(1,1,1), # white = no correlation 
+  hsv(h=0, v=1, s=(1:10/10))) # red = positive correlation
+
+#png(here("Plots", "heatmapzlogcounts-TEC-only.png"), width = 30, height= 30, units = "cm", res = 300)
+heatmap(cor(TxBzlogcounts), 
+        symm=TRUE, 
+        zlim=c(-1,1), 
+        col=cor.colours, 
+        margins=c(7,7))
+dev.off()
+
+```
+
+```{r sessionInfo}
+sessionInfo()
+```

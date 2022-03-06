@@ -1,0 +1,540 @@
+---
+title: "Reference corpus data preparation for full MDA"
+author: "Elen Le Foll"
+date: "09/11/2021"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+  editor_options: 
+    markdown: 
+      wrap: sentence
+
+---
+
+# Set-up
+
+*Built with R `r getRversion()`*  
+*Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
+
+```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache = TRUE)
+
+knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, message=FALSE, paged.print=TRUE, fig.width = 10, warning=FALSE)
+
+library(caret) # For its confusion matrix function
+library(dplyr)
+library(forcats)
+library(here) # For dynamic file paths
+library(ggplot2) 
+library(PerformanceAnalytics)
+library(purrr) # For data wrangling
+library(psych) # For various useful stats function
+library(suffrager) # For pretty feminist colour palettes :)
+library(tidyr)
+library(tibble)
+
+```
+
+# MDA of Textbook English vs. Reference corpora
+
+## Importing reference corpora data
+
+### Importing Spoken BNC2014 counts
+
+These counts were computed on the basis of the "John and Jill in Ivybridge" version of the Spoken BNC2014 with added full stops at speaker turns.
+
+```{r SpokenBNC2014}
+
+SpokenBNC2014 <- read.delim(here("MFTE", "Outputs", "SpokenBNC2014_3.1_normed_complex_counts.tsv"), header = TRUE, stringsAsFactors = TRUE)
+str(SpokenBNC2014) # Check sanity of data
+nrow(SpokenBNC2014) # Should be 1251 files
+
+SpokenBNC2014$Series <- "Spoken BNC2014"
+SpokenBNC2014$Level <- "Ref."
+SpokenBNC2014$Country <- "Spoken BNC2014"
+SpokenBNC2014$Register <- "Spoken BNC2014"
+
+```
+
+### Importing Youth Fiction counts
+
+These counts were computed on the basis of the random samples of approximately 5,000 words of the books of the Youth Fiction corpus.
+
+```{r YouthFiction}
+
+YouthFiction <- read.delim(here("MFTE", "Outputs", "YF_sampled_500_3.1_normed_complex_counts.tsv"), header = TRUE, stringsAsFactors = TRUE)
+str(YouthFiction) # Check sanity of data
+nrow(YouthFiction) # Should be 1191 files
+
+YouthFiction$Series <- "Youth Fiction"
+YouthFiction$Level <- "Ref."
+YouthFiction$Country <- "Youth Fiction"
+YouthFiction$Register <- "Youth Fiction"
+
+```
+
+### Importing ITTC counts
+
+```{r InfoTeencounts}
+
+InfoTeen <- read.delim(here("MFTE", "Outputs", "InfoTeen_3.1_normed_complex_counts.tsv"), header = TRUE, stringsAsFactors = TRUE)
+str(InfoTeen) # Check sanity of data
+nrow(InfoTeen) # Should be 1414 files
+InfoTeen <- InfoTeen %>% filter(Filename!=".DS_Store" & Filename!="Revision_World_GCSE_10529068_wjec-level-law-past-papers.txt" & Filename!="Revision_World_GCSE_10528474_wjec-level-history-past-papers.txt" & Filename!="Revision_World_GCSE_10528472_edexcel-level-history-past-papers.txt")
+# Removes three outlier files which should not have been included in the corpus
+
+InfoTeen$Series <- "Info Teens"
+InfoTeen$Level <- "Ref."
+InfoTeen$Country <- "Info Teens"
+InfoTeen$Register <- "Info Teens"
+
+```
+
+
+## Merging TEC and reference corpora counts
+
+Due to reasons of space, the results of the five-register dataset were not included in the thesis.
+```{r DataMerging-5Reg, eval=FALSE}
+
+TxBcounts <- readRDS(here("FullMDA", "TxBcounts.rds"))
+
+TxBcounts %>% 
+  filter(Series=="NGL") %>% 
+  group_by(Series, Level) %>% 
+  summarise(wordcount = sum(Words))
+
+counts <- bind_rows(TxBcounts, InfoTeen, SpokenBNC2014, YouthFiction, .id = "Corpus") %>% 
+  filter(Register != "Poetry")
+head(counts); tail(counts)
+nrow(counts)
+
+# Convert all character vectors to factors
+counts[sapply(counts, is.character)] <- lapply(counts[sapply(counts, is.character)], as.factor)
+
+# Change all NAs to 0
+counts[is.na(counts)] <- 0
+
+levels(counts$Corpus)
+levels(counts$Corpus) <- list(Textbook.English="1", Informative.Teens="2", Spoken.BNC2014="3", Youth.Fiction="4")
+summary(counts$Corpus)
+summary(counts$Series)
+
+# Re-order registers
+levels(counts$Register)
+counts$Register <- factor(counts$Register, levels = c("Conversation", "Fiction", "Informative", "Instructional", "Personal", "Info Teens", "Spoken BNC2014", "Youth Fiction"))
+
+# Wrangle metadata variables
+counts$Subcorpus <- counts$Register
+levels(counts$Subcorpus) <- c("Textbook Conversation", "Textbook Fiction", "Textbook Informative", "Textbook Instructional", "Textbook Personal", "Info Teens Ref.", "Spoken BNC2014 Ref.", "Youth Fiction Ref.")
+summary(counts$Subcorpus)
+
+levels(counts$Register) <- c("Conversation", "Fiction", "Informative", "Instructional", "Personal", "Poetry", "Informative", "Conversation", "Fiction")
+summary(counts$Register)
+
+# Re-order variables
+colnames(counts)
+counts <- counts %>% 
+  select(order(names(.))) %>% # Order alphabetically first
+  select(Filename, Register, Level, Series, Country, Corpus, Subcorpus, Words, everything()) # Then place the metadata variable at the front of the table
+
+#saveRDS(counts, here("FullMDA", "counts.rds")) # Last saved 9 Feb 2022
+
+```
+
+This is the dataset that is presented in the second half of Chapter 7.
+```{r DataMerging-3Reg.only}
+
+TxBcounts <- readRDS(here("FullMDA", "TxBcounts.rds"))
+
+All3Reg <- c("Conversation", "Fiction", "Informative")
+
+TxBcounts3Reg <- TxBcounts %>% 
+  filter(Register %in% All3Reg) %>% 
+  droplevels(.)
+
+counts <- bind_rows(TxBcounts3Reg, InfoTeen, SpokenBNC2014, YouthFiction, .id = "Corpus")
+head(counts); tail(counts)
+str(counts)
+
+# Convert all character vectors to factors
+counts[sapply(counts, is.character)] <- lapply(counts[sapply(counts, is.character)], as.factor)
+
+# Change all NAs to 0
+counts[is.na(counts)] <- 0
+
+levels(counts$Corpus)
+levels(counts$Corpus) <- list(Textbook.English="1", Informative.Teens="2", Spoken.BNC2014="3", Youth.Fiction="4")
+summary(counts$Corpus)
+summary(counts$Series)
+
+# Wrangle metadata variables
+counts$Subcorpus <- counts$Register
+levels(counts$Subcorpus)
+levels(counts$Subcorpus) <- c("Textbook Conversation", "Textbook Fiction", "Info Teens Ref.", "Textbook Informative", "Spoken BNC2014 Ref.", "Youth Fiction Ref.")
+summary(counts$Subcorpus)
+
+# Re-order registers
+levels(counts$Register)
+levels(counts$Register) <- c("Conversation", "Fiction", "Informative", "Informative", "Conversation", "Fiction")
+summary(counts$Register)
+
+# Re-order variables
+colnames(counts)
+counts <- counts %>% 
+  select(order(names(.))) %>% # Order alphabetically first
+  select(Filename, Register, Level, Series, Country, Corpus, Subcorpus, Words, everything()) # Then place the metadata variable at the front of the table
+
+#saveRDS(counts, here("FullMDA", "counts3Reg.rds")) # Last saved 9 Feb 2022
+
+```
+
+## Data preparation
+
+### Plotting the distributions of all the features
+```{r distribution-viz, fig.height=40, warning=FALSE}
+
+ncounts <- readRDS(here("FullMDA", "counts3Reg.rds"))
+colnames(ncounts)
+
+# Compare relative frequencies of individual features, e.g., BE as a main verb per FVP (finite verb phrase)
+ncounts %>% 
+  group_by(Register, Corpus) %>% 
+  summarise(median(BEMA), MAD(BEMA))
+
+# Inspired by: https://drsimonj.svbtle.com/quick-plot-of-all-variables
+
+ncounts %>%
+  select(-Words) %>% 
+  keep(is.numeric) %>% 
+  gather() %>% # This function from tidyr converts a selection of variables into two variables: a key and a value. The key contains the names of the original variable and the value the data. This means we can then use the facet_wrap function from ggplot2
+  ggplot(aes(value)) +
+    theme_bw() +
+    facet_wrap(~ key, scales = "free", ncol = 4) +
+    scale_x_continuous(expand=c(0,0)) +
+    scale_y_continuous(limits = c(0,NA)) +
+    geom_histogram(aes(y = ..density..), bins = 30, colour= "black", fill = "grey") +
+    geom_density(colour = "darkred", weight = 2, fill="darkred", alpha = .4)
+
+#ggsave(here("Plots", "DensityPlotsAllVariables.svg"), width = 15, height = 49)
+
+ncounts %>%
+  select(-Words) %>% 
+  keep(is.numeric) %>% 
+  gather() %>% # This function from tidyr converts a selection of variables into two variables: a key and a value. The key contains the names of the original variable and the value the data. This means we can then use the facet_wrap function from ggplot2
+  ggplot(aes(value)) +
+    theme_bw() +
+    facet_wrap(~ key, scales = "free", ncol = 4) +
+    scale_x_continuous(expand=c(0,0)) +
+    geom_histogram(bins = 30, colour= "darkred", fill = "darkred", alpha = 0.5)
+
+#ggsave(here("Plots", "HistogramPlotsAllVariables.svg"), width = 20, height = 45)
+
+```
+
+### Feature removal due to low text frequency
+```{r feature-removal-low-frequency}
+
+# For MDA with five TEC registers
+#ncounts <- readRDS(here("FullMDA", "counts.rds"))
+
+# For MDA with three TEC registers
+ncounts <- readRDS(here("FullMDA", "counts3Reg.rds"))
+
+colnames(ncounts)
+
+# Removal of meaningless feature: CD because numbers as digits were mostly removed from the textbooks, LIKE and SO because they are dustbin categories
+ncounts <- ncounts %>% 
+  select(-c(CD, LIKE, SO))
+
+# Combine low frequency features into meaningful groups whenever this makes linguistic sense
+ncounts <- ncounts %>% 
+  mutate(JJPR = JJPR + ABLE, ABLE = NULL) %>% 
+  mutate(PASS = PGET + PASS, PGET = NULL) %>% 
+  mutate(TPP3 = TPP3S + TPP3P, TPP3P = NULL, TPP3S = NULL) %>% 
+  mutate(FQTI = FREQ + TIME, FREQ = NULL, TIME = NULL)
+
+zero_features <- as.data.frame(round(colSums(ncounts==0)/nrow(ncounts)*100, 2)) # Percentage of texts with 0 occurrences of each feature
+colnames(zero_features) <- "Percentage_with_zero"
+zero_features %>% 
+  filter(!is.na(zero_features)) %>% 
+  rownames_to_column() %>% 
+  arrange(Percentage_with_zero) %>% 
+  filter(Percentage_with_zero > 66.6)
+
+zero_features <- as.data.frame(round(colSums(ncounts>0)/nrow(ncounts)*100, 2)) # Percentage of texts >0 occurrences of each feature
+colnames(zero_features) <- "Percentage_above_zero"
+zero_features %>% rownames_to_column() %>% filter(!is.na(zero_features)) %>% arrange(desc(Percentage_above_zero)) 
+
+docfreq.too.low <- zero_features %>% filter(!is.na(zero_features)) %>% subset(Percentage_above_zero < 33.3) %>% rownames_to_column() %>% select(rowname) # Select all variables with a document frequency of at least 40%.
+docfreq.too.low
+
+ncounts <- select(ncounts, -one_of(docfreq.too.low$rowname)) # Drop these variables
+colnames(ncounts)
+ncol(ncounts)-8 # Number of linguistic features remaining
+
+# With five TEC registers
+#saveRDS(ncounts, here("FullMDA", "ncounts2.rds")) # Last saved 18 November 2021
+
+# With three TEC registers
+#saveRDS(ncounts, here("FullMDA", "ncounts2_3Reg.rds")) # Last saved 9 Feb 2022
+
+```
+
+### Standardising normalised counts and identifying potential outliers
+
+"As an alternative to removing very sparse feature, we apply a signed logarithmic transformation to deskew the feature distributions." (Neumann & Evert)
+
+```{r standardisation-outliers}
+
+# First scale the normalised counts (z-standardisation) to be able to compare the various features
+ncounts %>%
+  select(-Words) %>% 
+  keep(is.numeric) %>% 
+  scale() ->
+  zcounts
+
+boxplot(zcounts, las = 3, main = "z-scores") # Slow
+
+# If necessary, remove any outliers at this stage.
+colnames(ncounts)
+data <- cbind(ncounts[,1:8], as.data.frame(zcounts))
+str(data)
+nrow(data)
+
+outliers <- data %>% 
+ filter(if_any(where(is.numeric) & !Words,  .fns = function(x){x > 8}))  %>% 
+  select(Filename, Corpus, Series, Register, Level, Words)
+outliers
+
+outliers %>% select(Filename)
+
+# Checking that outlier texts are not particularly long or short texts
+summary(outliers$Words)
+histogram(outliers$Words, breaks = 30)
+summary(data$Words)
+# Distribution of outlier texts
+summary(outliers$Corpus)
+
+# Manually checking a sample of these outliers:
+
+# Encyclopedia_Kinds_au_10085347_Nobel_Prize_in_Chemistry.txt is essentially a list of Nobel prize winners but with some additional information. Hence a good representative of the type of texts of the ITTC.
+# Solutions_Elementary_ELF_Spoken_0013 --> Has a lot of "going to" constructions because they are learnt in this chapter but is otherwise a well-formed text.
+# Teen_Kids_News_10403972_a-brief-history-of-white-house-weddings --> No issues
+# Teen_Kids_News_10403301_golden-globe-winners-2019-the-complete-list --> Similar to the Nobel prize laureates text.
+# Revision_World_GCSE_10528123_gender-written-textual-analysis-framework --> Text includes bullet points tokenised as the letter "o" but otherwise a fairly typical informative text.
+
+# Removing the outliers
+ncounts <- ncounts %>% 
+  filter(!Filename %in% outliers$Filename)
+
+nrow(ncounts)
+
+#saveRDS(ncounts, here("FullMDA", "ncounts3_3Reg.rds")) # Last saved 9 Feb 2022
+
+ncounts %>%
+  select(-Words) %>% 
+  keep(is.numeric) %>% 
+  scale() ->
+  zcounts
+
+nrow(zcounts)
+boxplot(zcounts, las = 3, main = "z-scores") # Slow to open!
+
+```
+
+### Transforming the features to (partially) deskew these distributions
+
+```{r signed.log.transformation}
+
+signed.log <- function(x) {sign(x)*log(abs(x)+1)}
+
+zlogcounts <- signed.log(zcounts) # Standardise first, then signed log transform
+
+boxplot(zlogcounts, las=3, main="log-transformed z-scores")
+
+# With three TEC registers
+#saveRDS(zlogcounts, here("FullMDA", "zlogcounts_3Reg.rds")) # Last saved 9 Feb 2022
+
+# With five TEC registers
+#saveRDS(zlogcounts, here("FullMDA", "zlogcounts.rds")) # Last saved 18 November
+
+zlogcounts %>%
+  as.data.frame() %>% 
+  gather() %>% # This function from tidyr converts a selection of variables into two variables: a key and a value. The key contains the names of the original variable and the value the data. This means we can then use the facet_wrap function from ggplot2
+  ggplot(aes(value)) +
+  theme_bw() +
+  facet_wrap(~ key, scales = "free", ncol = 4) +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_y_continuous(limits = c(0,NA)) +
+  geom_histogram(aes(y = ..density..), bins = 30, colour= "black", fill = "grey") +
+  geom_density(colour = "darkred", weight = 2, fill="darkred", alpha = .4)
+
+#ggsave(here("Plots", "DensityPlotsAllVariablesSignedLog.svg"), width = 15, height = 49)
+
+```
+
+
+### Merging of data for MDA
+
+```{r import-final-ncounts-data}
+
+# With five TEC registers 
+# zlogcounts <- readRDS(here("FullMDA", "zlogcounts.rds")) 
+# nrow(zlogcounts)
+# colnames(zlogcounts)
+# 
+# ncounts <- readRDS(here("FullMDA", "ncounts2.rds"))
+# nrow(ncounts)
+# colnames(ncounts)
+# 
+# data <- cbind(ncounts[,1:7], as.data.frame(zlogcounts))
+# str(data)
+# 
+#saveRDS(data, here("FullMDA", "datazlogcounts.rds")) # Last saved 18 November
+
+# With three TEC registers
+zlogcounts <- readRDS(here("FullMDA", "zlogcounts_3Reg.rds")) 
+nrow(zlogcounts)
+colnames(zlogcounts)
+
+ncounts <- readRDS(here("FullMDA", "ncounts3_3Reg.rds"))
+nrow(ncounts)
+colnames(ncounts)
+
+data <- cbind(ncounts[,1:8], as.data.frame(zlogcounts))
+colnames(data)
+
+#saveRDS(data, here("FullMDA", "datazlogcounts_3Reg.rds")) # Last saved 9 Feb 2022
+
+```
+
+## Performing the PCA of Textbook English vs. Reference corpora
+### Quick import
+```{r prepare-data}
+
+# With five TEC registers
+# data <- readRDS(here("FullMDA", "datazlogcounts.rds"))
+
+# With three TEC registers
+data <- readRDS(here("FullMDA", "datazlogcounts_3Reg.rds"))
+
+summary(data$Corpus)
+summary(data$Subcorpus)
+
+# This rearranges the levels in the desired order for the plot legends:
+data <- data %>% 
+  mutate(Subcorpus = fct_relevel(Subcorpus, "Info Teens Ref.", after = 9))
+
+```
+
+## Testing factorability of data
+
+### Correlation matrix: only for data exploration, not used to exclude variables
+```{r corrsimple-function, eval=FALSE}
+
+# From: https://towardsdatascience.com/how-to-create-a-correlation-matrix-with-too-many-variables-309cc0c0a57
+## Function adapated to my needs ##
+
+colnames(data)
+
+corr <- cor(data[9:ncol(data)])
+#prepare to drop duplicates and correlations of 1     
+corr[lower.tri(corr,diag=TRUE)] <- NA 
+#drop perfect correlations
+corr[corr == 1] <- NA   
+#turn into a 3-column table
+corr <- as.data.frame(as.table(corr))
+#remove the NA values from above 
+corr <- na.omit(corr)   
+
+#Uninteresting variable correlations?
+lowcor <- subset(corr, abs(Freq) < 0.3)
+#lowcor %>% filter(Var2=="CC"|Var1=="CC") %>% round(Freq, 2)
+#select significant correlations 
+corr <- subset(corr, abs(Freq) > 0.3)
+#sort by highest correlation
+corr <- corr[order(-abs(corr$Freq)),]   
+#see which variables might be eliminated: the ones with correlation > 0.3
+eliminate <- as.data.frame((summary(corr$Var1) + summary(corr$Var2)))
+(LowcCommunality <- eliminate %>% filter(`(summary(corr$Var1) + summary(corr$Var2))`==0))
+
+# Potentially problematic collinear variables that may need to be removed:
+highcor <- subset(corr, abs(Freq) > 0.95)
+highcor
+
+#variables which are retained
+corr$Var1 <- droplevels(corr$Var1)
+corr$Var2 <- droplevels(corr$Var2)
+features <- unique(c(levels(corr$Var1), levels(corr$Var2))) 
+features # 68 variables
+#turn corr back into matrix in order to plot with corrplot
+mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  
+#plot correlations in a manageable way
+library(corrplot)
+plot.margin=unit(c(0,0,0,0), "mm")
+corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ", tl.cex = 0.5)
+#save as SVG with Rstudio e.g. 1000 x 1000
+```
+
+### Visualisation of feature correlations
+```{r heatmap}
+
+# Simple heatmap in base R (inspired by Stephanie Evert's SIGIL code)
+cor.colours <- c(
+  hsv(h=2/3, v=1, s=(10:1)/10), # blue = negative correlation 
+  rgb(1,1,1), # white = no correlation 
+  hsv(h=0, v=1, s=(1:10/10))) # red = positive correlation
+
+#png(here("Plots", "heatmapzlogcounts.png"), width = 30, height= 30, units = "cm", res = 300)
+heatmap(cor(zlogcounts), 
+        symm=TRUE, 
+        zlim=c(-1,1), 
+        col=cor.colours, 
+        margins=c(7,7))
+dev.off()
+
+```
+
+### MSA, communalities and scree plot
+```{r factorability-screeplot}
+
+# Eliminate highly collinear variable
+cor(data$VPRT, data$VBD)
+
+data <- data %>% 
+  select(-c(VPRT))
+
+colnames(data)
+kmo <- KMO(data[,9:ncol(data)])
+kmo # # Overall MSA = 0.95 
+kmo$MSAi[order(kmo$MSAi)] # All features have individual MSAs of > 0.5 (but only because TPP3P was merged with TPP3S earlier on)
+
+#png(here("Plots", "screeplot-TEC-Ref_3Reg.png"), width = 20, height= 12, units = "cm", res = 300)
+scree(data[,9:ncol(data)], factors = FALSE, pc = TRUE) # 6 components
+dev.off()
+
+# Perform PCA
+pca1 <- psych::principal(data[9:ncol(data)], 
+                         nfactors = 6)
+pca1$loadings
+
+pca1$communality %>% sort(.) # If features with communalities of < 0.2 are removed, we remove TIME (therefore merged TIME and FREQ further up the line)
+
+# Final number of features
+ncol(data)-6
+# Final number of texts
+nrow(data)
+
+#saveRDS(data, here("FullMDA", "dataforPCA.rds")) # Last saved on 9 Feb 2022
+
+```
+
+```{r sessionInfo}
+sessionInfo()
+```

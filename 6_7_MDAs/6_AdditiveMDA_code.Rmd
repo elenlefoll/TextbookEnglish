@@ -1,0 +1,1986 @@
+---
+title: "Additive MDA"
+author: "Elen Le Foll"
+date: "25/03/2020"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+  editor_options: 
+    markdown: 
+      wrap: sentence
+---
+
+*Built with R `r getRversion()`*  
+*Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
+
+```{r setup, include=FALSE}
+options(scipen=999)
+
+library(broom.mixed) # For checking singularity issues 
+library(car) # For recoding data
+library(cowplot) # For nice plots
+library(emmeans) # Comparing group means of predicted values
+library(GGally) # For ggpairs
+library(gridExtra) # For making large faceted plots
+library(here) # For ease of sharing
+library(lme4) # For mixed effects modelling
+library(scales) # For working with colours
+library(sjPlot) # For nice tabular display of regression models
+library(suffrager) # For some nice, feminist colours
+library(tidyverse) # For data wrangling and plotting
+library(visreg) # For nice visualisations of model results
+select <- dplyr::select
+
+source(here("R_rainclouds.R")) # For geom_flat_violin rainplots
+
+```
+
+```{r palette-intra-textbook}
+
+# Colours used in Register Studies paper and included in Open Access plots published on Zenodo:
+colours <- suf_palette(name = "london", n = 6, type = "continuous") # Very nice, similar to OrRd palette
+scales::show_col(colours)
+colours <- colours[6:1] 
+
+# Colour scheme used in PhD thesis:
+colours = c("#F9B921", "#A18A33",  "#722672", "#BD241E", "#15274D", "#D54E1E") 
+scales::show_col(colours)
+
+```
+
+
+# Import data
+
+## Textbook data for additive MDAs using Biber's 1988 model of general English as a baseline
+
+```{r TxBcounts}
+# Textbook Corpus
+
+TxBcounts <- read.delim(here("data", "TxB900MDA_counts.tsv"), header = TRUE)
+
+glimpse(TxBcounts)
+nrow(TxBcounts)
+TxBcounts <- TxBcounts %>% filter(Filename!="._Access_1_Informative_0001.txt")
+TxBcounts$Register <- as.factor(stringr::str_extract(TxBcounts$Filename, "Spoken|Narrative|Other|Personal|Informative|Instructional|Poetry")) # Add a variable for Textbook Register
+summary(TxBcounts$Register)
+TxBcounts$Register <-car::recode(TxBcounts$Register, "'Narrative' = 'Fiction'; 'Spoken' = 'Conversation'")
+
+colnames(TxBcounts)
+MAT_features <- read.csv(here("metadata", "MAT_features_TxB.csv"), header = F)
+MAT_features <- MAT_features$V3 # Feature names without any spaces or hythens
+MAT_features
+colnames(TxBcounts) <- MAT_features
+colnames(TxBcounts)
+
+TxBcounts %>% 
+  group_by(Register) %>% 
+  summarise(totaltexts = n(), totalwords = sum(Tokens), meannouncount = mean(Nouns), sdnouncount = sd(Nouns), TTRmean = mean(TTR))
+
+```
+
+```{r TxBzscores}
+### Z-scores ###
+
+TxBzscores <- read.delim(here("data", "TxB900MDA_zscores.tsv"), header = TRUE)
+glimpse(TxBzscores)
+TxBzscores <- TxBzscores %>% filter(Filename!="CORPUS" & Filename!="._Access_1_Informative_0001.txt") # Remove this row with mean values for the corpus
+nrow(TxBzscores)
+colnames(TxBzscores)
+MAT_features <- read.csv(here("metadata", "MAT_features_zscores.csv"), header = F)
+MAT_features <- MAT_features$V3 # Feature names without any spaces or hythens
+colnames(TxBzscores) <- MAT_features
+colnames(TxBzscores)
+
+TxBzscores$Register <- as.factor(stringr::str_extract(TxBzscores$Filename, "Spoken|Narrative|Other|Personal|Informative|Instructional|Poetry")) # Add a variable for Textbook Register
+TxBzscores$Register <-car::recode(TxBzscores$Register, "'Narrative' = 'Fiction'; 'Spoken' = 'Conversation'")
+summary(TxBzscores$Register)
+
+# Textbook Series variable
+TxBzscores$Filename <- stringr::str_replace(TxBzscores$Filename, "English_In_Mind", "EIM") 
+TxBzscores$Filename <- stringr::str_replace(TxBzscores$Filename, "English_in_Mind", "EIM") # This is necessary because of inconsistencies in the use of capital letters for this series
+TxBzscores$Filename <- stringr::str_replace(TxBzscores$Filename, "New_GreenLine", "NGL") # Otherwise the regex for GreenLine will override New_GreenLine
+TxBzscores$Filename <- stringr::str_replace(TxBzscores$Filename, "Piece_of_cake", "POC") # Otherwise the regex for GreenLine will override New_GreenLine
+
+TxBzscores$Series <- as.factor(stringr::str_extract(TxBzscores$Filename, "Access|Achievers|EIM|GreenLine|HT|NB|NM|POC|JTT|NGL|Solutions"))
+summary(TxBzscores$Series)
+TxBzscores$Series <-car::recode(TxBzscores$Series, "c('NB', 'JTT') = 'JTT'; c('NM', 'HT') = 'HT'")
+
+# Textbook country variable
+TxBzscores$Country <- TxBzscores$Series
+TxBzscores$Country <- car::recode(TxBzscores$Series, "c('Access', 'GreenLine', 'NGL') = 'Germany'; c('Achievers', 'EIM', 'Solutions') = 'Spain'; c('HT', 'NB', 'NM', 'POC', 'JTT') = 'France'")
+summary(TxBzscores$Country)
+
+TxBzscores$Level <- as.factor(TxBzscores$Level)
+
+```
+
+```{r TxBdimensions}
+TxBdimensions <- read.delim(here("data", "TxB900MDA_dims.tsv"), header = TRUE)
+
+filter(TxBdimensions, Filename=="CORPUS") # This row reports the mean values for each dimension
+TxBdimensions <- TxBdimensions %>% filter(Filename!="CORPUS") # Remove the row with mean values
+glimpse(TxBdimensions)
+
+# Register variable
+TxBdimensions$Register <- as.factor(stringr::str_extract(TxBdimensions$Filename, "Spoken|Narrative|Other|Personal|Informative|Instructional|Poetry")) # Add a variable for Textbook Register
+summary(TxBdimensions$Register)
+TxBdimensions$Register <-car::recode(TxBdimensions$Register, "'Narrative' = 'Fiction'; 'Spoken' = 'Conversation'")
+
+# Show me the Textbook Series variable for ease of plotting
+TxBdimensions$Filename <- stringr::str_replace(TxBdimensions$Filename, "English_In_Mind", "EIM") 
+TxBdimensions$Filename <- stringr::str_replace(TxBdimensions$Filename, "English_in_Mind", "EIM") # This is necessary because of inconsistencies in the use of capital letters for this series
+TxBdimensions$Filename <- stringr::str_replace(TxBdimensions$Filename, "New_GreenLine", "NGL") # Otherwise the regex for GreenLine will override New_GreenLine
+TxBdimensions$Filename <- stringr::str_replace(TxBdimensions$Filename, "Piece_of_cake", "POC") # Otherwise the regex for GreenLine will override New_GreenLine
+TxBdimensions$Series <- as.factor(stringr::str_extract(TxBdimensions$Filename, "Access|Achievers|EIM|GreenLine|HT|NB|NM|POC|JTT|NGL|Solutions"))
+
+summary(TxBdimensions$Series)
+
+# Match the level E French textbooks to their corresponding series
+TxBdimensions$Series <-car::recode(TxBdimensions$Series, "c('NB', 'JTT') = 'JTT'; c('NM', 'HT') = 'HT'")
+
+# Textbook country variable
+TxBdimensions$Country <- TxBdimensions$Series
+TxBdimensions$Country <- car::recode(TxBdimensions$Series, "c('Access', 'GreenLine', 'NGL') = 'Germany'; c('Achievers', 'EIM', 'Solutions') = 'Spain'; c('HT', 'NB', 'NM', 'POC', 'JTT') = 'France'")
+summary(TxBdimensions$Country)
+
+TxBdimensions$Level <- as.factor(TxBdimensions$Level)
+
+```
+
+# Additive MDA: Intra-textbook analysis I
+
+## Dim1
+
+### Rainplots for all textbook registers on Dimension 1
+
+```{r TxB-Dim1-rainplot}
+
+ggplot(TxBdimensions,aes(x=Register,y=Dim1, fill = Register, colour = Register))+ # Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+  # note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds.
+  geom_boxplot(position = position_nudge(x = .25), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 1 (Biber 1988)') + xlab('Textbook Registers') +
+  theme_cowplot() +
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  #ggtitle("Dimension 1: Involved vs. Informational Discourse")
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -30, to = 40, by = 10)) 
+
+#ggsave(here("plots", "TxB_Reg_Dim1.svg"), width = 10, height = 6)
+#ggsave(here("plots", "TxB_Reg_Dim1.png"), width = 10, height = 6, dpi = 300)
+
+```
+
+### Modelling Dim1 results: Linear regression with mixed effects
+
+### Checks
+
+#### Predictors
+
+Check the relationships among the predictor variables and the grouping variable.
+
+```{r, fig.width = 6, fig.height = 9}
+
+# Plot 1
+ggplot(TxBdimensions, aes(x = Level)) +
+  geom_bar() +
+  facet_grid(rows = vars(Series), cols = vars(Register))
+
+
+# Plot 2 (more detailed)
+fig_obs <- ggplot(TxBdimensions, aes(x = Level, y = Dim1)) +
+  geom_point(
+    shape = "circle filled",
+    fill = "grey",
+    position = position_jitter(width = 0.2, height = 0)
+  ) +
+  facet_grid(rows = vars(Series), cols = vars(Register))
+fig_obs
+
+```
+
+Basic observations: \* There are relatively few 'Personal' and 'Poetry' texts.
+\* Some series ('POC' and 'Solutions') have almost no fiction.
+\* Some series (e.g. 'POC' and 'Solutions' again) have no level 'E' textbooks
+
+#### Outcome
+
+Check the distribution of the outcome variable.
+Note that the *y* axis varies in scale so as to 'zoom in' on the shape of the distribution for those registers that contain much fewer texts.
+
+```{r, fig.width = 6, fig.height = 6}
+fig_outcome <- ggplot(TxBdimensions, aes(x = Dim1)) +
+  geom_histogram(bins = 20) +
+  facet_grid(rows = vars(Register), cols = vars(Level), scales = "free_y")
+fig_outcome
+```
+
+Aside from the fact that some combinations of `Register` and `Level` contain very few texts, `Dim1` looks approximately normally distributed in each.
+
+### Models and model comparisons
+
+Data for Poetry is too sparse so I am excluding it from these models.
+Thus, the following models are for just four of the registers.
+Following Gries and others, I am following this method: 1.
+Fit baseline model with only random effect structure.
+2.
+Fit all plausible models.
+3.
+Check for (significant) differences between models.
+
+```{r Dim1models}
+
+TxBdim_nopoetry <- TxBdimensions %>% filter(Register != "Poetry") %>% droplevels(.)
+summary(TxBdim_nopoetry$Register) # Check
+
+md0 <- lmer(Dim1 ~ 1 + (1|Series), TxBdim_nopoetry, REML = FALSE)
+md_register <- update(md0, .~. + Register)
+md_level <- update(md0, . ~ . + Level)
+md_both <- update(md_register, .~. + Level)
+md_interaction <- update(md_both, . ~ . + Level:Register)
+
+anova(md0, md_register, md_both, md_interaction)
+anova(md0, md_level)
+
+md_final <- lmer(Dim1 ~ (Register|Series) + Register + Level + Level:Register, TxBdim_nopoetry, REML = FALSE) # boundary (singular) fit: see ?isSingular
+
+tab_model(md_final)
+```
+
+### Singularity
+
+The model fit is singular.
+
+The summary of the random effects can tell us more.
+It shows the variance-covariance matrix for the random effect estimates.
+
+```{r}
+VarCorr(md_final)
+
+md_final_ranefs <- tidy(md_final, effects = "ran_vals")
+
+head(md_final_ranefs)
+```
+
+To look at the association between intercepts and slopes, we need the values in the `term` column as separate columns.
+
+```{r}
+md_final_ranefs %>%
+  pivot_wider(
+    id_cols = c(group, level),
+    names_from = term,
+    values_from = estimate
+  ) ->
+  md_final_ranefs
+
+head(md_final_ranefs)
+```
+
+Now we can plot a matrix of correlations among the estimated random effects.
+
+```{r, message = FALSE, fig.width = 7, fig.height = 7}
+md_final_ranefs %>%
+  select(`(Intercept)`, starts_with("Register")) %>%
+  ggpairs(
+    lower = list(continuous = wrap("smooth_lm", shape = "circle filled", fill = "grey", se = FALSE)),
+    diag = "blank",
+    upper = list(continuous = wrap("cor", stars = FALSE))
+  )
+```
+
+The scatterplots show close linear relationships among some of the estimates.
+In particular, the estimates for the random effect of the 'Personal' register are closely correlated with 'Fiction' and 'Informative', as was also the case in the estimated covariance matrix.
+Zoom in on this correlation to understand what each plot in the matrix represents.
+
+```{r}
+fig_ranef_cor <- ggplot(md_final_ranefs, 
+                        aes(x = RegisterFiction, y = RegisterPersonal, label = level)) +
+  geom_point(shape = "bullet") +
+  geom_text(hjust = "inward")
+
+fig_ranef_cor
+```
+
+In general, the higher the estimated `Dim1` for Personal Communication texts in a given textbook series, the lower the estimated `Dim1` for Fiction in that same series.
+Hence, in a certain sense, some of these random slopes for `Register` are providing 'redundant' information.
+If the random effect for one register is almost perfectly correlated with another, then there is no need for them both.
+Indeed, this redundancy can make it difficult to estimate both reliably.
+
+### Final Dim1 model
+
+```{r finalDim1model}
+
+TxBdim_nopoetry <- TxBdimensions %>% filter(Register != "Poetry") %>% droplevels(.)
+summary(TxBdim_nopoetry$Register) # Check
+
+md_final <- lmer(Dim1 ~ (1|Series) + Register + Level + Level:Register, TxBdim_nopoetry, REML = FALSE) # no warnings
+
+tab_model(md_final, wrap.labels = 100) 
+
+```
+
+### Checks
+
+The basic checks look okay: 
+\* No warnings about problems with the fitting.
+\* The variance of the random effects is not zero.
+\* None of the standard errors are really huge (although those for the interactions involving the 'Personal' register are larger because data is sparse for this register).
+
+```{r checks}
+# check distribution of residuals
+plot(md_final)
+
+# We can access the estimated deviation between each series average Dim1 1 and the overall average:
+ranef(md_final)
+
+```
+
+### Visualising fitted vs. observed values
+
+```{r PredObsPlot, fig.width = 6, fig.height = 9}
+TxBdim_nopoetry[, "predicted"] <- predict(md_final)
+
+p <- ggplot(TxBdim_nopoetry, aes(x = Level, y = Dim1)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  facet_grid(rows = vars(Series), cols = vars(Register)) +
+  geom_point(aes(y = predicted), shape = "triangle filled", fill = "red")+
+  labs(y = "Dimension 1 (Biber 1988)", x = "Textbook Level")
+
+top_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Register") +
+  theme_void()
+right_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Series", angle = -90) +
+  theme_void()
+blank_panel <- ggplot() +
+  theme_void()
+
+jpeg(here("plots", "TxB_Dim1_Pred_Obs_1Series_RS.jpeg"), height = 30, width = 20, units = "cm", res = 300)
+
+gridExtra::grid.arrange(
+  top_label, blank_panel, p, right_label,
+  nrow = 2, ncol = 2,
+  widths = c(30, 1), heights = c(1, 30)
+)
+
+#dev.off()
+
+# Save plot using Rstudio export function (dimensions: 600 to 900 work well)
+```
+
+### Comparing groups
+
+```{r comparingGroups}
+Register_results <- emmeans(md_final, "Register")
+summary(Register_results)
+
+Level_results <- emmeans(md_final, "Level")
+summary(Level_results)
+
+comparisons <- pairs(Register_results, adjust = "tukey")
+comparisons
+
+confint(comparisons)
+
+```
+
+### Visualising effects
+
+```{r TxB-Dim1-SeriesEffect}
+
+visreg(md_final, xvar = "Series", by="Register", type = "conditional", re.form=~(1|Series), line=list(col="darkred"), xlab = "Textbook Series", ylab = "Dimension 1 (Biber 1988)", layout=c(2,3))
+
+```
+
+## Textual Analysis of individual features on Dim1
+
+```{r TxB-Dim1-textualAnalysis}
+
+Dim1 <- TxBzscores %>%
+  dplyr::select(Register, Private_verbs, That_deletion, Contractions, Present_tense, SPP2, Pro_verb_DO, Analytic_negation, Dem_pronouns, Emphatics, FPP1, it, BE_main_verb, because, Discourse_particles, Ind_pronouns, Hedges, Amplifiers, Sentence_relatives, Direct_WH_questions, Poss_modals, Ind_clause_coord, WH_clauses, Stranded_prepositions, Nouns, AWL, Prepositions, TTR, Attr_Adj) %>% 
+  group_by(Register) %>% 
+  summarise_all(mean) %>% 
+  mutate_if(is.numeric, round, digits = 2) %>% 
+  t()
+
+head(Dim1)
+
+```
+
+## Dim2
+
+### Rainplots
+
+```{r TxB-Dim2-rainplot, include = TRUE, echo = TRUE}
+# Rainplots for all textbook registers on Dimension 2 
+
+TxBdimensions %>% 
+  group_by(Register) %>% 
+  summarise(mean = mean(Dim2), sd = sd(Dim2)) %>% 
+  mutate_if(is.numeric, round, digits = 2)
+
+ggplot(TxBdimensions,aes(x=Register,y=Dim2, fill = Register, colour = Register))+ # Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+  geom_boxplot(position = position_nudge(x = .25), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 2 (Biber 1988)')+xlab('Textbook Registers') +
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  #ggtitle("Dimension 2: Narrative vs. Non-narrative Concerns") +
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -10, to = 20, by = 5)) 
+
+#ggsave(here("plots", "TxB_Reg_Dim2.svg"), width = 10, height = 6)
+
+# Consider filtering out the outlier in Poetry: Solutions_Elementary_Poetry_0001.txt 
+# Very high score due to repetition of "Ain't got no..." which is tagged as past tense verb (0.90) + synthetic negation (0.40), both of which score positively on factor 2.
+
+# Removing clear outliner
+
+TxBdimensions2 <- TxBdimensions %>% filter(Filename!="Solutions_Elementary_Poetry_0001.txt")
+
+ggplot(TxBdimensions2,aes(x=Register,y=Dim2, fill = Register, colour = Register))+ # Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Register)+0.25, y = Dim2), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 2 (Biber 1988)')+xlab('Textbook Registers')+
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  #ggtitle("Dimension 2: Narrative vs. Non-narrative Concerns")
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -10, to = 15, by = 5)) 
+
+#ggsave(here("plots", "TxB_Reg_Dim2.svg"), width = 10, height = 6)
+
+```
+
+### LME model, plots and checks
+
+```{r TxBDim2-LMEmodel}
+
+md_final2 <- lmer(Dim2 ~ (1|Series) + Register + Level + Level:Register, TxBdim_nopoetry, REML = FALSE) # no warnings
+
+tab_model(md_final2, wrap.labels = 100) 
+
+# check distribution of residuals
+library(predictmeans)
+residplot(md_final2)
+
+# We can access the estimated deviation between each series average Dim2 and the overall average:
+ranef(md_final2)
+
+TxBdim_nopoetry[, "predicted"] <- predict(md_final2)
+
+p <- ggplot(TxBdim_nopoetry, aes(x = Level, y = Dim2)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  facet_grid(rows = vars(Series), cols = vars(Register)) +
+  geom_point(aes(y = predicted), shape = "triangle filled", fill = "red")+
+  labs(y = "Dimension 2 (Biber 1988)", x = "Textbook Level")
+
+top_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Register") +
+  theme_void()
+right_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Series", angle = -90) +
+  theme_void()
+blank_panel <- ggplot() +
+  theme_void()
+
+grid.arrange(
+  top_label, blank_panel, p, right_label,
+  nrow = 2, ncol = 2,
+  widths = c(30, 1), heights = c(1, 30)
+)
+
+# Save plot using Rstudio export function (dimensions: 600 to 900 work well)
+
+Register_results2 <- emmeans(md_final2, "Register")
+summary(Register_results2)
+
+comparisons2 <- pairs(Register_results2, adjust = "tukey")
+comparisons2
+
+# Visualising effects
+visreg(md_final2, xvar = "Level", by="Register", type = "conditional", line=list(col="darkred"), xlab = "Textbook Level", ylab = "Dimension 2 (Biber 1988)")
+
+# Group differences
+emmeans(md_final2, ~ Level*Register)
+
+```
+
+## Dim3
+
+```{r TxB-Dim3-rainplot-zscores}
+# Rainplots for all textbook registers on Dimension 3
+
+TxBdimensions %>% group_by(Register) %>% summarise(mean = mean(Dim3), sd = sd(Dim3))
+
+ggplot(TxBdimensions,aes(x=Register,y=Dim3, fill = Register, colour = Register))+ 
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+  geom_boxplot(position = position_nudge(x = .25), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 3 (Biber 1988)')+xlab('Textbook Registers')+ 
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  #ggtitle("Dimension 3: Explicit vs. Situation-Dependent Reference") +
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -10, to = 20, by = 5)) 
+
+#ggsave(here("plots", "TxB_Reg_Dim3.svg"), width = 10, height = 6)
+
+
+Dim3 <- TxBzscores %>%
+  select(Register, WH_rel_clauses_obj, Pied_piping_relative_clauses, WH_rel_clauses_subj, Phrasal_coord, Nominalizations, Time_adv, Place_adv, Adverbs) %>%
+  group_by(Register) %>% 
+  summarise_all(mean) %>% 
+  mutate_if(is.numeric, round, digits = 2) %>% 
+  t()
+
+Dim3
+
+```
+
+```{r TxBDim3-LMEmodel}
+
+md_final3 <- lmer(Dim3 ~ (1|Series) + Register + Level + Level:Register, TxBdim_nopoetry, REML = FALSE) # no warnings
+
+tab_model(md_final3, wrap.labels = 100) 
+
+# check distribution of residuals
+residplot(md_final3)
+
+# We can access the estimated deviation between each series average Dim3 and the overall average:
+ranef(md_final3)
+
+TxBdim_nopoetry[, "predicted"] <- predict(md_final3)
+
+p <- ggplot(TxBdim_nopoetry, aes(x = Level, y = Dim3)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  facet_grid(rows = vars(Series), cols = vars(Register)) +
+  geom_point(aes(y = predicted), shape = "triangle filled", fill = "red")+
+  labs(y = "Dimension 3 (Biber 1988)", x = "Textbook Level")
+
+top_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Register") +
+  theme_void()
+right_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Series", angle = -90) +
+  theme_void()
+blank_panel <- ggplot() +
+  theme_void()
+
+grid.arrange(
+  top_label, blank_panel, p, right_label,
+  nrow = 2, ncol = 2,
+  widths = c(30, 1), heights = c(1, 30)
+)
+
+# Save plot using Rstudio export function (dimensions: 600 to 900 work well)
+
+Register_results3 <- emmeans(md_final3, "Register")
+summary(Register_results3)
+
+comparisons3 <- pairs(Register_results3, adjust = "tukey")
+comparisons3
+
+# Visualise effects
+# Levels
+
+visreg::visreg(md_final3, xvar = "Level", by="Register", type = "conditional", line=list(col="darkred"), xlab = "Textbook Level", ylab = "Dimension 3 (Biber 1988)")
+
+# Textbook Series (random effect)
+v <- visreg::visreg(md_final3, "Register", by="Series", re.form=~(1|Series), plot=FALSE)
+plot(v, ylab="Dimension 3 (Biber 1988)", line=list(col="darkred"))
+
+visreg(md_final3, xvar = "Series", by="Register", type = "conditional", re.form=~(1|Series), line=list(col="darkred"), xlab = "Textbook Series", ylab = "Dimension 3 (Biber 1988)", layout=c(1,5))
+
+# Textual analysis
+Dim3zscores <- TxBzscores %>%
+  select(Series, WH_rel_clauses_obj, WH_rel_clauses_subj, Pied_piping_relative_clauses, Phrasal_coord, Nominalizations, Place_adv, Time_adv, Adverbs) %>% 
+  group_by(Series) %>% 
+  summarise_all(mean) %>% 
+  mutate_if(is.numeric, round, digits = 2) %>% 
+  t()
+
+Dim3zscores
+```
+
+## Dim4
+
+```{r TxB-Dim4-rainplot}
+
+
+ggplot(TxBdimensions,aes(x=Register,y=Dim4, fill = Register, colour = Register))+ 
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+  geom_boxplot(aes(x = as.numeric(Register)+0.25, y = Dim4), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 4 (Biber 1988)')+xlab('Textbook Registers')+ theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  #ggtitle("Dimension 4: Overt Expression of Persuasion") +
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -10, to = 25, by = 5))
+
+#ggsave(here("plots", "TxB_Reg_Dim4.svg"), width = 10, height = 6)
+
+TxBdimensions %>% filter(Dim4>20) # Outlier
+
+TxBdimensions %>% group_by(Register) %>% summarise(mean = mean(Dim4))
+
+TxBdimensions2 <- TxBdimensions %>% filter(Filename!="JTT_5_Informative_0007.txt") # Remove outlier for testing
+
+ggplot(TxBdimensions2,aes(x=Register,y=Dim4, fill = Register, colour = Register))+ 
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+  geom_boxplot(aes(x = as.numeric(Register)+0.25, y = Dim4), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 4 (Biber 1988)')+xlab('Textbook Registers')+ theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  #ggtitle("Dimension 4: Overt Expression of Persuasion") +
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -10, to = 25, by = 5))
+
+#ggsave(here("plots", "TxB_Reg_Dim4.svg"), width = 10, height = 6)
+
+```
+
+```{r TxBDim4-LMEmodel}
+
+TxBdim2_nopoetry <- TxBdimensions2 %>% filter(Register != "Poetry") %>% droplevels(.)
+summary(TxBdim_nopoetry$Register) # Check
+
+md_final4 <- lmer(Dim4 ~ (1|Series) + Register + Level + Level:Register, TxBdim2_nopoetry, REML = FALSE) # no warnings
+
+tab_model(md_final4, wrap.labels = 100) 
+
+# check distribution of residuals
+library(predictmeans)
+residplot(md_final4)
+
+# We can access the estimated deviation between each series average Dim4 and the overall average:
+ranef(md_final4)
+
+TxBdim2_nopoetry[, "predicted"] <- predict(md_final4)
+
+p <- ggplot(TxBdim2_nopoetry, aes(x = Level, y = Dim4)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  facet_grid(rows = vars(Series), cols = vars(Register)) +
+  geom_point(aes(y = predicted), shape = "triangle filled", fill = "red")+
+  labs(y = "Dimension 4 (Biber 1988)", x = "Textbook Level")
+
+top_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Register") +
+  theme_void()
+right_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Series", angle = -90) +
+  theme_void()
+blank_panel <- ggplot() +
+  theme_void()
+
+grid.arrange(
+  top_label, blank_panel, p, right_label,
+  nrow = 2, ncol = 2,
+  widths = c(30, 1), heights = c(1, 30)
+)
+
+# Save plot using Rstudio export function (dimensions: 600 to 900 work well)
+
+Register_results4 <- emmeans(md_final4, "Register")
+summary(Register_results4)
+
+comparisons4 <- pairs(Register_results4, adjust = "tukey")
+comparisons4
+
+
+```
+
+```{r TxBDim4-LevelEffects}
+
+# Visualise effects
+
+visreg(md_final4, xvar = "Level", by="Register", type = "conditional", line=list(col="darkred"), xlab = "Textbook Level", ylab = "Dimension 4 (Biber 1988)")
+
+# Or using a ggplot2 approach
+
+ggplot(TxBdim_nopoetry, aes(x = Level, y = Dim4, colour = Register)) +
+  geom_point(position = position_jitter(width = 0.27), size = 2, alpha = 0.8)+
+  geom_boxplot(aes(x = Level, y = Dim4), 
+               outlier.shape = NA, alpha = 0.3, width = .6, colour = "BLACK") +
+  scale_colour_manual(values = colours[c(1,2,6,4,5)])+
+  scale_fill_manual(values = colours[c(1,2,6,4,5)])+
+  scale_y_continuous(limits=c(-10,15))+ # Removes two outliers
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.title.align = 0.5, legend.margin=margin(0,0,0,0))+
+  ylab('Dimension 4 (Biber 1988)')
+
+#ggsave(here("plots", "Dim4_boxplot_levels.svg"), width = 7, height = 9)
+
+# Z-scores
+
+dim4zscores <- TxBzscores %>% 
+  select(Filename, Level, To_infinitives, Pred_modals, Suasive_verbs, if_unless, Necessity_modals, Split_auxiliaries) %>% 
+  group_by(Level) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE) %>% 
+  print.data.frame
+
+
+```
+
+## Dim5
+
+```{r TxB-Dim5-rainplot}
+# Rainplots for all textbook registers on Dimension 5 
+
+ggplot(TxBdimensions,aes(x=Register,y=Dim5, fill = Register, colour = Register))+ 
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+  geom_boxplot(position = position_nudge(x = .25), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 5 (Biber 1988)')+xlab('Textbook Registers')+
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  #ggtitle("Dimension 5: Abstract vs. Non-Abstract Information ")+
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -4, to = 10, by = 2))
+
+#ggsave(here("plots", "TxB_Reg_Dim5.svg"), width = 10, height = 6)
+
+# Mean Dim5 scores
+TxBdimensions %>% group_by(Register) %>% summarise(mean = mean(Dim5), sd = sd(Dim5))
+
+# Lots of texts reach the floor level:
+TxBdimensions %>% filter(Dim5 < -3.915) %>% summarise(n = n())
+
+# Clear level effect for Informative texts:
+TxBdimensions %>% filter(Register=="Informative") %>% group_by(Level) %>% summarise(mean = mean(Dim5), sd = sd(Dim5))
+
+# Floor effect might be due to low frequencies of the features on Dimension 5 in the beginner/pre-intermediate textbook:
+TxBdimensions %>% filter(as.numeric(Level)>3) %>% group_by(Register) %>% summarise(mean = mean(Dim5), sd = sd(Dim5))
+
+TxBdimensionsLevelsDE <- TxBdimensions %>% filter(as.numeric(Level)>3)
+
+ggplot(TxBdimensionsLevelsDE,aes(x=Register,y=Dim5, fill = Register, colour = Register))+ # Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Register)+0.25, y = Dim5), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 5 (Biber 1988)')+xlab('Textbook Registers (Levels D and E only)')+ 
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  #ggtitle("Dimension 5: Abstract vs. Non-Abstract Information") +
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -4, to = 10, by = 2))
+
+#ggsave(here("plots", "TxB_Reg_Dim5_LevelsD-E.svg"), width = 10, height = 6)
+
+```
+
+```{r TxBDim5-LMEmodels}
+
+md_final5 <- lmer(Dim5 ~ (1|Series) + Register + Level + Level:Register, TxBdim_nopoetry, REML = FALSE) # no warnings
+
+tab_model(md_final5, wrap.labels = 100)
+
+# check distribution of residuals
+residplot(md_final5) # Major issues!!
+
+TxBdim_nopoetry %>% filter(Dim5==min(TxBdim_nopoetry$Dim5)) %>%  nrow(.) # There are 257/1949 texts with the minimum Dim5 score. We obviously have a floor effect here.
+
+### Only looking at the upper level textbooks and excluding instructional language
+UpperTxBDim <- TxBdim_nopoetry %>% filter(Level %in% c("C", "D", "E") & Register != "Instructional") %>% droplevels(.)
+
+UpperTxBDim %>% filter(Dim5==-3.9201) # Reduces number of texts with the floor level to just 16
+
+md_final5_Upper <- lmer(Dim5 ~ (1|Series) + Register + Level + Level:Register, UpperTxBDim, REML = FALSE) # no warnings
+
+tab_model(md_final5_Upper, wrap.labels = 100) # Hardly explains anything and is therefore really not worth the trouble
+
+# check distribution of residuals
+library(predictmeans)
+residplot(md_final5_Upper)
+
+###
+
+UpperTxBDim[, "predicted"] <- predict(md_final5_Upper)
+
+p <- ggplot(UpperTxBDim, aes(x = Level, y = Dim5)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  facet_grid(rows = vars(Series), cols = vars(Register)) +
+  geom_point(aes(y = predicted), shape = "triangle filled", fill = "red")+
+  labs(y = "Dimension 5 (Biber 1988)", x = "Textbook Level")
+
+top_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Register") +
+  theme_void()
+right_label <- ggplot() +
+  annotate("text", x = 0, y = 0, label = "Textbook Series", angle = -90) +
+  theme_void()
+blank_panel <- ggplot() +
+  theme_void()
+
+grid.arrange(
+  top_label, blank_panel, p, right_label,
+  nrow = 2, ncol = 2,
+  widths = c(30, 1), heights = c(1, 30)
+)
+
+```
+
+## Dim6
+
+```{r TxB-Dim6-rainplot, include = TRUE, echo = TRUE}
+# Rainplots for all textbook registers on Dimension 6 
+
+ggplot(TxBdimensions,aes(x=Register,y=Dim6, fill = Register, colour = Register))+ 
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+  geom_boxplot(aes(x = as.numeric(Register)+0.25, y = Dim6), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 6 (Biber 1988)')+xlab('Textbook Registers')+ 
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  #ggtitle("Dimension 6: On-Line Informational Elaboration") +
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -4, to = 10, by = 2))
+
+#ggsave(here("plots", "TxB_Reg_Dim6.svg"), width = 10, height = 6)
+
+TxBdimensions %>% filter(Dim6 > 5) # Two clear outliers
+
+TxBdimensions %>% group_by(Register) %>% summarise(mean = mean(Dim6))
+
+summary(TxBdimensions$Dim6)
+
+# Floor level:
+TxBdimensions %>% filter(Dim6 < -3.494) %>% summarise(n = n()) # 66
+
+```
+
+```{r TxBDim6-LMEmodel}
+
+md_final6 <- lmer(Dim6 ~ (1|Series) + Register + Level + Level:Register, TxBdim_nopoetry, REML = FALSE) # no warnings
+
+tab_model(md_final6, wrap.labels = 100) 
+
+# check distribution of residuals
+residplot(md_final6) # Not looking terribly good here, either!
+
+ggplot(TxBdim_nopoetry, aes(x = Level, y = Dim6, facet = Register)) +
+  geom_point(position = position_jitter(width = .15), size = .25, alpha = 0.7)+
+  geom_boxplot(aes(x = Level, y = Dim6, fill = Register), 
+               outlier.shape = NA, alpha = 0.9, width = .15) +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  scale_y_continuous(limits=c(-3.5,4))+
+  facet_grid(cols = vars(Register)) +
+  theme_minimal()
+
+ggplot(TxBdim_nopoetry, aes(x = Level, y = Dim6, colour = Register)) +
+  geom_point(position = position_jitter(width = 0.3), size = 2, alpha = 0.8)+
+  geom_boxplot(aes(x = Level, y = Dim6), 
+               outlier.shape = NA, alpha = 0.3, width = .6, colour = "BLACK") +
+  scale_colour_manual(values = colours[c(1,2,6,4,5)])+
+  scale_fill_manual(values = colours[c(1,2,6,4,5)])+
+  scale_y_continuous(limits=c(-3.5,3.9), breaks = c(-3,-2,-1,0,1,2,3,4))+ # Removes the outlier in Conversation (discussed in Diss. chapter)
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.title.align = 0.5, legend.margin=margin(0,0,0,0))+
+  ylab('Dimension 6 (Biber 1988)')
+
+#ggsave(here("plots", "Dim6_boxplot_levels.svg"), width = 7, height = 9)
+
+visreg(md_final6, xvar = "Level", by="Register", type = "conditional", line=list(col="darkred"), xlab = "Textbook Level", ylab = "Biber's Dimension 6")
+
+# Model with upper levels only
+TxBdim_nopoetry %>% filter(Dim6==min(TxBdim_nopoetry$Dim6)) %>%  nrow(.) # There are 60/1949 texts with the minimum Dim6 score. We obviously have a floor effect here.
+
+minDim6 <- min(TxBdim_nopoetry[, "Dim6"])
+
+UpperTxBDim <- TxBdim_nopoetry %>% filter(Level %in% c("C", "D", "E") & Register != "Instructional") %>% droplevels(.)
+
+UpperTxBDim %>% filter(Dim6==min(TxBdim_nopoetry$Dim6)) %>%  nrow(.) # Now only 20/1949
+
+md_final6_Upper <- update(md_final6, data = UpperTxBDim)
+tab_model(md_final6_Upper, wrap.labels = 100) 
+
+residplot(md_final6_Upper) # Not ideal but better
+
+visreg::visreg(md_final6_Upper, xvar = "Level", by="Register", type = "conditional", line=list(col="darkred"), xlab = "Textbook Level", ylab = "Dimension 6 (Biber 1988)")
+
+
+```
+
+# Comparative Additive MDA
+
+## Data import
+
+### Reference corpora
+
+```{r BNCdata}
+# Spoken BNC2014 no mark-up (Jack & Jill version)
+
+# Z-scores of individual features
+BNCzscores <- read.delim(here("data", "SpokenBNC2014full_zscores.tsv"), header = TRUE)
+BNCzscores <- BNCzscores %>% filter(Filename!=".DS_Store" & Filename!="CORPUS") # Remove this rows
+colnames(BNCzscores)
+MAT_features <- read.csv(here("metadata", "MAT_features_zscores_ref.csv"), header = F)
+MAT_features <- MAT_features$V3 # Feature names without any spaces or hythens
+colnames(BNCzscores) <- MAT_features
+colnames(BNCzscores)
+
+# Dimensions Biber (1988)
+BNCdimensions <- read.delim(here("data", "SpokenBNC2014full_dims.tsv"), header = TRUE)
+#View(BNCdimensions)
+glimpse(BNCdimensions)
+head(BNCdimensions)
+BNCdimensions <- BNCdimensions %>% filter(Filename!="CORPUS") %>% filter(Filename!=".DS_Store") # Remove mean values output by the MAT + .DS_Store file due to working with the MAT on a MAC
+# Adding metadata variables for future comparisons with TEC data
+BNCdimensions$Series <- "Spoken BNC2014"
+BNCdimensions$Level <- "Spoken BNC2014"
+BNCdimensions$Country <- "Spoken BNC2014"
+BNCdimensions$Register <- "Spoken BNC2014"
+summary(BNCdimensions$Dim1)
+
+# Quick plot of distribution of Dim1 values:
+boxplot(BNCdimensions$Dim1)
+
+```
+
+```{r YouthFictiondata}
+
+# Dimensions Biber (1988)
+# Three datasets need to be uploaded because the files were so large and had to be processed by the MAT in three batches:
+YFdimensionsa <- read.delim(here("data", "YF5000a_dims.tsv"), header = TRUE)
+YFdimensionsb <- read.delim(here("data", "YF5000b_dims.tsv"), header = TRUE)
+YFdimensionsc <- read.delim(here("data","YF5000c_dims.tsv"), header = TRUE)
+
+# Merge the three datasets
+YFdimensions <- rbind(YFdimensionsa, YFdimensionsb, YFdimensionsc)
+nrow(YFdimensions)
+YFdimensions <- YFdimensions %>% filter(Filename!="CORPUS" & Filename!=".DS_Store") # Remove mean values file
+# Add metadata variables for comparison with TEC data
+YFdimensions$Series <- "Youth Fiction"
+YFdimensions$Level <- "Youth Fiction"
+YFdimensions$Country <- "Youth Fiction"
+YFdimensions$Register <- "Youth Fiction"
+# Remove individual datasets no longer needed from the R environment
+rm(YFdimensionsa, YFdimensionsb, YFdimensionsc)
+
+# Check distribution of Dim scores
+boxplot(YFdimensions$Dim1)
+boxplot(YFdimensions$Dim2)
+
+# Z-scores of individual features
+YFzscoresa <- read.delim(here("data", "YF5000a_zscores.tsv"), header = TRUE)
+YFzscoresb <- read.delim(here("data", "YF5000b_zscores.tsv"), header = TRUE)
+YFzscoresc <- read.delim(here("data", "YF5000c_zscores.tsv"), header = TRUE)
+
+YFzscores <- rbind(YFzscoresa, YFzscoresb, YFzscoresc)
+YFzscores <- YFzscores %>% filter(Filename!="CORPUS") # Remove mean values rows
+colnames(YFzscores)
+MAT_features <- read.csv(here("metadata", "MAT_features_zscores_ref.csv"), header = F)
+MAT_features <- MAT_features$V3 # Feature names without any spaces or hyphens
+colnames(YFzscores) <- MAT_features
+colnames(YFzscores)
+
+# Counts
+
+YFcountsa <- read.delim(here("data","YF5000a_counts.tsv"), header = TRUE)
+YFcountsb <- read.delim(here("data","YF5000b_counts.tsv"), header = TRUE)
+YFcountsc <- read.delim(here("data","YF5000c_counts.tsv"), header = TRUE)
+YFcountsc %>% filter(NNP>0) %>% select(Filename, NNP) # Tagging error, should have been added to NN count
+YFcountsc <- YFcountsc %>% select(-NNP) # Removing parsing error
+YFcounts <- rbind(YFcountsa, YFcountsb, YFcountsc)
+rm(YFcountsa, YFcountsb, YFcountsc)
+YFcounts <- YFcounts %>%  filter(Filename != "CORPUS" & Filename!=".DS_Store")
+nrow(YFcounts)
+
+colnames(YFcounts)
+MAT_features <- read.csv(here("metadata" ,"MAT_features.csv"), header = F)
+MAT_features <- MAT_features$V3 # Feature names without any spaces or hythens
+MAT_features
+colnames(YFcounts) <- MAT_features[c(1:37, 39:100)] # Excluding the proper noun tag
+colnames(YFcounts)
+
+```
+
+```{r InformativeTeenCorpus}
+
+# InfoTeen Dimensions
+InfoTeendimensions <- read.delim(here("data", "InfoTeen_dims.tsv"), header = TRUE)
+nrow(InfoTeendimensions)
+InfoTeendimensions <- InfoTeendimensions %>% filter(Filename!="CORPUS" & Filename!=".DS_Store")
+
+InfoTeendimensions$Series <- "Info Teens"
+InfoTeendimensions$Level <- "Info Teens"
+InfoTeendimensions$Country <- "Info Teens"
+InfoTeendimensions$Register <- "Info Teens"
+boxplot(InfoTeendimensions$Dim1)
+
+```
+
+```{r Data-mergingALL}
+
+Dimensions <- dplyr::bind_rows(TxBdimensions, BNCdimensions, InfoTeendimensions, YFdimensions, .id = "Corpus")
+nrow(Dimensions)
+head(Dimensions); tail(Dimensions)
+
+#Convert all character vectors to factors
+Dimensions[sapply(Dimensions, is.character)] <- lapply(Dimensions[sapply(Dimensions, is.character)], as.factor)
+
+levels(Dimensions$Corpus)
+levels(Dimensions$Corpus) <- list(Textbook.English="1", Spoken.BNC2014="2", Informative.Teens="3", Youth.Fiction="4")
+summary(Dimensions$Corpus)
+summary(Dimensions$Series)
+
+# Re-order registers
+levels(Dimensions$Register)
+Dimensions$Register <- factor(Dimensions$Register, levels = c("Conversation", "Fiction", "Informative", "Instructional", "Personal", "Poetry", "Info Teens", "Spoken BNC2014", "Youth Fiction"))
+
+#saveRDS(Dimensions, here("data", "Dimensions.rds"))
+```
+
+```{r Spoken-comparison-punctuation}
+
+SpokenTxBzscores <- TxBzscores %>% filter(Register=="Conversation") %>% select(-Register)
+
+SpokenZscores <- bind_rows("Textbook Conversation" = SpokenTxBzscores, "Spoken BNC2014" = BNCzscores, .id = "Corpus") # Ignore stupid warning in R 3.x
+SpokenZscores <- SpokenZscores %>% mutate_if(is.character, as.factor)
+glimpse(SpokenZscores)
+summary(SpokenZscores$Corpus)
+
+# This computes Dim 1 scores without the offending variables that reply on punctuation marks that are absent from the Spoken BNC2014:
+SpokenNewDim1 <- SpokenZscores %>%
+  mutate(Dim1nopunct = Private_verbs + That_deletion + Contractions + Present_tense + SPP2 + Pro_verb_DO + Analytic_negation + Dem_pronouns + Emphatics + FPP1 + it + BE_main_verb + because + Ind_pronouns + Hedges + Amplifiers + Poss_modals + WH_clauses - Nouns - AWL - Prepositions - TTR - Attr_Adj) %>%  
+  select(Filename, Corpus, Dim1nopunct)
+
+SpokenNewDim1 %>% 
+  group_by(Corpus) %>% 
+  summarise(meanDim1 = mean(Dim1nopunct), sdDim1 = sd(Dim1nopunct))
+
+wilcox.test(Dim1nopunct ~ Corpus, data = SpokenNewDim1, corect = TRUE, conf.int = TRUE)
+
+```
+
+```{r Data-Wranggling-RefModel}
+
+DimensionsNewDim1 <- merge(Dimensions, SpokenNewDim1, by = "Filename", all = TRUE)
+
+DimensionsNewDim1$Corpus <- DimensionsNewDim1$Corpus.x
+
+DimensionsNewDim1 <- DimensionsNewDim1 %>% 
+  mutate(Dim1nopunct = 
+           case_when(is.na(Dim1nopunct) ~ Dim1,
+                     TRUE ~ Dim1nopunct))
+
+# Checking output:
+DimensionsNewDim1 %>% slice_sample(n = 10) %>% select(Corpus, Register, Dim1, Dim1nopunct)
+  
+# Add Source variable for random effect variable in mixed effect models
+DimensionsNewDim1 <- DimensionsNewDim1 %>% mutate(Source = case_when(
+  Corpus=="Youth.Fiction" ~ paste("Book", str_extract(Filename, "[0-9]{1,3}"), sep = ""),
+  Corpus=="Spoken.BNC2014" ~ "Spoken.BNC2014",
+  Corpus=="Textbook.English" ~ as.character(Series),
+  Corpus=="Informative.Teens" ~ str_extract(Filename, "BBC|Science_Tech"),
+  TRUE ~ "NA")) %>% 
+  mutate(Source = case_when(
+  Corpus=="Informative.Teens" & is.na(Source) ~ str_remove(Filename, "_.*"),
+  TRUE ~ as.character(Source)))
+
+DimensionsNewDim1$Source <- as.factor(DimensionsNewDim1$Source)
+summary(DimensionsNewDim1$Source, 325)
+
+## Re-arranging data frame
+
+recoding_corpus <- list(
+  Textbook.English = "Textbook",
+  Spoken.BNC2014 = "Reference",
+  Informative.Teens = "Reference",
+  Youth.Fiction = "Reference")
+
+recoding_register <- list(
+  `Info Teens` = "Informative",
+  `Spoken BNC2014` = "Conversation",
+  `Youth Fiction` = "Fiction")
+
+dimensions_ref <- DimensionsNewDim1 %>%
+  mutate(
+    Corpus = recode(Corpus, !!!recoding_corpus),
+    Register = recode(Register, !!!recoding_register)) %>%
+  filter(Register %in% c("Conversation", "Fiction", "Informative")) %>%
+  mutate(Register = factor(Register))
+
+dimensions_ref %>% count(Corpus, Register) # Check wrangled table is correct
+
+## Check how many different observations there are in each random effect grouping
+dimensions_ref %>%
+  count(Corpus, Register, Source) %>%
+  group_by(Corpus, Register) %>%
+  summarize(min_n = min(n), median_n = median(n), max_n = max(n), .groups = "drop")
+
+## Distributions of the dimension scores in the different combinations of corpus type and register.
+
+dimensions_ref %>%
+  pivot_longer(cols = starts_with("Dim"), names_to = "Dim", values_to = "Score") %>%
+  ggplot(aes(x = Register, y = Score, fill = Corpus)) +
+  geom_point(shape = "circle filled", position = position_jitterdodge()) +
+  facet_wrap(vars(Dim))
+
+#saveRDS(dimensions_ref, here("data", "AdditiveMDAdimensions_ref.rds"))
+
+```
+
+### Quick data import
+
+```{r quick-import}
+
+Dimensions <- readRDS(here("data", "Dimensions.rds"))
+
+dimensions_ref <- readRDS(here("data", "AdditiveMDAdimensions_ref.rds"))
+
+```
+
+
+
+```{r palette-comparative-analysis}
+
+# Colours used in Register Studies paper and in the open access plots on Zenodo:
+colours <- suf_palette(name = "london", n = 6, type = "continuous") # Very nice, similar to OrRd palette
+colours2 <- suf_palette(name = "classic", n = 5, type = "continuous") # Just green and purple
+colours <- c(colours, colours2[c(2:4)]) # Nine colours range
+scales::show_col(colours)
+
+```
+
+```{r palette-constrastive-3Reg}
+ 
+# Colours as used in Register Studies paper (see also plot on Zenodo)
+london <- suf_palette(name = "london", n = 6, type = "continuous") # Very nice, similar to OrRd palette
+#scales::show_col(london)
+classic <- suf_palette(name = "classic", n = 5, type = "continuous") # Just green and purple
+#scales::show_col(classic)
+colours3Reg <- c(classic[2], london[6], classic[4], london[5], london[c(2,4)])
+
+# Colours as used in PhD thesis
+colours3Reg <- c("#BD241E", "#F9B921","#267226", "#A18A33", "#15274D", "#722672")
+
+```
+
+
+## Dimension 1
+
+### Dimension 1: Visualisations
+
+```{r rp-Dim1-plot-allTxBRef}
+# Rainplots for all textbook registers and the three ref. corpora on Dimension 1 (not included in thesis)
+
+ggplot(Dimensions,aes(x=Register,y=Dim1, fill = Register, colour = Register))+ # Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Register)+0.25, y = Dim1), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 1 (Biber 1988)')+ 
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  annotate(geom = "text", x = 8.3, y = -42, label = "Reference Corpora", size = 5) +
+  annotate(geom = "segment", x = 7, xend = 9.5, y = -39, yend = -39) +
+  annotate(geom = "text", x = 3.8, y = -42, label = "Textbook Corpus", size = 5) +
+  annotate(geom = "segment", x = 1, xend = 6.5, y = -39, yend = -39) +
+  #ggtitle("Dimension 1: Involved vs. Informational Discourse") +
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -45, to = 45, by = 5))
+
+#ggsave(here("plots", "Dim1.svg"), width = 13, height = 8)
+
+```
+
+
+```{r rp-Dim1-plot-only3TxBRef}
+
+# Rainplots for all textbook registers and the three ref. corpora on Dimension 1 
+
+dimensions_ref <- readRDS(here("data", "AdditiveMDAdimensions_ref.rds"))
+summary(dimensions_ref)
+
+dimensions_ref <- dimensions_ref %>% 
+  unite("Subcorpus", c(Corpus, Register), remove = FALSE) %>% 
+  mutate_if(is.character, as.factor)
+
+dimensions_ref$Subcorpus <- fct_relevel(dimensions_ref$Subcorpus, "Reference_Conversation", "Textbook_Conversation", "Reference_Fiction", "Textbook_Fiction")
+
+ggplot(dimensions_ref,aes(x=Subcorpus,y=Dim1, fill = Subcorpus, colour = Subcorpus))+ # Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Subcorpus)+0.25, y = Dim1), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 1 (Biber 1988)')+ 
+  theme_cowplot()+
+  theme(axis.title.x=element_blank())+
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours3Reg)+
+  scale_fill_manual(values = colours3Reg) +
+  annotate(geom = "text", x = 1.5, y = -42, label = "Conversation", size = 5) +
+  annotate(geom = "segment", x = 0.7, xend = 2.5, y = -39, yend = -39) +
+  annotate(geom = "text", x = 3.5, y = -42, label = "Fiction", size = 5) +
+  annotate(geom = "segment", x = 2.7, xend = 4.5, y = -39, yend = -39) +
+  annotate(geom = "text", x = 5.7, y = -42, label = "Informative", size = 5) +
+  annotate(geom = "segment", x = 4.7, xend = 6.5, y = -39, yend = -39) +
+  scale_x_discrete(labels=rep(c("Reference", "Textbook"), 3))+
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -45, to = 45, by = 5))
+
+#ggsave(here("plots", "Dim1_3RegComparison.svg"), width = 13, height = 8)
+#ggsave(here("plots", "Dim1_3RegComparison.png"), width = 20, height = 15, units = "cm", dpi = 300)
+
+```
+
+```{r Spoken-comparison-rainplots}
+
+# Simple comparison rainplot Dim1 no punctuation-reliant features
+
+# Colours used in Register Studies paper
+bicolour <- c(classic[2], london[6])
+
+# Colours used in PhD thesis:
+bicolour <- c("#BD241E", "#F9B921")
+
+SpokenRef <- dimensions_ref %>% 
+  filter(Register=="Conversation")
+
+SpokenRef$Corpus <- relevel(SpokenRef$Corpus, "Reference")
+
+ggplot(SpokenRef, aes(x=Corpus,y=Dim1nopunct, fill = Corpus))+
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .5, aes(x=Corpus,y=Dim1nopunct, fill = Corpus, colour = Corpus))+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Corpus)+0.25, y = Dim1nopunct), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  ylab('Adjusted Biber (1988) Dimension 1 \n(excluding punctuation-dependent variables)') + 
+  xlab('')+ 
+  scale_x_discrete(labels=c("Spoken BNC2014", "Textbook Conversation"))+
+  scale_colour_manual(values = bicolour)+
+  scale_fill_manual(values = bicolour)+
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -10, to = 50, by = 5))
+
+#ggsave(here("plots", "SpokenDim1-nopunct.svg"), width = 8, height = 6)
+#ggsave(here("plots", "SpokenDim1-nopunct.png"), width = 20, height = 15, units = "cm", dpi = 300)
+
+```
+
+### Testing Dim1
+
+### Comparing three textbook registers vs. three reference corpora
+
+```{r Dim1ModelRef}
+
+# Mixed effect model
+
+# Check  distribution of the outcome variable. 
+
+ggplot(dimensions_ref, aes(x = Dim1nopunct)) +
+  geom_histogram(bins = 20) +
+  facet_grid(rows = vars(Register), cols = vars(Corpus), scales = "free_y")
+
+md0 <- lmer(Dim1nopunct ~ 1 + (Register|Source), dimensions_ref, REML = FALSE)
+md_corpus <- update(md0, .~. + Corpus)
+md_register <- update(md0, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Corpus:Register)
+
+anova(md0, md_corpus, md_both, md_interaction)
+anova(md0, md_register)
+
+md_final1 <- lmer(Dim1nopunct ~ 1 + Corpus + Register + Corpus:Register + (Register|Source), dimensions_ref)
+
+tab_model(md_final1)
+
+# The reference levels are `CorpusTextbook` and `RegisterConversation`. The estimate for `CorpusReference` is positive, since `Dim1nopunct` values are higher for `Reference` texts in the `Conversation` register. The estimates for `RegisterFiction` and `RegisterInformative` are negative, since `Dim1` values are generally lower in these two registers.
+
+ranef(md_final1)
+
+# check distribution of residuals
+plot(md_final1)
+
+# This function can be used to estimate mean and sd of all the terms of the model
+library(merTools)
+(randomSims <- REsim(md_final1, n.sims = 500))
+
+# We can access the estimated deviation between each series average Dim1 and the overall average:
+ranef(md_final1)
+
+# Diagnostic plots (in new window)
+residplot(md_final1)
+
+## Plot predicted vs. observed values
+dimensions_ref[, "predicted"] <- predict(md_final1)
+
+dimensions_ref %>%
+  ggplot(aes(x = Corpus, y = Dim1nopunct)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  geom_point(aes(y = predicted), shape = "triangle filled", fill = "red", position = position_jitter(width = 0.2, height = 0)) +
+  facet_wrap(vars(Register))
+
+## Compare means
+
+comparisons <- emmeans(md_final1, "Corpus", by = "Register")
+comparisons
+pairs(comparisons)
+confint(comparisons)
+
+# This is a warning that the degrees of freedom have been calculated according to the naive 'asymptotic' method (i.e. are assumed to be infinite), because we have a very large number of observations and so a more complex estimation method like Kenward-Roger might take a lot of computation.
+
+```
+
+## Dimension 2: Narrative vs. Non-narrative
+
+
+```{r rp-Dim2-allTxBregisters}
+# Rainplots for all textbook registers and the three ref. corpora on Dimension 2 
+
+Dimensions[Dimensions$Dim2>15,] # Remove one poetry outlier with a very high Dim 2 score
+Dimensions2 <- Dimensions[Dimensions$Dim2<15,] 
+
+colours <- suf_palette(name = "london", n = 6, type = "continuous") # Very nice, similar to OrRd palette
+colours2 <- suf_palette(name = "classic", n = 5, type = "continuous") # Just green and purple
+colours <- c(colours, colours2[c(2:4)]) # Nine colours range
+#scales::show_col(colours)
+
+p2 <- ggplot(Dimensions2,aes(x=Register,y=Dim2, fill = Register, colour = Register))+ #Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+#note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Register)+0.25, y = Dim2), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 2 (Biber 1988)')+ 
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  annotate(geom = "text", x = 8.3, y = -10.5, label = "Reference Corpora", size = 5) +
+  annotate(geom = "segment", x = 7, xend = 9.5, y = -9.5, yend = -9.5) +
+  annotate(geom = "text", x = 3.8, y = -10.5, label = "Textbook Corpus", size = 5) +
+  annotate(geom = "segment", x = 1, xend = 6.5, y = -9.5, yend = -9.5) +
+  ggtitle("Dimension 2: Narrative vs. Non-narrative Concerns")
+
+p2 + scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -15, to = 20, by = 5))
+
+#ggsave(here("plots", "Dim2.svg"), width = 13, height = 8)
+
+```
+
+```{r rp-Dim2-3RegComparison}
+# Rainplots comparing the three textbook and reference corpora on Dimension 2 
+
+ggplot(dimensions_ref,aes(x=Subcorpus,y=Dim2, fill = Subcorpus, colour = Subcorpus))+ # Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Subcorpus)+0.25, y = Dim2), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 2 (Biber 1988)')+ 
+  theme_cowplot()+
+  theme(axis.title.x=element_blank())+
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours3Reg)+
+  scale_fill_manual(values = colours3Reg) +
+  annotate(geom = "text", x = 1.5, y = -11, label = "Conversation", size = 5) +
+  annotate(geom = "segment", x = 0.7, xend = 2.5, y = -10, yend = -10) +
+  annotate(geom = "text", x = 3.5, y = -11, label = "Fiction", size = 5) +
+  annotate(geom = "segment", x = 2.7, xend = 4.5, y = -10, yend = -10) +
+  annotate(geom = "text", x = 5.7, y = -11, label = "Informative", size = 5) +
+  annotate(geom = "segment", x = 4.7, xend = 6.5, y = -10, yend = -10) +
+  scale_x_discrete(labels=rep(c("Reference", "Textbook"), 3))+
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -14, to = 14, by = 2))
+
+#ggsave(here("plots", "Dim2_3RegComparison.svg"), width = 13, height = 8)
+
+```
+
+```{r Dim2ModelRef}
+
+# Mixed effect model
+
+# Check  distribution of the outcome variable. 
+
+ggplot(dimensions_ref, aes(x = Dim2)) +
+  geom_histogram(bins = 20) +
+  facet_grid(rows = vars(Register), cols = vars(Corpus), scales = "free_y")
+
+md0 <- lmer(Dim2 ~ 1 + (Register|Source), dimensions_ref, REML = FALSE)
+md_corpus <- update(md0, .~. + Corpus)
+md_register <- update(md0, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Corpus:Register)
+
+anova(md0, md_corpus, md_both, md_interaction)
+anova(md0, md_register)
+
+md_final2 <- lmer(Dim2 ~ 1 + Corpus + Register + Corpus:Register + (Register|Source), dimensions_ref)
+
+tab_model(md_final2)
+
+# Diagnostic plots (in new window)
+residplot(md_final2) # I've seen worse, but I've also seen better... 
+
+# This function can be used to estimate mean and sd of all the terms of the model
+library(merTools)
+(randomSims <- REsim(md_final2, n.sims = 500))
+
+# We can access the estimated deviation between each series average Dim2 and the overall average:
+ranef(md_final2)
+
+## Plot predicted vs. observed values
+dimensions_ref[, "predicted"] <- predict(md_final2)
+
+dimensions_ref %>%
+  ggplot(aes(x = Corpus, y = Dim2)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  geom_point(aes(y = predicted), shape = "circle filled", fill = "red", position = position_jitter(width = 0.2, height = 0)) +
+  facet_wrap(vars(Register))
+
+## Compare means
+
+comparisons <- emmeans(md_final2, "Corpus", by = "Register")
+pairs(comparisons)
+# This is a warning that the degrees of freedom have been calculated according to the naive 'asymptotic' method (i.e. are assumed to be infinite), because we have a very large number of observations and so a more complex estimation method like Kenward-Roger might take a lot of computation.
+
+visreg(md_final2, xvar = "Corpus", by="Register", type = "conditional", line=list(col="darkred"), ylab = "Dimension 2 (Biber 1988)")
+
+emmeans(md_final2, ~ Corpus*Register)
+
+```
+
+```{r Dim2refzscores}
+
+TxBzscores %>% filter(Register=="Fiction") %>% 
+  #filter(Level %in% c("C", "D", "E")) %>% 
+  select(Level, Past_tense, TPP3, Perfect_aspect, Public_verbs, Syn_negation, Present_part_clauses) %>% 
+  group_by(Level) %>% 
+  summarise_if(is.numeric, mean) %>% 
+  mutate_if(is.numeric, round, 2)
+
+YFzscores %>% 
+  select(Past_tense, TPP3, Perfect_aspect, Public_verbs, Syn_negation, Present_part_clauses) %>% 
+  summarise_if(is.numeric, mean) %>% 
+  round(2)
+
+TxBcounts %>% filter(Register=="Fiction") %>% 
+  #filter(Level %in% c("C", "D", "E")) %>% 
+  select(Level, Past_tense, TPP3, Perfect_aspect, Public_verbs, Syn_negation, Present_part_clauses) %>% 
+  group_by(Level) %>% 
+  summarise_if(is.numeric, mean) %>% 
+  mutate_if(is.numeric, round, 2)
+
+YFcounts %>% 
+  select(Past_tense, TPP3, Perfect_aspect, Public_verbs, Syn_negation, Present_part_clauses) %>% 
+  summarise_if(is.numeric, mean) %>% 
+  round(2)
+
+TxBFictioncounts <- TxBcounts %>%  filter(Register=="Fiction")
+
+Fictioncounts <- merge(YFcounts, TxBFictioncounts, all = TRUE)
+Fictioncounts$Level <- ifelse(is.na(Fictioncounts$Level), "Youth Fiction", Fictioncounts$Level)
+Fictioncounts$Register <- ifelse(is.na(Fictioncounts$Register), "Youth Fiction", Fictioncounts$Register)
+
+Fictioncounts %>% 
+  select(Level, Past_tense, TPP3, Perfect_aspect, Public_verbs, Syn_negation, Present_part_clauses) %>% 
+  group_by(Level) %>% 
+  summarise_if(is.numeric, mean) %>% 
+  mutate_if(is.numeric, round, 2)
+
+Dim2Fiction <- Fictioncounts %>% 
+  select(Level, Past_tense, TPP3, Perfect_aspect, Public_verbs, Syn_negation, Present_part_clauses)
+
+london <- suffrager::suf_palette("london")
+hanwell <- suffrager::suf_palette("hanwell")
+colours <- c(london, hanwell[3:4])
+
+Dim2FictionFeature <- Dim2Fiction %>% ggplot(aes(x = Level, y = Present_part_clauses, colour = Level, fill = Level)) +
+  geom_jitter(size=0.7, alpha=.7) +
+  geom_boxplot(outlier.shape = NA, fatten = 2, fill = "white", alpha = 0.3) +
+  scale_colour_manual(values = colours) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  xlab("")
+
+Dim2FictionFeature
+
+Ppc <- Dim2FictionFeature + ylab("Present participial clauses ")
+past <- Dim2FictionFeature + aes(y = Past_tense) + ylab("Past tense verbs ")
+TPP3 <- Dim2FictionFeature + aes(y = TPP3) + ylab("Third person pronouns ")
+SynNeg <- Dim2FictionFeature + aes(y = Syn_negation) + ylim(c(-0.01,0.75)) + ylab("Synthetic negation ") # These y-axis limits remove three outliers that overextend the scale and make the real differences invisible
+PerAsp <- Dim2FictionFeature + aes(y = Perfect_aspect) + ylab("Perfect aspect verbs")
+public <- Dim2FictionFeature + aes(y = Public_verbs) + ylab("Public verbs")
+
+grid.arrange(past, TPP3, PerAsp, public, SynNeg, Ppc, ncol=2, nrow=3)
+
+#ggsave(here("plots", "Dim2FictionFeatures.svg"), dpi = 300)
+
+```
+
+```{r TextbookNarrative}
+
+NarrativeTxBdim <- filter(TxBdimensions, Register == "Fiction")
+summary(NarrativeTxBdim$Dim1)
+summary(NarrativeTxBdim$Dim2)
+boxplot(NarrativeTxBdim$Dim2)
+
+boxplot(NarrativeTxBdim$Dim2 ~ NarrativeTxBdim$Level) # We can see that the past tense is probably not taught until level B
+boxplot(NarrativeTxBdim$Dim2 ~ NarrativeTxBdim$Series)
+boxplot(NarrativeTxBdim$Dim2 ~ NarrativeTxBdim$Country)
+
+options(contrasts=c("contr.treatment", "contr.poly")) # Standard option
+options(contrasts=c("contr.sum", "contr.poly")) # Gries 2013: 5.2.1
+lm <- lm(Dim2 ~ Series + Level, NarrativeTxBdim)
+summary(lm)
+
+TukeyHSD(aov(lm), ordered = TRUE)
+
+par(mfrow = c(1,2))
+car::crPlot(lm, var = "Series")
+car::crPlot(lm, var = "Level")
+par(mfrow = c(1,1))
+
+car::influencePlot(lm, id.method = "identify") # six outliers are identified of which: 
+# 273 is odd because it is a second-person narrative account but it was decided not to remove it because it is still a well-formed narrative text
+# The others were fine.
+
+NarrativeTxBdim <- NarrativeTxBdim[-268,] # 268 (POC_4e_PB_cleaned_Narrative_maxed_0002) was identified as to be removed because it is a rhymed version of Cindrella 
+
+
+```
+
+```{r TextbookInformative}
+
+InformativeTxBDim <- filter(TxBdimensions, Register == "Informative")
+summary(InformativeTxBDim$Dim1)
+summary(InformativeTxBDim$Dim2)
+boxplot(InformativeTxBDim$Dim2)
+
+boxplot(InformativeTxBDim$Dim2 ~ InformativeTxBDim$Level) # We can see that the past tense is probably not taught until level B
+boxplot(InformativeTxBDim$Dim2 ~ InformativeTxBDim$Series)
+boxplot(InformativeTxBDim$Dim2 ~ InformativeTxBDim$Country)
+
+options(contrasts=c("contr.treatment", "contr.poly")) # Standard option
+options(contrasts=c("contr.sum", "contr.poly")) # Gries 2013: 5.2.1
+lm <- lm(Dim1 ~ Series + Level, InformativeTxBDim)
+summary(lm)
+
+TukeyHSD(aov(lm), ordered = TRUE)
+
+par(mfrow = c(1,2))
+car::crPlot(lm, var = "Series")
+car::crPlot(lm, var = "Level") # Higher levels have lower scores on Dim1
+par(mfrow = c(1,1))
+
+car::influencePlot(lm, id.method = "identify")
+
+```
+
+```{r basic_rc, include = TRUE, echo = TRUE}
+
+colours <- suf_palette(name = "london", n = 6, type = "continuous") # Very nice, similar to OrRd palette
+colours2 <- suf_palette(name = "classic", n = 5, type = "continuous") # Just green and purple
+colours <- c(colours, colours2[c(2:4)]) # Nine colours range
+#scales::show_col(colours)
+
+# Plot all registers on one dimension
+p2 <- ggplot(TxBdimensions,aes(x=Register,y=Dim1))+
+  geom_flat_violin(position = position_nudge(x = .2, y = 0),adjust =2)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+  ylab('Dimension 1 (Biber 1988)')+xlab('Textbook Registers')+theme_cowplot()+
+  ggtitle('Dimension 1')
+
+p2
+
+# Plot with coordinate flip
+
+p3 <- ggplot(TxBdimensions,aes(x=Register,y=Dim1))+
+  geom_flat_violin(position = position_nudge(x = .2, y = 0),adjust = 2)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+  ylab('Dimension 1 (Biber 1988)')+xlab('Textbook Registers')+coord_flip()+theme_cowplot()+guides(fill = "none")+
+  ggtitle('Dimension 1')
+
+p3
+
+```
+
+```{r Fiction-comparison-rainplots}
+# Comparing textbook series
+
+london <- suf_palette(name = "london", n = 5, type = "continuous") # 
+hanwell <- suf_palette(name = "hanwell", n = 5, type = "discrete") # 
+colours <- c(hanwell, london) # Better for a discrete palette
+
+Fiction <- dimensions_ref %>% filter(Register=="Fiction")
+
+p8 <- ggplot(Fiction,aes(x=Corpus,y=Dim2, fill = Corpus))+
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .45, aes(x=Corpus,y=Dim2, fill = Corpus, colour = Level))+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Corpus)+0.25, y = Dim2), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Score on Biber\'s (1988) Dimension 2')+ theme_cowplot()+
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours[c(10,2)])+
+  ggtitle("Dimension 2: Narrative vs. Non-narrative Concerns")
+
+p8
+
+# Comparing textbook series without Level A
+
+Fiction.B.E <- Fiction %>% filter(!Level=="A")
+summary(Fiction.B.E$Level)
+
+london <- suf_palette(name = "london", n = 5, type = "continuous") # 
+hanwell <- suf_palette(name = "hanwell", n = 5, type = "discrete") # 
+colours <- c(hanwell, london) # Better for a discrete palette
+
+p8a <- ggplot(Fiction.B.E,aes(x=Corpus,y=Dim2, fill = Corpus))+
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .45, aes(x=Corpus,y=Dim2, fill = Corpus, colour = Level))+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Corpus)+0.25, y = Dim2), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Score on Biber\'s (1988) Dimension 2')+ theme_cowplot()+
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours[c(10,2)])+
+  ggtitle("Dimension 2: Narrative vs. Non-narrative Concerns")
+
+p8a
+
+```
+
+## Dimension 3: Explicit vs. Situation-Dependent Reference
+
+```{r rp-Dim3-plot}
+# Rainplots for all textbook registers and the three ref. corpora on Dimension 3 
+
+Dimensions[Dimensions$Dim3>20,] # Remove four Info Teens outliers with very high Dim 3 scores
+Dimensions3 <- Dimensions[Dimensions$Dim3<20,] 
+
+colours <- suf_palette(name = "london", n = 6, type = "continuous") # Very nice, similar to OrRd palette
+colours2 <- suf_palette(name = "classic", n = 5, type = "continuous") # Just green and purple
+colours <- c(colours, colours2[c(2:4)]) # Nine colours range
+#scales::show_col(colours)
+
+p3 <- ggplot(Dimensions3,aes(x=Register,y=Dim3, fill = Register, colour = Register))+ #Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+#note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Register)+0.25, y = Dim3), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 3 (Biber 1988)')+ 
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  annotate(geom = "text", x = 8.3, y = -15, label = "Reference Corpora", size = 5) +
+  annotate(geom = "segment", x = 7, xend = 9.5, y = -13, yend = -13) +
+  annotate(geom = "text", x = 3.8, y = -15, label = "Textbook Corpus", size = 5) +
+  annotate(geom = "segment", x = 1, xend = 6.5, y = -13, yend = -13) +
+  ggtitle("Dimension 3: Explicit vs. Situation-Dependent Reference ")
+
+p3 + scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -10, to = 20, by = 5))
+
+#ggsave(here("plots", "Dim3.svg"), width = 13, height = 8)
+
+```
+
+```{r rp-Dim3-3RegisterComparison}
+
+london <- suf_palette(name = "london", n = 6, type = "continuous") # Very nice, similar to OrRd palette
+#scales::show_col(london)
+classic <- suf_palette(name = "classic", n = 5, type = "continuous") # Just green and purple
+#scales::show_col(classic)
+colours <- c(london[c(6,1)], classic[4], london[2], classic[2], london[3])
+#scales::show_col(colours)
+
+dimensions_ref[dimensions_ref$Dim3>20,] # Remove four Info Teens outliers with very high Dim 3 scores
+Dimensions3 <- dimensions_ref[dimensions_ref$Dim3<20,] 
+
+ggplot(Dimensions3,aes(x=Subcorpus,y=Dim3, fill = Subcorpus, colour = Subcorpus))+ # Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Subcorpus)+0.25, y = Dim3), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 3 (Biber 1988)')+ 
+  theme_cowplot()+
+  theme(axis.title.x=element_blank())+
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours3Reg)+
+  scale_fill_manual(values = colours3Reg) +
+  annotate(geom = "text", x = 1.5, y = -14, label = "Conversation", size = 5) +
+  annotate(geom = "segment", x = 0.7, xend = 2.5, y = -12, yend = -12) +
+  annotate(geom = "text", x = 3.5, y = -14, label = "Fiction", size = 5) +
+  annotate(geom = "segment", x = 2.7, xend = 4.5, y = -12, yend = -12) +
+  annotate(geom = "text", x = 5.7, y = -14, label = "Informative", size = 5) +
+  annotate(geom = "segment", x = 4.7, xend = 6.5, y = -12, yend = -12) +
+  scale_x_discrete(labels=rep(c("Reference", "Textbook"), 3))+
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -10, to = 20, by = 2))
+
+#ggsave(here("plots", "Dim3_3RegComparison.svg"), width = 13, height = 8)
+
+```
+
+### Singularity
+
+```{r Dim3-maximalmodel-singularity, eval=FALSE}
+
+# Mixed effect model
+
+# Check  distribution of the outcome variable. 
+
+ggplot(dimensions_ref, aes(x = Dim3)) +
+  geom_histogram(bins = 20) +
+  facet_grid(rows = vars(Register), cols = vars(Corpus), scales = "free_y")
+
+# Compute model with maximal random effect structure
+md_maximal <- lmer(Dim3 ~ 1 + Corpus + Register + Corpus*Register + (Register|Source), dimensions_ref, REML = FALSE) 
+
+# Model failed to converge!
+
+# Calculate variance-covariance matrix for the random effect estimates.
+
+VarCorr(md_maximal)
+
+md_max_ranefs <- tidy(md_maximal, effects = "ran_vals")
+
+head(md_max_ranefs)
+
+# To look at the association between intercepts and slopes, we need the values in the `term` column as separate columns.
+
+md_max_ranefs %>%
+  pivot_wider(
+    id_cols = c(group, level),
+    names_from = term,
+    values_from = estimate
+  ) ->
+  md_final_ranefs
+
+head(md_final_ranefs)
+
+# Now we can plot a matrix of correlations among the estimated random effects.
+
+md_final_ranefs %>%
+  select(`(Intercept)`, starts_with("Register")) %>%
+  ggpairs(
+    lower = list(continuous = wrap("smooth_lm", shape = "circle filled", fill = "grey", se = FALSE)),
+    diag = "blank",
+    upper = list(continuous = wrap("cor", stars = FALSE))
+  )
+
+fig_ranef_cor <- ggplot(md_final_ranefs, 
+                        aes(x = RegisterFiction, y = RegisterInformative, label = level)) +
+  geom_point(shape = "bullet") +
+  geom_text(hjust = "inward")
+
+fig_ranef_cor
+```
+
+
+```{r Dim3ModelRef}
+
+# Mixed effect model with simplified random effect structure, otherwise the model did not converge (see chunk above)
+
+md0 <- lmer(Dim3 ~ 1 + (Register|Source), dimensions_ref, REML = FALSE) 
+md_corpus <- update(md0, .~. + Corpus)
+md_register <- update(md0, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Corpus:Register) 
+
+anova(md0, md_corpus, md_both, md_interaction)
+anova(md0, md_register)
+
+md_final3 <- lmer(Dim3 ~ 1 + Corpus + Register + Corpus:Register + (1|Source), dimensions_ref)
+
+tab_model(md_final3)
+
+# Diagnostic plots (in new window)
+residplot(md_final3) # Oh dear, oh dear...
+
+# We can access the estimated deviation between each series average Dim3 and the overall average:
+ranef(md_final3) %>% head()
+
+## Plot predicted vs. observed values
+dimensions_ref[, "predicted"] <- predict(md_final3)
+
+dimensions_ref %>%
+  ggplot(aes(x = Corpus, y = Dim3)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  geom_point(aes(y = predicted), shape = "circle filled", fill = "red", position = position_jitter(width = 0.2, height = 0)) +
+  facet_wrap(vars(Register))
+
+## Compare means
+
+comparisons <- emmeans(md_final3, "Corpus", by = "Register")
+pairs(comparisons)
+# This is a warning that the degrees of freedom have been calculated according to the naive 'asymptotic' method (i.e. are assumed to be infinite), because we have a very large number of observations and so a more complex estimation method like Kenward-Roger might take a lot of computation.
+
+visreg(md_final3, xvar = "Corpus", by="Register", type = "conditional", line=list(col="darkred"), ylab = "Dimension 2 (Biber 1988)")
+
+emmeans(md_final3, ~ Corpus*Register)
+
+```
+
+## Dimension 4 (not discussed in PhD thesis)
+
+```{r rp-Dim4-plot}
+# Means and SD
+
+Dimensions %>% select(Register, Dim3) %>% group_by(Register) %>% summarise_if(is.numeric, c(mean = mean, sd = sd))
+
+# Rainplots for all textbook registers and the three ref. corpora on Dimension 3 
+
+colours <- suf_palette(name = "london", n = 6, type = "continuous") # Very nice, similar to OrRd palette
+colours2 <- suf_palette(name = "classic", n = 5, type = "continuous") # Just green and purple
+colours <- c(colours, colours2[c(2:4)]) # Nine colours range
+#scales::show_col(colours)
+
+p4 <- ggplot(Dimensions,aes(x=Register,y=Dim4, fill = Register, colour = Register))+ #Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+#note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Register)+0.25, y = Dim4), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('Dimension 4 (Biber 1988)')+ 
+  theme_cowplot()+ 
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)+
+  annotate(geom = "text", x = 8.3, y = -15, label = "Reference Corpora", size = 5) +
+  annotate(geom = "segment", x = 7, xend = 9.5, y = -13, yend = -13) +
+  annotate(geom = "text", x = 3.8, y = -15, label = "Textbook Corpus", size = 5) +
+  annotate(geom = "segment", x = 1, xend = 6.5, y = -13, yend = -13) 
+  
+p4 + scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -10, to = 25, by = 5))
+
+#ggsave(here("plots", "Dim4.svg"), width = 13, height = 8)
+```
+
+```{r Dim4ModelRef}
+
+# Check  distribution of the outcome variable. 
+ggplot(dimensions_ref, aes(x = Dim4)) +
+  geom_histogram(bins = 20) +
+  facet_grid(rows = vars(Register), cols = vars(Corpus), scales = "free_y")
+
+md0 <- lmer(Dim4 ~ 1 + (1|Source), dimensions_ref, REML = FALSE) # Random effect had to be simplified otherwise the model did not converge
+md_corpus <- update(md0, .~. + Corpus)
+md_register <- update(md0, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Corpus:Register) 
+
+anova(md0, md_corpus, md_both, md_interaction)
+anova(md0, md_register)
+
+md_final4 <- lmer(Dim4 ~ 1 + Corpus + Register + Corpus:Register + (1|Source), dimensions_ref)
+
+tab_model(md_final4)
+
+# Diagnostic plots (in new window)
+residplot(md_final4) # Oh dear, oh dear...
+
+## Plot predicted vs. observed values
+dimensions_ref[, "predicted"] <- predict(md_final4)
+
+dimensions_ref %>%
+  ggplot(aes(x = Corpus, y = Dim4)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  geom_point(aes(y = predicted), shape = "circle filled", fill = "red", position = position_jitter(width = 0.2, height = 0)) +
+  facet_wrap(vars(Register))
+
+## Compare means
+
+comparisons <- emmeans(md_final4, "Corpus", by = "Register")
+pairs(comparisons)
+# This is a warning that the degrees of freedom have been calculated according to the naive 'asymptotic' method (i.e. are assumed to be infinite), because we have a very large number of observations and so a more complex estimation method like Kenward-Roger might take a lot of computation.
+
+visreg(md_final4, xvar = "Corpus", by="Register", type = "conditional", line=list(col="darkred"), ylab = "Dimension 4 (Biber 1988)")
+
+emmeans(md_final4, ~ Corpus*Register)
+
+```
+
+```{r Dim4ModelRefUpper}
+
+dimensions_refUpper <- dimensions_ref %>% filter(!(Level %in% c("A", "B"))) %>% droplevels()
+summary(dimensions_refUpper$Level) # Check that the subsetting has worked
+
+md_final4Upper <- lmer(Dim4 ~ 1 + Corpus + Register + Corpus:Register + (1|Source), dimensions_refUpper)
+
+tab_model(md_final4Upper, wrap.labels = 100)
+
+residplot(md_final4Upper) # Oh dear, oh dear...
+
+comparisons <- emmeans(md_final4Upper, "Corpus", by = "Register")
+pairs(comparisons)
+
+visreg(md_final4Upper, xvar = "Corpus", by="Register", type = "conditional", line=list(col="darkred"), ylab = "Dimension 4 (Biber 1988)")
+
+emmeans(md_final4Upper, ~ Corpus*Register)
+
+```
+
+
+## Dimension 5 (not discussed in PhD thesis)
+
+```{r Dim5ModelRef}
+
+# Mixed effect model
+
+dimensions_refUpper <- dimensions_ref %>% filter(!(Level %in% c("A", "B"))) %>% droplevels()
+
+# Check  distribution of the outcome variable. 
+
+ggplot(dimensions_refUpper, aes(x = Dim5)) +
+  geom_histogram(bins = 20) +
+  facet_grid(rows = vars(Register), cols = vars(Corpus), scales = "free_y")
+
+md0 <- lmer(Dim5 ~ 1 + (1|Source), dimensions_refUpper, REML = FALSE) # Random effect had to be simplified otherwise the model did not converge
+md_corpus <- update(md0, .~. + Corpus)
+md_register <- update(md0, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Corpus:Register) 
+
+anova(md0, md_corpus, md_both, md_interaction)
+anova(md0, md_register, md_both)
+
+md_final5 <- lmer(Dim5 ~ 1 + Corpus + Register + Corpus:Register + (1|Source), dimensions_refUpper, REML = FALSE)
+
+tab_model(md_final5)
+
+# Diagnostic plots (in new window)
+residplot(md_final5) # ??
+
+## Plot predicted vs. observed values
+dimensions_refUpper[, "predicted"] <- predict(md_final5)
+
+dimensions_refUpper %>%
+  ggplot(aes(x = Corpus, y = Dim5)) +
+  geom_point(shape = "circle filled", fill = "grey", position = position_jitter(width = 0.2, height = 0)) +
+  geom_point(aes(y = predicted), shape = "circle filled", fill = "red", position = position_jitter(width = 0.2, height = 0)) +
+  facet_wrap(vars(Register))
+
+## Compare means
+
+comparisons <- emmeans(md_final5, "Corpus", by = "Register")
+pairs(comparisons)
+emmeans(md_final5, ~ Corpus*Register)
+
+visreg(md_final5, xvar = "Corpus", by="Register", type = "conditional", line=list(col="darkred"), ylab = "Dimension 5 (Biber 1988)")
+
+v <- visreg::visreg(md_final5, xvar = "Corpus", by="Source", type = "conditional", line=list(col="darkred"), ylab = "Dimension 5 (Biber 1988)")
+
+v1 <- subset(v, Source %in% c("HT", "JTT", "NGL", "Access", "POC", "GreenLine", "Solutions", "EiM"))
+plot(v1)
+
+
+```

@@ -1,0 +1,1014 @@
+---
+title: "A new model of intra-textbook variation"
+author: "Elen Le Foll"
+date: "09/11/2021"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+  editor_options: 
+    markdown: 
+      wrap: sentence
+
+---
+
+## Set-up
+
+*Built with R `r getRversion()`*  
+*Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache = TRUE)
+
+#library(car) # For data wrangling
+library(caret) # For its confusion matrix function
+#library(clipr) # For easy exports
+library(cowplot)
+library(DescTools) # For 95% CI
+library(dplyr)
+library(emmeans)
+#library(FactoMineR) # For Shiny app
+library(factoextra) # For circular graphs of variables
+library(here) # For dynamic file paths
+library(ggplot2) 
+library(ggthemes) # For theme of factoextra plots
+library(lme4) # For linear regression modelling
+library(patchwork) # To create figures with more than one plot
+library(pca3d) # For 3-D plots
+library(PCAtools) # For nice biplots of PCA results
+#library(purrr) # For data wrangling
+library(psych) # For various useful stats function
+library(sjPlot) # For model plots and tables
+library(suffrager) # For pretty feminist colour palettes :)
+library(tidyr)
+library(tibble)
+library(visreg) # For plots of interaction effects
+
+source(here("R_rainclouds.R")) # For geom_flat_violin rainplots
+
+```
+
+
+```{r colours, include=FALSE}
+#library(suffrager)
+# suf_palette(name, n, type = c("discrete", "continuous"))
+
+colours <- suf_palette(name = "london", n = 6, type = "continuous") 
+colours2 <- suf_palette(name = "classic", n = 5, type = "continuous") 
+colours <- c(colours, colours2[c(2:4)]) # Nine colours range
+palette <- colours[c(1,5,6,2,3,8,7,4,9)] # Good order for PCA
+scales::show_col(palette)
+
+```
+
+
+# Performing the PCA
+
+## TEC data import
+
+```{r quick-TEC-import}
+
+TxBcounts <- readRDS(here("FullMDA", "TxBcounts3.rds"))
+colnames(TxBcounts)
+nrow(TxBcounts)
+
+TxBzlogcounts <- readRDS(here("FullMDA", "TxBzlogcounts.rds")) 
+nrow(TxBzlogcounts)
+colnames(TxBzlogcounts)
+
+TxBdata <- cbind(TxBcounts[,1:6], as.data.frame(TxBzlogcounts))
+str(TxBdata)
+ncol(TxBdata)-6
+
+#saveRDS(TxBdata, here("FullMDA", "TxBdata.rds")) # Last saved 6 December 2021
+
+```
+
+## Metadata on TEC
+
+```{r TEC-metadata}
+
+TxBdata %>% summarise(total = sum(Words))
+
+metadata <- TxBdata %>% 
+  select(Filename, Country, Series, Level, Register, Words) %>% 
+  mutate(Volume = paste(Series, Level)) %>% 
+  mutate(Volume = fct_rev(Volume)) %>% 
+  mutate(Volume = fct_reorder(Volume, as.numeric(Level))) %>% 
+  group_by(Volume) %>% 
+  mutate(wordcount = sum(Words)) %>% 
+  ungroup() %>% 
+  distinct(Volume, .keep_all = TRUE)
+
+metadata
+
+ggplot(metadata, aes(x = Volume, y = wordcount, fill = Country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = palette[c(3,8,1)]) +
+  scale_y_continuous(limits = c(0,90000), expand = c(0,0), labels = scales::comma) +
+  coord_flip() +
+  theme_bw() +
+  labs(x = "", y = "Number of words") +
+  theme(legend.position = c(0.73,0.1))
+
+#ggsave(here("plots", "TEC-T_wordcounts.svg"), width = 6, height = 10)
+
+metadataInstr <- TxBdata %>% 
+  select(Country, Series, Level, Register, Words) %>% 
+  filter(Register=="Instructional") %>% 
+  mutate(Volume = paste(Series, Register)) %>% 
+  mutate(Volume = fct_rev(Volume)) %>% 
+  mutate(Volume = fct_reorder(Volume, as.numeric(Level))) %>% 
+  group_by(Volume, Register) %>% 
+  mutate(InstrWordcount = sum(Words)) %>% 
+  ungroup() %>% 
+  distinct(Volume, .keep_all = TRUE) %>% 
+  select(Series, InstrWordcount)
+
+metadataInstr
+
+metaWordcount <- TxBdata %>% 
+  select(Country, Series, Level, Register, Words) %>% 
+  group_by(Series) %>% 
+  mutate(TECwordcount = sum(Words)) %>% 
+  ungroup() %>% 
+  distinct(Series, .keep_all = TRUE) %>% 
+  select(Series, TECwordcount)
+
+wordcount <- merge(metaWordcount, metadataInstr, by = "Series")
+
+wordcount %>% 
+  mutate(InstrucPercent = InstrWordcount/TECwordcount*100) %>% 
+  arrange(InstrucPercent) %>% 
+  mutate(InstrucPercent = round(InstrucPercent, 2))
+
+```
+
+
+## Checking the factorability of data
+
+```{r factorability.TEC}
+
+colnames(TxBdata)
+ncol(TxBdata) - 6
+kmo <- KMO(TxBdata[,7:ncol(TxBdata)]) 
+kmo # 0.86 (if conducted on counts all normalised per 100 words, this value drops to 0.61!)
+kmo$MSAi[order(kmo$MSAi)]
+
+# Remove first feature with MSAs of < 0.5
+TxBdata <- TxBdata %>% 
+  select(-c(MDWO))
+
+kmo <- KMO(TxBdata[,7:ncol(TxBdata)]) 
+kmo # 0.87
+kmo$MSAi[order(kmo$MSAi)] # All individual MSA > 0.5
+
+```
+
+## Choosing the number of principal components to retain and excluding features with low final communalites
+
+https://rdrr.io/cran/FactorAssumptions/man/communalities_optimal_solution.html
+
+```{r screeplot-communalities}
+
+#TxBdata <- readRDS(here("FullMDA", "TxBdata.rds")) %>% select(-MDWO)
+#colnames(TxBdata)
+
+# Plot screen plot
+#png(here("plots", "screeplot-TEC-only.png"), width = 20, height= 12, units = "cm", res = 300)
+scree(TxBdata[,7:ncol(TxBdata)], factors = FALSE, pc = TRUE) # Retain six components
+dev.off()
+
+# Perform PCA
+pca1 <- psych::principal(TxBdata[,7:ncol(TxBdata)], 
+                         nfactors = 6)
+pca1$loadings
+
+pca1$communality %>% sort(.) # If features with communalities of < 0.2 are removed, we remove STPR, HDG, MDNE and CAUSE
+
+TxBdataforPCA <- TxBdata %>% 
+  select(-c(STPR, MDNE, HDG, CAUSE))
+
+kmo <- KMO(TxBdataforPCA[,7:ncol(TxBdataforPCA)]) 
+kmo # 0.88
+kmo$MSAi[order(kmo$MSAi)] # All individual MSA > 0.5
+
+# Final number of features
+ncol(TxBdataforPCA)-6
+
+#saveRDS(TxBdataforPCA, here("FullMDA", "TxBdataforPCA.rds")) # Last saved on 3 December 2021
+
+```
+
+https://stats.stackexchange.com/questions/59213/how-to-compute-varimax-rotated-principal-components-in-r
+
+### Testing the effect of rotating the components
+This chunk was used when considering whether or not to rotate the components (see methods section)
+```{r PCA-rotation-tests, eval=FALSE}
+
+# Comparing a rotated vs. a non-rotated solution
+
+TxBdata <- readRDS(here("FullMDA", "TxBdataforPCA.rds"))
+colnames(TxBdata)
+ncol(TxBdata)-6
+
+# No rotation
+pca2 <- psych::principal(TxBdata[,7:ncol(TxBdata)], 
+                         nfactors = 6, 
+                         rotate = "none")
+
+pca2$loadings
+
+biplot.psych(pca2, 
+             vars = TRUE, 
+             choose=c(1,2),
+             )
+
+# Promax rotation
+pca2.rotated <- psych::principal(TxBdata[,7:ncol(TxBdata)], 
+                         nfactors = 6, 
+                         rotate = "promax")
+
+# This summary shows the component correlations which is particularly interesting
+pca2.rotated
+
+pca2.rotated$loadings
+
+biplot.psych(pca2.rotated, vars = TRUE, choose=c(1,2))
+
+```
+
+## Peforming the PCA
+
+### Using the full data (except outliers)
+```{r PCA-prcomp-full-data}
+
+# Perform PCA on full data
+TxBdata <- readRDS(here("FullMDA", "TxBdataforPCA.rds"))
+nrow(TxBdata)
+ncol(TxBdata)-6
+```
+
+#### Using subsets of the data
+
+Perform PCA on random subset of the data to test the stability of the solution. Re-running this line will generate a new subset of the TEC texts containing 2/3 of the texts randomly sampled.
+
+```{r PCA-prcomp-random-subset, eval=FALSE}
+
+TxBdata <- readRDS(here("FullMDA", "TxBdataforPCA.rds")) %>% 
+  slice_sample(n = 1961*0.6, replace = FALSE)
+nrow(TxBdata)
+TxBdata$Filename[1:10]
+
+colnames(TxBdata)
+nrow(TxBdata) / (ncol(TxBdata)-6) # Check that there is enough data to conduct a PCA. This should be > 5 (see Friginal & Hardy 2014: 303–304).
+```
+
+Perform PCA on country subset of the data to test the stability of the solution:
+
+```{r PCA-prcomp-country-subset, eval=FALSE}
+
+TxBdata <- readRDS(here("FullMDA", "TxBdataforPCA.rds")) %>% 
+  #filter(Country == "France")
+  #filter(Country == "Germany")
+  filter(Country == "Spain")
+
+nrow(TxBdata)
+TxBdata$Filename[1:10] # Check data
+
+colnames(TxBdata)
+nrow(TxBdata) / (ncol(TxBdata)-6) # Check that there is enough data to conduct a PCA. This should be > 5 (see Friginal & Hardy 2014: 303–304).
+
+```
+
+### PCA code
+
+```{r PCA-prcomp}
+
+pca <- prcomp(TxBdata[,7:ncol(TxBdata)], scale.=FALSE) # All quantitative variables for all TxB files except outliers
+register  <- factor(TxBdata[,"Register"]) # Register
+level <- factor(TxBdata[,"Level"]) # Textbook proficiency level
+
+summary(register)
+summary(level)
+summary(pca)
+
+scree(TxBdata[,7:ncol(TxBdata)], factors = FALSE, pc = TRUE) # The scree plots pretty much always suggest that six components should be retained
+
+```
+
+## Plotting PCA results 
+
+### 3D plots
+```{r 3D-plots-TxB, eval=FALSE}
+
+## 3-D PCA plots https://cran.r-project.org/web/packages/pca3d/vignettes/pca3d.pdf ##
+# 3-D plot
+colours <- palette[c(1:3,8,7)] # without poetry
+names(colours) <- c("Conversation", "Fiction", "Informative", "Instructional", "Personal")
+scales::show_col(colours) # Check colours
+pca3d(pca, 
+      group = register,
+      components = 1:3,
+      #components = 4:6,
+      show.ellipses=FALSE, 
+      ellipse.ci=0.75,
+      show.plane=FALSE,
+      col = col,
+      shape = "sphere",
+      radius = 1,
+      legend = "right")
+
+snapshotPCA3d(here("plots", "PCA_TxB_3Dsnapshot.png"))
+
+names(colours) <- c("C", "B", "E", "A", "D") # To colour the dots according to the profiency level of the textbooks
+pca3d(pca, 
+      components = 4:6,
+      group = level,
+      show.ellipses=FALSE, 
+      ellipse.ci=0.75,
+      show.plane=FALSE,
+      col = colours,
+      shape = "sphere",
+      radius = 0.8,
+      legend = "right")
+
+```
+
+### Bi-plots
+```{r PCAtools-biplots-TxB, warning=FALSE, fig.height=15, fig.width=20}
+# PCA for PCAtools
+
+# This package requires the data to be formatted in a rather unconventional way so it needs to wrangled first.
+
+#TxBdata <- readRDS(here("FullMDA", "TxBdataforPCA.rds"))
+
+TxBdata2meta <- TxBdata[,1:6]
+rownames(TxBdata2meta) <- TxBdata2meta$Filename
+TxBdata2meta <- TxBdata2meta %>% select(-Filename)
+head(TxBdata2meta)
+
+TxBdata2 = TxBdata
+rownames(TxBdata2) <- TxBdata2$Filename
+TxBdata2num <- as.data.frame(base::t(TxBdata2[,7:ncol(TxBdata2)]))
+TxBdata2num[1:12,1:3] # Check sanity of data
+
+p <- PCAtools::pca(TxBdata2num, 
+         metadata = TxBdata2meta,
+         scale = FALSE)
+
+colkey = c(Conversation="#BD241E", Fiction="#A18A33", Informative="#15274D", Instructional="#F9B921", Personal="#722672")
+shapekey = c(A=1, B=2, C=6, D=0, E=5)
+
+# Biplots to examine components more carefully
+
+#png(here("plots", "PCA_TxB_Biplot_PC1_PC2.png"), width = 40, height= 25, units = "cm", res = 300)
+PCAtools::biplot(p,
+                 x = "PC1",
+                 y = "PC2",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 #xlim = c(min(p$rotated$PC1)-0.5, max(p$rotated$PC1)+0.5),
+                 #ylim = c(min(p$rotated$PC2)-0.5, max(p$rotated$PC2)+0.5),
+                 colby = "Register",
+                 pointSize = 2,
+                 colkey = colkey,
+                 shape = "Level",
+                 shapekey = shapekey,
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 axisLabSize = 22,
+                 legendPosition = 'right',
+                 legendTitleSize = 22,
+                 legendLabSize = 18, 
+                 legendIconSize = 7) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+#dev.off()
+#ggsave(here("plots", "PCA_TxB_BiplotPC1_PC2.svg"), width = 12, height = 10)
+
+# Biplots to examine components more carefully
+pRegisters <- PCAtools::biplot(p,
+                 x = "PC3",
+                 y = "PC4",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 colby = "Register",
+                 pointSize = 2,
+                 colkey = colkey,
+                 shape = "Level",
+                 shapekey = shapekey,
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 legendPosition = 'right',
+                 legendTitleSize = 22,
+                 legendLabSize = 18, 
+                 legendIconSize = 7) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+
+#ggsave(here("plots", "PCA_TxB_BiplotPC3_PC4.svg"), width = 12, height = 10)
+
+```
+
+
+```{r PCAtools-biplots-TxB-Levels, warning=FALSE, fig.height=30, fig.width=20}
+
+# Biplot with ellipses for Level rather than Register
+colkey = c(A="#F9B921", B="#A18A33", C="#BD241E", D="#722672", E="#15274D")
+shapekey = c(Conversation=1, Fiction=2, Informative=6, Instructional=0, Personal=5)
+
+pLevels <- PCAtools::biplot(p,
+                 x = "PC3",
+                 y = "PC4",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 #xlim = c(min(p$rotated$PC1)-0.5, max(p$rotated$PC1)+0.5),
+                 #ylim = c(min(p$rotated$PC2)-0.5, max(p$rotated$PC2)+0.5),
+                 colby = "Level",
+                 pointSize = 2,
+                 colkey = colkey,
+                 shape = "Register",
+                 shapekey = shapekey,
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 legendPosition = 'right',
+                 legendTitleSize = 22,
+                 legendLabSize = 18, 
+                 legendIconSize = 7) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+#ggsave(here("plots", "PCA_TxB_BiplotPC3_PC4_Level.svg"), width = 12, height = 10)
+
+# Save the two different representations of data points on PC2 and PC3 using the {patchwork} package
+pRegisters / pLevels
+#ggsave(here("plots", "PCA_TxB_BiplotPC3_PC4_Register_vs_Level.svg"), width = 14, height = 20)
+
+pLevels <- PCAtools::biplot(p,
+                 x = "PC5",
+                 y = "PC6",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 xlim = c(min(p$rotated$PC5)-0.5, max(p$rotated$PC5)+0.5),
+                 ylim = c(min(p$rotated$PC6)-0.5, max(p$rotated$PC6)+0.5),
+                 colby = "Level",
+                 pointSize = 2,
+                 colkey = colkey,
+                 shape = "Register",
+                 shapekey = shapekey,
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 #axisLabSize = 22,
+                 legendPosition = 'right',
+                 legendTitleSize = 22,
+                 legendLabSize = 18, 
+                 legendIconSize = 7) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+
+#pLevels
+#ggsave(here("plots", "PCA_TxB_BiplotPC5_PC6_Level.svg"), width = 12, height = 10)
+
+# Biplots to examine components more carefully
+
+colkey = c(Conversation="#BD241E", Fiction="#A18A33", Informative="#15274D", Instructional="#F9B921", Personal="#722672")
+shapekey = c(A=1, B=2, C=6, D=0, E=5)
+
+pRegisters <- PCAtools::biplot(p,
+                 x = "PC5",
+                 y = "PC6",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 #xlim = c(min(p$rotated$PC1)-0.5, max(p$rotated$PC1)+0.5),
+                 #ylim = c(min(p$rotated$PC2)-0.5, max(p$rotated$PC2)+0.5),
+                 colby = "Register",
+                 pointSize = 2,
+                 colkey = colkey,
+                 shape = "Level",
+                 shapekey = shapekey,
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 axisLabSize = 22,
+                 legendPosition = 'right',
+                 legendTitleSize = 22,
+                 legendLabSize = 18, 
+                 legendIconSize = 7) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+#ggsave("Plots/PCA_TxB_BiplotPC5_PC6.svg", width = 12, height = 10)
+
+# Save the two different representations of data points on PC4 and PC5 using the {patchwork} package
+pRegisters / pLevels
+#ggsave(here("plots", "PCA_TxB_BiplotPC5_PC6_Register_vs_Level.svg"), width = 14, height = 20)
+```
+
+
+```{r PCAtools-pairsplots-TxB, eval=FALSE}
+
+## Very slow, open in zoomed out window!
+# Add legend manually? Yes (take it from the biplot code below), let's not waste too much time, here. Or use Evert's mvar.pairs plot (though that also requires manual axis annotation)
+
+png(here("plots", "PCA_TxB_pairsplot.png"), width = 25, height= 45, units = "cm", res = 300)
+PCAtools::pairsplot(p,
+                 triangle = FALSE,
+                 components = 1:6,
+                 ncol = 3,
+                 nrow = 5,
+                 pointSize = 0.8,
+                 lab = NULL, # Otherwise will try to label each data point!
+                 colby = "Register",
+                 colkey = colkey,
+                 shape = "Level",
+                 shapekey = shapekey,
+                 margingaps = unit(c(0.2, 0.2, 0.8, 0.2), "cm"),
+                 legendPosition = "none")
+dev.off()
+
+#ggsave(here("plots", "PCA_TxB_pairsplot.svg"), width = 15, height = 15)
+
+```
+
+### Feature contributions (loadings) on each component
+```{r graphs-of-variables}
+
+TxBdata <- readRDS(here("FullMDA", "TxBdataforPCA.rds"))
+
+pca <- prcomp(TxBdata[,7:ncol(TxBdata)], scale.=FALSE) # All quantitative variables for all TxB files
+
+# The rotated data that represents the observations / samples is stored in rotated, while the variable loadings are stored in loadings
+
+loadings <- as.data.frame(pca$rotation[,1:4])
+
+loadings %>% round(2)
+
+smallToZero <- function(x) {if_else(x < 0.05 & x > -0.05, 0, x)}
+loadings %>% 
+  filter_all(any_vars(. > abs(0.05))) %>% 
+  mutate_all(smallToZero) %>% 
+  round(3)
+
+#write_last_clip()
+
+# Compare frequencies of the individual features across different registers and levels
+
+TxBcounts %>% 
+  group_by(Register, Level) %>% 
+  summarise(median(NCOMP), MAD(NCOMP)) %>% 
+  mutate(across(where(is.numeric), round, 2)) %>% 
+  as.data.frame()
+
+# Graph of variables
+factoextra::fviz_pca_var(pca,
+             axes = c(1,2),
+             select.var = list(cos2 = 0.1),
+             col.var = "contrib", # Colour by contributions to the PC
+             gradient.cols = c("#F9B921", "#DB241E", "#722672"),
+             title = "",
+             repel = TRUE, # Try to avoid too much text overlapping
+             ggtheme = ggthemes::theme_few())
+#ggsave(here("plots", "fviz_pca_var_PC1_PC2.svg"), width = 11, height = 9)
+
+factoextra::fviz_pca_var(pca,
+             axes = c(3,2),
+             select.var = list(contrib = 30),
+             col.var = "contrib", # Colour by contributions to the PC
+             gradient.cols = c("#F9B921", "#DB241E", "#722672"),
+             title = "",
+             repel = TRUE, # Try to avoid too much text overlapping
+             ggtheme = ggthemes::theme_few())
+#ggsave(here("plots", "fviz_pca_var_PC3_PC2.svg"), width = 9, height = 8)
+
+factoextra::fviz_pca_var(pca,
+             axes = c(3,4),
+             select.var = list(contrib = 30),
+             col.var = "contrib", # Colour by contributions to the PC
+             gradient.cols = c("#F9B921", "#DB241E", "#722672"),
+             title = "",
+             repel = TRUE, # Try to avoid too much text overlapping
+             ggtheme = ggthemes::theme_few())
+#ggsave(here("plots", "fviz_pca_var_PC3_PC4.svg"), width = 9, height = 8)
+
+factoextra::fviz_pca_var(pca,
+             axes = c(5,6),
+             select.var = list(cos2 = 0.05),
+             col.var = "contrib", # Colour by contributions to the PC
+             gradient.cols = c("#F9B921", "#DB241E", "#722672"),
+             title = "",
+             repel = TRUE, # Try to avoid too much text overlapping
+             ggtheme = ggthemes::theme_few())
+#ggsave(here("plots", "fviz_pca_var_PC5_PC6.svg"), width = 9, height = 8)
+
+```
+
+## Visualising results in shiny app
+```{r PCA-FactoMineR, eval=FALSE}
+
+colnames(TxBdata)
+
+res.pca <- FactoMineR::PCA(TxBdata, quali.sup = 1:5, quanti.sup = 6, scale.unit = FALSE, graph = FALSE, ncp = 6)
+
+summary(res.pca, ncp = 6, nbelements = 6)
+
+# For some reason I don't understand, the dimdesc() function only works if I eliminate the supplementary variables (although they obviously don't contribute to the dimensions anyway!)
+res.pca2 <- FactoMineR::PCA(TxBdata[,7:ncol(TxBdata)], scale.unit = FALSE, graph = FALSE)
+# 
+dims <- dimdesc(res.pca2, proba = 0.0001)
+
+dims
+
+dims$Dim.1
+dims$Dim.2
+dims$Dim.3
+dims$Dim.4
+dims$Dim.5
+
+plot(res.pca, choix = "ind", habillage = "Register", col.hab = colours[1:5], cex = 1.1, select = "contrib 10", title = "Graphe des individus")
+
+plot(res.pca, choix="var", select="cos2 0.6")  # plot the variables with cos2 greater than 0.6
+
+library(Factoshiny)
+TxBdata2 <- TxBdata %>% 
+  select(-Words, -Filename)
+
+res.shiny <- PCAshiny(TxBdata2)
+
+```
+
+## Exploring the dimensions of the model
+### Descriptive stats of dimensions
+```{r PCA-numerical-results}
+# http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/118-principal-component-analysis-in-r-prcomp-vs-princomp/#pca-results-for-variables
+
+#TxBdata <- readRDS(here("FullMDA", "TxBdataforPCA.rds"))
+
+pca <- prcomp(TxBdata[,7:ncol(TxBdata)], scale.=FALSE) # All quantitative variables for all TxB files
+register  <- factor(TxBdata[,"Register"]) # Register
+level <- factor(TxBdata[,"Level"]) # Textbook proficiency level
+
+summary(register)
+summary(level)
+summary(pca)
+
+## Access to the PCA results
+pca$rotation[,1]
+
+res.ind <- cbind(TxBdata[,1:5], as.data.frame(pca$x)[,1:6])
+head(res.ind)
+
+res.ind %>% 
+  group_by(Register) %>% 
+  summarise_if(is.numeric, mean)
+
+res.ind %>% 
+  group_by(Register, Level) %>% 
+  summarise_if(is.numeric, mean) %>% 
+  mutate(across(where(is.numeric), round, 2)) %>% 
+  as.data.frame()
+
+res.ind %>% 
+  select(Register, Level, PC2) %>% 
+  group_by(Register, Level) %>% 
+  summarise_if(is.numeric, c(Median = median, MAD = mad))%>% 
+  mutate(across(where(is.numeric), round, 2)) %>% 
+  as.data.frame()
+
+# Search for example texts to illustrate results
+res.ind %>% 
+  #filter(PC3 > 2.5 & PC2 < -2) %>% 
+  filter(PC4 < -2.5) %>% 
+  select(Filename, PC3, PC4) %>% 
+  mutate(across(where(is.numeric), round, 2))
+
+```
+
+### Mixed-effects models of dimension scores and plots
+```{r lmer-models}
+
+# Dimension 1
+# Model with only Register as a fixed effect
+lm1 <- lm(PC1 ~ Register, data = res.ind)
+summary(lm1)
+
+# Models with Textbook series as random intercepts
+md1 <- lmer(PC1 ~ Register*Level + (1|Series), data = res.ind, REML = FALSE)
+md1Register <- lmer(PC1 ~ Register + (1|Series), data = res.ind, REML = FALSE)
+md1Level <- lmer(PC1 ~ Level + (1|Series), data = res.ind, REML = FALSE)
+
+anova(md1, md1Register, md1Level)
+
+tab_model(md1, wrap.labels = 300) # Marginal R2 = 0.890
+tab_model(md1Register) # Marginal R2 = 0.877
+tab_model(md1Level) # Marginal R2 = 0.002
+
+# Tweak plot aestetics with: https://cran.r-project.org/web/packages/sjPlot/vignettes/custplot.html
+# Colour customisation trick from: https://stackoverflow.com/questions/55598920/different-line-colors-in-forest-plot-output-from-sjplot-r-package
+
+# Plot of fixed effects:
+plot_model(md1Register, 
+           type = "est",
+           show.intercept = TRUE,
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = palette[c(1:3,8,7)],
+           group.terms = c(1:5), 
+           title = "",
+           wrap.labels = 40,
+           axis.title = "PC1 estimated coefficients") +
+  theme_sjplot2() 
+
+#ggsave(here("plots", "TxB_PCA1_lmer_fixedeffects_Register.svg"), height = 3, width = 8)
+
+Register_results <- emmeans(md1Register, "Register")
+summary(Register_results)
+comparisons <- pairs(Register_results, adjust = "tukey")
+comparisons
+#write_last_clip()
+confint(comparisons)
+#write_last_clip()
+
+TxBdata %>% 
+  filter(Register == "Instructional") %>% 
+  group_by(Level) %>% 
+  summarise(median(VPRT))
+
+# Plot of random effects:
+plot_model(md1, 
+           type = "re", # Option to visualise random effects
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = "bw",
+           wrap.labels = 40,
+           axis.title = "PC1 estimated coefficients") +
+  theme_sjplot2()
+
+#ggsave(here("plots", "TxB_PCA1_lmer_randomeffects.svg"), height = 3, width = 8)
+
+# Dimension 2
+md2 <- lmer(PC2 ~ Register*Level + (1|Series), data = res.ind, REML = FALSE)
+md2Register <- lmer(PC2 ~ Register + (1|Series), data = res.ind, REML = FALSE)
+md2Level <- lmer(PC2 ~ Level + (1|Series), data = res.ind, REML = FALSE)
+anova(md2, md2Register, md2Level)
+
+tab_model(md2) # Marginal R2 = 0.723
+tab_model(md2Register) # Marginal R2 = 0.558
+tab_model(md2Level) # Marginal R2 = 0.228
+
+# Plot of fixed effects:
+plot_model(md2, 
+           type = "est",
+           show.intercept = TRUE,
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = palette[c(1:3,8,7)],
+           group.terms = c(1:5,1,1,1,1,2:5,2:5,2:5,2:5), 
+           title = "",
+           wrap.labels = 40,
+           axis.title = "PC2 estimated coefficients") +
+  theme_sjplot2() 
+
+#ggsave(here("plots", "TxB_PCA2_lmer_fixedeffects.svg"), height = 8, width = 8)
+
+#svg(here("plots", "TxB_predicted_PC2_scores_interactions.svg"), height = 5, width = 8)
+visreg(md2, xvar = "Level", by="Register", type = "conditional",
+       line=list(col="darkred"), 
+       xlab = "Textbook Level", ylab = "PC2"
+       #,gg = TRUE
+       ,layout=c(5,1)
+)
+dev.off()
+
+# Plots of random effects
+## Random intercepts
+plot_model(md2, 
+           type = "re", # Option to visualise random effects
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = "bw",
+           wrap.labels = 40,
+           axis.title = "PC2 estimated coefficients") +
+  theme_sjplot2()
+#ggsave(here("plots", "TxB_PCA2_lmer_randomeffects.svg"), height = 3, width = 8)
+
+# Textbook Series-Register interactions
+visreg::visreg(md2, "Register", by="Series", re.form=~(1|Series),
+               ylab="PC2", line=list(col="darkred"))
+
+visreg(md2, xvar = "Series", by="Level", type = "conditional", re.form=~(1|Series), 
+       line=list(col="darkred"), xlab = "Textbook Series", ylab = "PC2",
+       layout=c(1,5))
+
+# Dimension 3
+md3 <- lmer(PC3 ~ Register*Level + (1|Series), data = res.ind, REML = FALSE)
+md3Register <- lmer(PC3 ~ Register + (1|Series), data = res.ind, REML = FALSE)
+md3Level <- lmer(PC3 ~ Level + (1|Series), data = res.ind, REML = FALSE)
+
+anova(md3, md3Register, md3Level)
+
+tab_model(md3) # Marginal R2 = 0.436
+tab_model(md3Register) # Marginal R2 = 0.272
+tab_model(md3Level) # Marginal R2 = 0.119
+
+# Plot of fixed effects:
+plot_model(md3, 
+           type = "est",
+           show.intercept = TRUE,
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = palette[c(1:3,8,7)],
+           group.terms = c(1:5,1,1,1,1,2:5,2:5,2:5,2:5), 
+           title = "",
+           wrap.labels = 40,
+           axis.title = "PC3 estimated coefficients") +
+  theme_sjplot2() 
+#ggsave(here("plots", "TxB_PCA3_lmer_fixedeffects.svg"), height = 8, width = 8)
+
+#svg(here("plots", "TxB_predicted_PC3_scores_interactions.svg"), height = 5, width = 8)
+visreg(md3, xvar = "Level", by="Register", type = "conditional",
+       line=list(col="darkred"), 
+       xlab = "Textbook Level", ylab = "PC3"
+       #,gg = TRUE
+       ,layout=c(5,1)
+)
+dev.off()
+
+# Plot of random effects:
+plot_model(md3, 
+           type = "re", # Option to visualise random effects
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           color = "bw",
+           wrap.labels = 40,
+           axis.title = "PC3 estimated coefficients") +
+  theme_sjplot2()
+#ggsave(here("plots", "TxB_PCA3_lmer_randomeffects.svg"), height = 3, width = 8)
+
+# Textbook Series-Register interactions
+visreg::visreg(md3, "Series", by="Register", re.form=~(1|Series),
+               ylab="PC2", line=list(col="darkred"))
+
+visreg(md2, xvar = "Level", by="Series", type = "conditional", re.form=~(1|Series), 
+       line=list(col="darkred"), xlab = "Textbook Series", ylab = "PC2")
+
+# Dimension 4
+md4 <- lmer(PC4 ~ Register*Level + (1|Series), data = res.ind, REML = FALSE)
+md4Register <- lmer(PC4 ~ Register + (1|Series), data = res.ind, REML = FALSE)
+md4Level <- lmer(PC4 ~ Level + (1|Series), data = res.ind, REML = FALSE)
+
+anova(md4, md4Register, md4Level)
+
+tab_model(md4) # Marginal R2 = 0.426
+tab_model(md4Register) # Marginal R2 = 0.203
+tab_model(md4Level) # Marginal R2 = 0.187
+
+# Plot of fixed effects:
+plot_model(md4, 
+           type = "est",
+           show.intercept = TRUE,
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = palette[c(1:3,8,7)],
+           group.terms = c(1:5,1,1,1,1,2:5,2:5,2:5,2:5), 
+           title = "",
+           wrap.labels = 40,
+           axis.title = "PC4 estimated coefficients") +
+  theme_sjplot2() 
+#ggsave(here("plots", "TxB_PCA4_lmer_fixedeffects.svg"), height = 8, width = 8)
+
+#svg(here("plots", "TxB_predicted_PC4_scores_interactions.svg"), height = 5, width = 8)
+visreg(md4, xvar = "Level", by="Register", type = "conditional",
+       line=list(col="darkred"), 
+       xlab = "Textbook Level", ylab = "PC4"
+       #,gg = TRUE
+       ,layout=c(5,1)
+)
+dev.off()
+
+
+# Plot of random effects:
+plot_model(md4, 
+           type = "re", # Option to visualise random effects
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           color = "bw",
+           wrap.labels = 40,
+           axis.title = "PC4 estimated coefficients") +
+  theme_sjplot2()
+
+#ggsave(here("plots", "TxB_PCA4_lmer_randomeffects.svg"), height = 3, width = 8)
+
+# Dimension 5
+md5 <- lmer(PC5 ~ Register*Level + (1|Series), data = res.ind, REML = FALSE)
+md5Register <- lmer(PC5 ~ Register + (1|Series), data = res.ind, REML = FALSE)
+md5Level <- lmer(PC5 ~ Level + (1|Series), data = res.ind, REML = FALSE)
+
+anova(md5, md5Register, md5Level)
+
+tab_model(md5) # Marginal R2 = 0.071
+tab_model(md5Register) # Marginal R2 = 0.001
+tab_model(md5Level) # Marginal R2 = 0.055
+
+# Plot of fixed effects:
+plot_model(md5, 
+           type = "est",
+           show.intercept = TRUE,
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = palette[c(1:3,8,7)],
+           group.terms = c(1:5,1,1,1,1,2:5,2:5,2:5,2:5), 
+           title = "",
+           wrap.labels = 40,
+           axis.title = "PC5 estimated coefficients") +
+  theme_sjplot2() 
+
+#ggsave(here("plots", "TxB_PCA5_lmer_fixedeffects.svg"), height = 3, width = 8)
+
+# Plot of random effects:
+plot_model(md5, 
+           type = "re", # Option to visualise random effects
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           color = "bw",
+           wrap.labels = 40,
+           axis.title = "PC5 estimated coefficients") +
+  theme_sjplot2()
+
+#ggsave(here("plots", "TxB_PCA5_lmer_randomeffects.svg"), height = 3, width = 8)
+
+# Dimension 6
+md6 <- lmer(PC6 ~ Register*Level + (1|Series), data = res.ind, REML = FALSE)
+md6Register <- lmer(PC6 ~ Register + (1|Series), data = res.ind, REML = FALSE)
+md6Level <- lmer(PC6 ~ Level + (1|Series), data = res.ind, REML = FALSE)
+
+anova(md6, md6Register, md6Level)
+
+tab_model(md6) # Marginal R2 = 0.048
+
+# Plot of fixed effects:
+plot_model(md6, 
+           type = "est",
+           show.intercept = TRUE,
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = palette[c(1:3,8,7)],
+           group.terms = c(1:5,1,1,1,1,2:5,2:5,2:5,2:5), 
+           title = "",
+           wrap.labels = 40,
+           axis.title = "PC6 estimated coefficients") +
+  theme_sjplot2() 
+
+#ggsave(here("plots", "TxB_PCA6_lmer_fixedeffects.svg"), height = 3, width = 8)
+
+# Plot of random effects:
+plot_model(md6, 
+           type = "re", # Option to visualise random effects
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           color = "bw",
+           wrap.labels = 40,
+           axis.title = "PC6 estimated coefficients") +
+  theme_sjplot2()
+
+#ggsave(here("plots", "TxB_PCA6_lmer_randomeffects.svg"), height = 3, width = 8)
+
+# Boxplot visualisation
+
+res.ind %>% 
+  ggplot(aes(x = Register, y = PC2, fill = Level, facet = Register)) +
+         geom_boxplot() +
+  facet_grid()
+
+ggplot(res.ind, aes(x=Register,y=PC2, fill = Level, colour = Register, facet = Register))+ # Or leave out "colour = Register" to keep the dots in black
+  #geom_point(position = position_jitter(width = .15), size = .25)+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Register), y = PC2), colour = "BLACK") +
+  ylab('PC2')+ 
+  theme_minimal()+ 
+  guides(fill = FALSE, colour = FALSE) +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours)
+
+#ggsave(here("plots", "TxB_PC2_RegisterLevelsBoxplots.svg"), width = 13, height = 8)
+
+```
+
+```{r sessionInfo}
+sessionInfo()
+```
+

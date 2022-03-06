@@ -1,0 +1,102 @@
+﻿Filename,Filename,Filename
+Level,Level,Level
+Tokens,Tokens,Tokens
+AWL,Average word length,AWL
+TTR,Type-token ratio,TTR
+#,Hashtags,Hashtag
+$,Dollars,Dollar
+'',Quotation marks,Quotation
+",",Commas,Comma
+-LRB-,Left bracket character,LeftBracket
+-RRB-,Right bracket character,RightBracket
+.,Full stops,Full_stop
+:,Colons,Colon
+AMP,Amplifiers,Amplifiers
+ANDC,Independent clause coordination,Ind_clause_coord
+CAUS,Causative adverbial subordinators,because
+CC,Coordinating conjunctions,Coord_conj
+CD,Cardinal numbers,Card_numb
+CONC,Concessive adverbial subordinators,although_though
+COND,Conditional adverbial subordinators,if_unless
+CONJ,Conjuncts,Conjuncts
+DEMO,Demonstratives,Demonstratives
+DEMP,Demonstrative pronouns,Dem_pronouns
+DPAR,Discourse particle,Discourse_particles
+DT,Determiners,Determiners
+DWNT,Downtoners,Downtoners
+EMPH,Emphatics,Emphatics
+EX,Existential there,Existential_there
+FPP1,First person pronouns,FPP1
+FW,Foreign words,Foreign_words
+GER,Gerunds,Gerunds
+HDG,Hedges,Hedges
+IN,"Preposition, subordinating conjunction",Prep_subord_conj
+INPR,Indefinite pronouns,Ind_pronouns
+JJ,Attributive adjectives,Attr_Adj
+LS,List markers,List_markers
+NEMD,Necessity modals,Necessity_modals
+NN,Total nouns (not gerunds or norminalisation),Nouns
+NNP,Proper nouns,Proper_nouns
+NOMZ,Nominalizations,Nominalizations
+OSUB,Other adverbial subordinator,Adv_sub
+PDT,Pre-determiner,Pre_determiners
+PHC,Phrasal coordination,Phrasal_coord
+PIN,Total prepositional phrases,Prepositions
+PIT,Pronoun IT,it
+PLACE,Place adverbials,Place_adv
+POMD,Possibility modals,Poss_modals
+POS,Possessive ending,Poss_S
+PRED,Predicative adjectives,Pred_adj
+PRMD,Predictive modals,Pred_modals
+PRP,Personal pronouns,Personal_pronouns
+PRPS,Possessive pronouns,Poss_pronouns
+QUAN,Quantifiers,Quantifiers
+QUPR,Quantifying pronouns,Quantifying_pronouns
+RB,Total adverbs,Adverbs
+RP,Particles,Particles
+SPP2,Second person pronouns,SPP2
+SYM,Symbols,Symbols
+SYNE,Synthetic negation,Syn_negation
+THAC,That adjective complements,That_adj_comp
+THVC,That verb complements,That_verb_comp
+TIME,Time adverbials,Time_adv
+TO,Infinitives (TO),To_infinitives
+TOBJ,That relative clauses on object position,That_rel_clause_obj
+TPP3,Third person pronouns,TPP3
+TSUB,That relative clauses on subject position,That_rel_clause_subj
+UH,Interjection,Interjection
+VB,Verb base form,Verb_base_form
+VBD,Past tense,Past_tense
+VBG,Verb -ing form,Verb_ing_form
+VBN,Verb past participle,Verb_past_par
+VPRT,Present tense,Present_tense
+WDT,WH- determiner,WH_determiner
+WP,WH- pronoun,WH_pronoun
+WPS,Possessive WH-pronoun,Poss_WH_pronoun
+XX0,Analytic negation,Analytic_negation
+[BEMA],Be as main verb,BE_main_verb
+[BYPA],By-passives,By_passives
+[CONT],Contractions,Contractions
+[PASS],Agentless passives,Agentless_passives
+[PASTP],Past participial clauses,Past_participial_clauses
+[PEAS],Perfect aspect,Perfect_aspect
+[PIRE],Pied-piping relative clauses,Pied_piping_relative_clauses
+[PRESP],Present participial clauses,Present_part_clauses
+[PRIV],Private verbs,Private_verbs
+[PROD],Pro-verb do,Pro_verb_DO
+[PUBV],Public verbs,Public_verbs
+[SERE],Sentence relatives,Sentence_relatives
+[SMP],seem_appear,seem_appear
+[SPAU],Split auxiliaries,Split_auxiliaries
+[SPIN],Split infinitives,Split_infinitives
+[STPR],Stranded preposition,Stranded_prepositions
+[SUAV],Suasive verbs,Suasive_verbs
+[THATD],Subordinator that deletion,That_deletion
+[WHCL],WH-clauses,WH_clauses
+[WHOBJ],WH relative clauses on object position,WH_rel_clauses_obj
+[WHQU],Direct WH-questions,Direct_WH_questions
+[WHSUB],WH relative clauses on subject position,WH_rel_clauses_subj
+[WZPAST],Past participial WHIZ deletion relatives,Past_part_WHIZ_del_rel
+[WZPRES],Present participial WHIZ deletion relatives,Present_part_WHIZ_del_rel
+``,Quotation marks 2,Quotation2
+Register,Register,Register

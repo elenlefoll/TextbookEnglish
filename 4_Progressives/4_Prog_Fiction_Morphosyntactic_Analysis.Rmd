@@ -1,0 +1,418 @@
+---
+title: "Progressives Morphosyntactic Analysis of Textbook Fiction"
+author: "Elen Le Foll"
+date: "01/06/2019"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+
+---
+
+## Set-up
+
+*Built with R `r getRversion()`*  
+*Last updated on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
+
+```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(here)
+library(ggplot2)
+library(gridExtra)
+library(lattice)
+library(lsr)
+library(RColorBrewer)
+library(tidyr)
+library(vcd)
+
+```
+
+## Data Preparation
+
+```{r preparation_YF}
+annotation_file <- read.csv(here("YouthFiction_prog_conc_anno.csv"), sep = "\t", header = TRUE, na.strings="", stringsAsFactors = TRUE)
+glimpse(annotation_file)
+
+# Select only annotated concordance lines
+#annotated <- annotation_file
+annotated <- annotation_file[1:2050,] # Narrows it down to 1517 concordances with prog. Note that as of 11.08.2019 only the first 2053 have been manually annotated anyway.
+# Extract only progressives
+YF_prog <- annotated[annotated$Tense != "NOT progressive" & annotated$Tense != "GOING TO" & annotated$Tense !="catenative", ]
+
+#YF_prog$Annotator <- as.character(YF_prog$Annotator) # Only necessary if Tatjana did all the annotating in a particular file because otherwise T is recognised as TRUE and the vector becomes a logical vector
+
+YF_prog$Tense <- droplevels(YF_prog)$Tense # Drop unused levels
+YF_prog$Time.reference <- droplevels(YF_prog)$Time.reference # Drop unused levels
+YF_prog$Lemma <- droplevels(YF_prog)$Lemma # Drop unused levels
+
+YF_prog$Tense <- factor(YF_prog$Tense, levels = c("past", "perfect", "present", "modal")) # Re-order levels
+YF_prog$Time.reference <- factor(YF_prog$Time.reference, levels = c("past", "past/present", "present", "future", "general", "hypothetical", "unclear"))
+
+nrow(YF_prog) # Number of progressives in Youth Fiction sampled
+nrow(YF_prog)/nrow(annotated) # Ratio of genuine progressives in progressive CQL query
+
+```
+
+```{r preparation_TxBNar}
+# Before saving annotation file as .csv, make sure to have deleted all trailing inverted commas as they serve as string deliminators. This can easily be done with a regex search and replace in calc $" --> nothing.
+annotation_file_TxB <- read.csv(here("TxB_narrative_prog_conc_anno.csv"), sep = "\t", header = TRUE, na.strings="", stringsAsFactors = TRUE)
+glimpse(annotation_file_TxB)
+
+# Select only annotated concordance lines
+annotated_TxB <- annotation_file_TxB
+# Extract only progressives
+TxBNarProg <- filter(annotated_TxB, Tense != "NOT progressive" & Tense != "GOING TO" & Tense !="catenative")
+
+TxBNarProg$Tense <- droplevels(TxBNarProg)$Tense # Drop unused levels
+TxBNarProg$Time.reference <- droplevels(TxBNarProg)$Time.reference # Drop unused levels
+TxBNarProg$Lemma <- droplevels(TxBNarProg)$Lemma
+
+TxBNarProg$Tense <- factor(TxBNarProg$Tense, levels = c("past", "perfect", "present", "modal")) # Re-order levels
+TxBNarProg$Time.reference <- factor(TxBNarProg$Time.reference, levels = c("past", "past/present", "present", "future", "general", "hypothetical", "unclear"))
+
+nrow(TxBNarProg) # Number of progressives in Textbook Fiction
+nrow(TxBNarProg)/nrow(annotation_file_TxB) # Ratio of genuine progressives in progressive query
+
+```
+
+```{r preparation_combine_fiction}
+
+FictionProg <- bind_rows("Youth Fiction Sampled" = YF_prog, "Textbook Fiction" = TxBNarProg, .id = "Corpus")
+glimpse(FictionProg)
+FictionProg <- FictionProg %>% dplyr::rename(Contraction = X., Question = X..1, Negation = NOT) # Rename variables
+glimpse(FictionProg)
+
+# Replace NA with meaningful levels
+summary(as.factor(FictionProg$Negation))
+FictionProg$Negation <- tidyr::replace_na(as.character(FictionProg$Negation), "positive") # positive
+summary(as.factor(FictionProg$Contraction))
+FictionProg$Contraction <- tidyr::replace_na(as.character(FictionProg$Contraction), "full") # full
+summary(as.factor(FictionProg$Question))
+FictionProg$Question <- tidyr::replace_na(as.character(FictionProg$Question), "statement") # statement
+
+summary(as.factor(FictionProg$Level))
+FictionProg$Level <- tidyr::replace_na(as.character(FictionProg$Level), "Youth Fiction") # positive
+
+summary(as.factor(FictionProg$Book))
+FictionProg$Book <- tidyr::replace_na(as.character(FictionProg$Book), "Textbook Narrative")
+plot(as.factor(FictionProg$Book[2:620])) # Number of concordances per book from YF corpus
+
+# Make the following variables into factors
+factor_cols <- c("Corpus", "Negation", "Contraction", "Question", "Repeated", "Lemma", "Voice", "Level")
+FictionProg[factor_cols] <- lapply(FictionProg[factor_cols], as.factor)
+
+levels(FictionProg$Negation)[levels(FictionProg$Negation)=="n"] <- "negated"
+levels(FictionProg$Contraction)[levels(FictionProg$Contraction)=="c"] <- "contract."
+
+FictionProg$Corpus <- relevel(FictionProg$Corpus, "Youth Fiction Sampled") # This is so that the plots are in the same order as the Textbook Conversation vs. Spoken BNC ones. E.g. reference corpus on the left.
+
+summary(FictionProg$Corpus) # Number of annotated progressive concordances in each subcorpus
+
+#saveRDS(FictionProg, file = here("FictionProg.rds")) # Last saved on 25.08.2019
+
+FictionProg <- readRDS(here("FictionProg.rds"))
+
+```
+
+# Proportion of progressives 
+
+```{r PropProgFiction}
+
+# Textbook Fiction #
+TF_words <- 219040 # Much better than tokens due to lack of punctuation in Spoken BNC
+TF_verbs <- 42302 # These are all verb forms (e.g. have been drinking = 3 verb forms). Calculated using SE query
+TF_verb_phrases <- 35148 # As calculated with Extract_verb_lemmas_spacy
+TF_prog <- nrow(TxBNarProg) # 1517 # After manual annotation, thus excluding GOING TO + inf.
+TF_ProgVerbPhrase_ratio <- TF_prog/(TF_verb_phrases - TF_prog - (nrow(filter(annotated_TxB, Tense=="GOING TO"))))*10000; TF_ProgVerbPhrase_ratio # 453.36 per 10,000 finite verb phrases
+
+# Youth Fiction sampled
+YFs_words <- 8328976
+YFs_verbs <- 1792111 # From SE query
+YFs_progCQL <- 71140 # From SE query
+# Ratio of genuine progressives in progressive query for Youth Fiction sampled
+YFsratio_prog_CQL <- nrow(YF_prog)/nrow(annotated)
+YFstotal_prog <- YFsratio_prog_CQL*YFs_progCQL # Approximate total number of progressives across Youth Fiction sampled
+YFs_verb_phrases <- 1328349 # From spacy script
+YFs_ProgVerbPhrase_ratio <- YFstotal_prog/(YFs_verb_phrases - YFstotal_prog - (nrow(filter(annotation_file, Tense=="GOING TO"))))*10000; YFs_ProgVerbPhrase_ratio # 412.74 per 10,000 finite verb phrases
+
+# Comparing proportions of verbs and progressives #
+
+TF <- as.vector(c(TF_words, TF_verbs, TF_verb_phrases, TF_prog))
+YFs <- as.vector(c(YFs_words, YFs_verbs, YFs_verb_phrases, YFstotal_prog))
+#YFs_sample <- round(YFs*(TF_words/YFs_words),0) # based on total number of words (from SE)
+YFs_sample <- round(YFs*(21530/727487),0) # based on total number of sentences (from SE)
+prog_ratio_fiction <- rbind(TF, YFs_sample)
+rownames(prog_ratio_fiction) <- c("Textbook Fiction", "Youth Fiction sample")
+colnames(prog_ratio_fiction) <- c("Words", "Verb forms", "Finite verb phrases", "Progressives")
+prog_ratio_fiction <- as.data.frame(prog_ratio_fiction); prog_ratio_fiction
+prog_ratio_fiction$Non_prog <- prog_ratio_fiction$`Finite verb phrases` - prog_ratio_fiction$Progressives
+prog_ratio_fiction$FProgRatio <- round(c(TF_ProgVerbPhrase_ratio, YFs_ProgVerbPhrase_ratio), 2)
+colnames(prog_ratio_fiction) <- c("Words", "Verb forms", "Finite verb phrases", "Progressives", "Non-progressives","F-coefficients of progressives")
+prog_ratio_fiction
+#clipr::write_clip(prog_ratio_fiction)
+#saveRDS(prog_ratio_fiction, file = here("prog_ratio_fiction.rds"))
+
+
+# Significance testing and approximation of effect sizes #
+# http://rcompanion.org/handbook/H_03.html 
+
+prog_ratio_fiction1 <- prog_ratio_fiction[,5:4]; prog_ratio_fiction1 
+chisq.test(prog_ratio_fiction1) 
+vcd::assocstats(t(prog_ratio_fiction1)) # Phi-Coefficient : 0.009
+fisher.test(prog_ratio_fiction1) # Is this helpful?
+
+verb_ratio_fiction <- prog_ratio_fiction[,1:2]; verb_ratio_fiction
+chisq.test(verb_ratio_fiction) # Highly significant
+vcd::assocstats(t(verb_ratio_fiction)) 
+
+```
+
+```{r ProgRationSpokenNar}
+
+prog_ratio_spoken <- readRDS(file = here("prog_ratio_spoken.rds"))
+prog_ratio_fiction <- readRDS(file = here("prog_ratio_fiction.rds"))
+
+prog_ratios <- rbind(prog_ratio_spoken, prog_ratio_fiction); prog_ratios
+prog_ratios <- prog_ratios[c(1,3), c(4:5)]; prog_ratios
+
+chisq.test(prog_ratios)
+vcd::assoc(prog_ratios)
+vcd::assocstats(t(prog_ratios))
+
+prop.test(t(prog_ratios))
+
+```
+
+# Tenses
+
+```{r tenses}
+
+# Mosaic plot of tense distribution across corpora
+# Select the colors that will be used
+#RColorBrewer::display.brewer.all(colorblindFriendly = T)
+# We will select the first 4 colors in the Set1 palette
+cols<-RColorBrewer::brewer.pal(n=4,name="OrRd")
+
+#tiff(here("mosaic_tenseforms_nar.tiff"), height = 30, width = 35, units="cm", compression = "lzw", res = 300)
+par(cex = 2, cex.main = 0.85, font = 2)
+plot(FictionProg$Tense ~ FictionProg$Corpus, col = cols, xlab = "", ylab = "Progressive tense forms", main = "Distribution of progressive tense forms in Textbook Conversation and the Spoken BNC 2014")
+dev.off()
+
+# Differentiated look at textbook levels #
+#tiff(here("mosaic_tenseforms_levels_nar.tiff"), height = 15, width = 25, units="cm", compression = "lzw", res = 300)
+plot(FictionProg$Tense ~ FictionProg$Level, col = cols, xlab = "                                                                                             Textbook Levels", ylab = "Progressive tense forms")
+dev.off()
+
+# Barplot with % of occurrences
+
+tenses <- table(FictionProg$Tense, FictionProg$Corpus)
+class(tenses) # Produces a lovely simple table
+tenses
+tensesp <- t((prop.table(tenses, margin = 2)*100)) # Work out percentages and transpose table
+tensesp <-round(tensesp, 2)
+
+barplot(tensesp, beside = TRUE, ylab = "% of occurrences", xlab = "Forms of the progressive", ylim = c(0,100), col = c("darkblue", "darkred"))
+legend("topright", fill = c("darkblue", "darkred"), c("Youth Reference", "Textbook Fiction"))
+
+vcd::assocstats(tenses) # Measuring the effect size. Cramer's V is what we're interested in (Levshina p. 217)
+
+# Association plot of tense distribution in corpora
+#tiff(here("tenseforms_assoc_nar.tiff"), height = 12, width = 17, units="cm", compression = "lzw", res = 300)
+vcd::assoc(tenses, shade = TRUE, varnames = FALSE) # This works
+dev.off()
+
+chisq.test(tenses)$stdres
+
+```
+
+### Relationship between tense and time reference
+```{r tense-time-ref}
+
+# Significance testing for time ref only #
+
+timeref <- table(FictionProg$Corpus, FictionProg$Time.reference); timeref # Raw figures
+timerefprop <- round(t((prop.table(timeref, margin = 2)*100)),2); timerefprop # As %
+chisq.test(timeref)
+vcd::assocstats(timeref) # Cramer's V = 0.117
+vcd::assoc(timeref, shade = TRUE)
+
+# Significance test for only textbook levels C-E against Textbook Conversation
+
+prog2 <- FictionProg[FictionProg$Level!="A" & FictionProg$Level!="B",]
+prog2$Level <- droplevels(prog2)$Level # Drop levels A and B
+prog2 <- prog2[prog2$Time.reference!="unclear",] # Get rid of unclear's
+prog2$Time.reference <- droplevels(prog2)$Time.reference # Drop unclear level
+timeref2 <- table(prog2$Corpus, prog2$Time.reference); timeref2 # Raw figures
+
+chisq.test(timeref2) # p < 0.039
+vcd::assoc(timeref2, shade = TRUE)
+
+# Plot relationship between tense and time reference
+
+FictionProg1 <- FictionProg[FictionProg$Time.reference != "unclear", ]
+FictionProg1 <- FictionProg1[!is.na(FictionProg1$Time.reference), ] # Remove NA's
+FictionProg1$Time.reference <- droplevels(FictionProg1)$Time.reference # Drop unused level "unclear"
+#prog1$Time.reference = forcats::fct_collapse(prog1$Time.reference, future = c("present/future","future")) # function to collapse levels
+
+#RColorBrewer::display.brewer.all(colorblindFriendly = T)
+# We will select the first 4 colors in the Set1 palette
+cols<-RColorBrewer::brewer.pal(n=4,name="OrRd")
+
+#tiff(here("mosaic_tenses_timeref_nar.tiff"), height = 15, width = 30, units="cm", compression = "lzw", res = 300)
+vcd::mosaic(Tense ~ Corpus + Time.reference, FictionProg1, gp = grid::gpar(fill = cols), rot_labels = c(45, 45, 0, 90), cex=2.5, zero_size = 0, labeling_args = list(rep = TRUE), xlab = "Time reference") # Best so far
+grid::grid.text("                                    past                                                     past/present                        present                                          future general hypo.", x=0.1, y=.1, vjust=1.5, hjust=0, gp=grid::gpar(fontface=1)) # Doesn't really work
+dev.off()
+
+```
+
+
+# Questions
+
+```{r questions}
+
+round(prop.table(table(FictionProg$Corpus, FictionProg$Question), margin = 1), 4)*100
+
+#tiff(here("prog_questions.tiff"), height = 17, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+plot(plyr::revalue(FictionProg$Question, c("q"="question")) ~ FictionProg$Corpus, ylab = "", xlab = "", main = "", col = cols[4:2])
+dev.off()
+
+questions <- table(FictionProg$Corpus, FictionProg$Question) ; questions
+questions <- questions[,1:2] ; questions # Get rid of unclear's
+test.questions <- chisq.test(questions)
+test.questions # Not significant
+
+assocplot(t(questions))
+vcd::assoc(questions, shade = TRUE, col_vars = c("question", "statement"))
+vcd::assocstats(questions) # No effect!
+```
+
+# Negation
+
+```{r negation}
+
+FictionProg$Corpus <- relevel(FictionProg$Corpus, "Textbook Fiction")
+levels(FictionProg$Corpus) <- c("Textbook Narrative", "Youth Fiction sample")
+
+negation1 <- round(prop.table(table(FictionProg$Corpus, FictionProg$Negation), margin = 1), 4)*100; negation1
+#clipr::write_clip(negation1)
+
+negation <- table(FictionProg$Corpus, FictionProg$Negation)
+test.negation <- chisq.test(negation); test.negation # Significant correlation at p < 0.01
+
+assocplot(t(negation))
+vcd::assocstats(negation) # Phi-coefficient is only 0.056 = very weak!
+
+#tiff(here("prog_negation.tiff"), height = 17, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+plot(plyr::revalue(FictionProg$Negation, c("positive"="not negated")) ~ FictionProg$Corpus, ylab = "", xlab = "", main = "", col = cols[3:4])
+dev.off()
+
+# No interesting correlation to be seen
+#tiff(here("prog_negation_question.tiff"), height = 13, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+vcd::mosaic(Negation ~ Corpus + Question, FictionProg, gp = grid::gpar(fill = cols[4:3]), rot_labels = c(0, 90, 0, 90), cex=2.5, zero_size = 0, labeling_args = list(rep = TRUE)) # Best so far
+dev.off()
+
+```
+
+# Contraction 
+
+```{r contraction}
+
+round(prop.table(table(FictionProg$Corpus, FictionProg$Contraction), margin = 1), 4)*100
+
+contractions <- table(FictionProg$Corpus, FictionProg$Contraction)
+test.contractions <- chisq.test(contractions)
+test.contractions # Not significant
+
+#tiff(here("prog_contractions_tenses_nar.tiff"), height = 13, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+vcd::mosaic(Contraction ~ Corpus + Tense, FictionProg, gp = grid::gpar(fill = cols[4:3]), rot_labels = c(0, 90, 0, 90), cex=2.5, zero_size = 0, labeling_args = list(rep = TRUE)) # Best so far
+dev.off()
+
+FictionProg$Textbook <- tidyr::replace_na(as.character(FictionProg$Textbook), "Youth Fiction")
+
+t(round(prop.table(table(FictionProg$Contraction, FictionProg$Textbook), 2),4)*100)
+
+#tiff(here("prog_contractions_series_nar.tiff"), height = 13, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+vcd::mosaic(Contraction ~ Textbook, FictionProg, gp = grid::gpar(fill = cols[4:3]), rot_labels = c(0, 90, 0, 90), cex=2.5, zero_size = 0, labeling_args = list(rep = TRUE)) # Best so far
+dev.off()
+
+```
+
+# Voice
+```{r voice}
+round(prop.table(table(FictionProg$Corpus, FictionProg$Voice), margin = 1), 4)*100
+
+voice <- table(FictionProg$Corpus, FictionProg$Voice)
+test.voice <- chisq.test(voice)
+test.voice # Not a significant correlation
+vcd::assocstats(voice)
+
+```
+
+# Repeatedness
+```{r repeatedness}
+
+repeatedness <- table(FictionProg$Corpus, FictionProg$Repeated); repeatedness
+repeatedness <- repeatedness[,c(1,3)]; repeatedness
+round(prop.table(repeatedness, 1), 2)
+test.repeat <- chisq.test(repeatedness)
+test.repeat # No significant difference
+vcd::assocstats(repeatedness)
+
+```
+
+# Continuousness
+
+```{r continousness}
+
+continuous <- table(FictionProg$Corpus, FictionProg$Continuous); continuous
+continuous <- continuous[,c(1,3)]; continuous
+round(prop.table(continuous, 1), 4)*100
+test.cont <- chisq.test(continuous); test.cont # Significant at p>0.001
+vcd::assocstats(continuous) # Cramer's V is 0.095 = very weak!
+
+#tiff(here("Prog_Continuous_Fiction.tiff"), height = 18, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.5, cex.main = 1)
+plot(continuous, shade = TRUE, main = "Progressive function: Continuousness")
+dev.off()
+
+## Which lemmas occur most frequently in either corpora with the function non-continuousness? ##
+noncont_lemmas_TxB <- FictionProg[FictionProg$Continuous=="no" & FictionProg$Corpus=="Textbook Fiction", 6] 
+table_noncont_lemmas_TxB <- sort(table(noncont_lemmas_TxB), decreasing = T)
+head(table_noncont_lemmas_TxB, 10)
+
+noncont_lemmas_YF <- FictionProg[FictionProg$Continuous=="no" & FictionProg$Corpus=="Youth Fiction Sampled", 6] 
+table_noncont_lemmas_YF <- sort(table(noncont_lemmas_YF), decreasing = T)
+head(table_noncont_lemmas_YF, 10)
+
+```
+
+# Additional functions
+```{r framing}
+
+functions <- table(FictionProg$Corpus, FictionProg$Extra.function); functions
+round((functions/1517*100),2) # Percentage of concordances in each corpus
+
+framing <- table(FictionProg$Corpus, FictionProg$Extra.function=="framing"); framing
+chisq.test(framing) # Significant at p>0.001
+vcd::assocstats(framing) # phi-coefficient = 0.246
+
+emphasis <- table(FictionProg$Corpus, FictionProg$Extra.function=="emphasis/shock"); emphasis
+chisq.test(emphasis) # Not significant, p = 0.12
+
+change <- table(FictionProg$Corpus,FictionProg$Extra.function=="gradual change"); change
+chisq.test(change) # Significant at p < 0.001
+vcd::assocstats(change) # Phi-Coefficient = 0.18
+
+```
+
+
+

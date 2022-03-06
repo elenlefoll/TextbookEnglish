@@ -1,0 +1,493 @@
+---
+title: "Tagger evaluation"
+author: "Elen Le Foll"
+date: "01/02/2022"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+    #code_folding: hide # enables you to include R code but have it hidden by default. Users can then choose to show hidden R code chunks either individually or document wide.
+    #keep_md: true
+    md_extensions: +bracketed_spans      
+      
+---
+
+### Set-up
+
+*Built with R `r getRversion()`*  
+*Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
+
+# Tagger evaluation on TEC data
+
+## Data import from evaluation files
+
+These chunks import the data directly from the Excel files in which the manual tag check and corrections was performed.
+
+```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, message=FALSE, paged.print=TRUE, fig.width = 10, warning=FALSE)
+
+library(caret) # For computing confusion matrices
+library(harrypotter) # Only for colour scheme
+library(here) # For path management
+library(paletteer) # For nice colours
+library(readxl) # For the direct import of Excel files
+library(tidyverse) # For everything else!
+
+```
+
+```{r TxBcounts}
+
+# Function to import and wrangle the evaluation data from the Excel files in which the manual evaluation was conducted
+importEval3 <- function(file, fileID, register, corpus) {
+  Tag1 <- file %>% 
+  add_column(FileID = fileID, Register = register, Corpus = corpus) %>%
+  select(FileID, Corpus, Register, Output, Tokens, Tag1, Tag1Gold) %>% 
+  rename(Tag = Tag1, TagGold = Tag1Gold, Token = Tokens) %>% 
+  mutate(Evaluation = ifelse(is.na(TagGold), TRUE, FALSE)) %>% 
+  mutate(TagGold = ifelse(is.na(TagGold), as.character(Tag), as.character(TagGold))) %>%
+  filter(!is.na(Tag)) %>% 
+  mutate_if(is.character, as.factor)
+  
+  Tag2 <- file %>% 
+  add_column(FileID = fileID, Register = register, Corpus = corpus) %>%
+  select(FileID, Corpus, Register, Output, Tokens, Tag2, Tag2Gold) %>% 
+  rename(Tag = Tag2, TagGold = Tag2Gold, Token = Tokens) %>% 
+  mutate(Evaluation = ifelse(is.na(TagGold), TRUE, FALSE)) %>% 
+  mutate(TagGold = ifelse(is.na(TagGold), as.character(Tag), as.character(TagGold))) %>%
+  filter(!is.na(Tag)) %>% 
+  mutate_if(is.character, as.factor)
+
+Tag3 <- file %>% 
+  add_column(FileID = fileID, Register = register, Corpus = corpus) %>%
+  select(FileID, Corpus, Register, Output, Tokens, Tag3, Tag3Gold) %>% 
+  rename(Tag = Tag3, TagGold = Tag3Gold, Token = Tokens) %>% 
+  mutate(Evaluation = ifelse(is.na(TagGold), TRUE, FALSE)) %>% 
+  mutate(TagGold = ifelse(is.na(TagGold), as.character(Tag), as.character(TagGold))) %>%
+  filter(!is.na(Tag)) %>% 
+  mutate_if(is.character, as.factor)
+
+output <- rbind(Tag1, Tag2, Tag3) %>% 
+  mutate(across(where(is.factor), str_remove_all, pattern = fixed(" "))) %>% # Removes all white spaces which are found in the excel files
+  filter(!is.na(Output)) %>% 
+  mutate_if(is.character, as.factor)
+}
+
+# Second function to import and wrangle the evaluation data for Excel files with four tag columns as opposed to three
+importEval4 <- function(file, fileID, register, corpus) {
+  Tag1 <- file %>% 
+  add_column(FileID = fileID, Register = register, Corpus = corpus) %>%
+  select(FileID, Corpus, Register, Output, Tokens, Tag1, Tag1Gold) %>% 
+  rename(Tag = Tag1, TagGold = Tag1Gold, Token = Tokens) %>% 
+  mutate(Evaluation = ifelse(is.na(TagGold), TRUE, FALSE)) %>% 
+  mutate(TagGold = ifelse(is.na(TagGold), as.character(Tag), as.character(TagGold))) %>%
+  filter(!is.na(Tag)) %>% 
+  mutate_if(is.character, as.factor)
+  
+  Tag2 <- file %>% 
+  add_column(FileID = fileID, Register = register, Corpus = corpus) %>%
+  select(FileID, Corpus, Register, Output, Tokens, Tag2, Tag2Gold) %>% 
+  rename(Tag = Tag2, TagGold = Tag2Gold, Token = Tokens) %>% 
+  mutate(Evaluation = ifelse(is.na(TagGold), TRUE, FALSE)) %>% 
+  mutate(TagGold = ifelse(is.na(TagGold), as.character(Tag), as.character(TagGold))) %>%
+  filter(!is.na(Tag)) %>% 
+  mutate_if(is.character, as.factor)
+
+Tag3 <- file %>% 
+  add_column(FileID = fileID, Register = register, Corpus = corpus) %>%
+  select(FileID, Corpus, Register, Output, Tokens, Tag3, Tag3Gold) %>% 
+  rename(Tag = Tag3, TagGold = Tag3Gold, Token = Tokens) %>% 
+  mutate(Evaluation = ifelse(is.na(TagGold), TRUE, FALSE)) %>% 
+  mutate(TagGold = ifelse(is.na(TagGold), as.character(Tag), as.character(TagGold))) %>%
+  filter(!is.na(Tag)) %>% 
+  mutate_if(is.character, as.factor)
+
+Tag4 <- file %>% 
+  add_column(FileID = fileID, Register = register, Corpus = corpus) %>%
+  select(FileID, Corpus, Register, Output, Tokens, Tag4, Tag4Gold) %>% 
+  rename(Tag = Tag4, TagGold = Tag4Gold, Token = Tokens) %>% 
+  mutate(Evaluation = ifelse(is.na(TagGold), TRUE, FALSE)) %>% 
+  mutate(TagGold = ifelse(is.na(TagGold), as.character(Tag), as.character(TagGold))) %>%
+  filter(!is.na(Tag)) %>% 
+  mutate_if(is.character, as.factor)
+
+output <- rbind(Tag1, Tag2, Tag3, Tag4) %>% 
+  mutate(across(where(is.factor), str_remove_all, pattern = fixed(" "))) %>% # Removes all white spaces which are found in the excel files
+  filter(!is.na(Tag)) %>% 
+  mutate_if(is.character, as.factor)
+
+}
+
+# Function to decide which of the two above functions should be used
+importEval <- function(file, fileID, register, corpus) { 
+  if(sum(!is.na(file$Tag4)) > 0) {
+    output = importEval4(file = file, fileID = fileID, register = register, corpus = corpus)
+  }
+  else{
+    output = importEval3(file = file, fileID = fileID, register = register, corpus = corpus)
+  }
+}
+
+Solutions_Intermediate_Spoken_0032 <- importEval(file = read_excel(here("MFTE", "Evaluation", "Solutions_Intermediate_Spoken_0032_Evaluation.xlsx")), fileID = "Solutions_Intermediate_Spoken_0032", register = "Conversation", corpus = "TEC-Sp")
+
+HT_5_Poetry_0001 <- importEval(file = read_excel(here("MFTE", "Evaluation", "HT_5_Poetry_0001_Evaluation.xlsx")), fileID = "HT_5_Poetry_0001", register = "Poetry", corpus = "TEC-Fr")
+
+Achievers_A1_Informative_0006 <- importEval(file = read_excel(here("MFTE", "Evaluation", "Achievers_A1_Informative_0006_Evaluation.xlsx")), fileID = "Achievers_A1_Informative_0006", register = "Informative", corpus = "TEC-Sp")
+
+New_GreenLine_5_Personal_0003 <- importEval(file = read_excel(here("MFTE", "Evaluation", "New_GreenLine_5_Personal_0003_Evaluation.xlsx")), fileID = "New_GreenLine_5_Personal_0003", register = "Personal communication", corpus = "TEC-Ger")
+
+Piece_of_cake_3e_Instructional_0006 <- importEval(file = read_excel(here("MFTE", "Evaluation", "Piece_of_cake_3e_Instructional_0006_Evaluation.xlsx")), fileID = "Piece_of_cake_3e_Instructional_0006", register = "Instructional", corpus = "TEC-Fr")
+
+Access_4_Narrative_0006 <- importEval(file = read_excel(here("MFTE", "Evaluation", "Access_4_Narrative_0006_Evaluation.xlsx")), fileID = "Access_4_Narrative_0006", register = "Fiction", corpus = "TEC-Ger")
+
+BNCBFict_b2 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBFict_b2.xlsx")), fileID = "BNCBFict_b2", register = "fiction", corpus = "BNC2014")
+
+BNCBFict_m54 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBFict_m54.xlsx")), fileID = "BNCBFict_m54", register = "fiction", corpus = "BNC2014")
+
+BNCBFict_e27 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBFict_e27.xlsx")), fileID = "BNCBFict_e27", register = "fiction", corpus = "BNC2014")
+
+BNCBMass16 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBMass16.xlsx")), fileID = "BNCBMass16", register = "news", corpus = "BNC2014")
+
+BNCBMass23 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBMass23.xlsx")), fileID = "BNCBMass23", register = "news", corpus = "BNC2014")
+
+BNCBReg111 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBReg111.xlsx")), fileID = "BNCBReg111", register = "news", corpus = "BNC2014")
+
+BNCBReg750 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBReg750.xlsx")), fileID = "BNCBReg750", register = "news", corpus = "BNC2014")
+
+BNCBSer486 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBSer486.xlsx")), fileID = "BNCBSer486", register = "news", corpus = "BNC2014")
+
+BNCBSer562 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBSer562.xlsx")), fileID = "BNCBSer562", register = "news", corpus = "BNC2014")
+
+BNCBEBl8 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBEBl8.xlsx")), fileID = "BNCBEBl8", register = "internet", corpus = "BNC2014")
+
+BNCBEFor32 <- importEval(file = read_excel(here("MFTE", "Evaluation", "BNCBEFor32.xlsx")), fileID = "BNCBEFor32", register = "internet", corpus = "BNC2014")
+
+S2DD <- importEval(file = read_excel(here("MFTE", "Evaluation", "S2DD.xlsx")), fileID = "S2DD", register = "spoken", corpus = "BNC2014")
+
+S3AV <- importEval(file = read_excel(here("MFTE", "Evaluation", "S3AV.xlsx")), fileID = "S3AV", register = "spoken", corpus = "BNC2014")
+
+SEL5 <- importEval(file = read_excel(here("MFTE", "Evaluation", "SEL5.xlsx")), fileID = "SEL5", register = "spoken", corpus = "BNC2014")
+
+SVLK <- importEval(file = read_excel(here("MFTE", "Evaluation", "SVLK.xlsx")), fileID = "SVLK", register = "spoken", corpus = "BNC2014")
+
+SZXQ <- importEval(file = read_excel(here("MFTE", "Evaluation", "SZXQ.xlsx")), fileID = "SZXQ", register = "spoken", corpus = "BNC2014")
+
+TaggerEval <- rbind(Solutions_Intermediate_Spoken_0032, HT_5_Poetry_0001, Achievers_A1_Informative_0006, New_GreenLine_5_Personal_0003, Piece_of_cake_3e_Instructional_0006, Access_4_Narrative_0006, BNCBEBl8, BNCBFict_b2, BNCBFict_m54, BNCBFict_e27, BNCBEFor32, BNCBMass16, BNCBMass23, BNCBReg111, BNCBReg750, BNCBSer486, BNCBSer562, S2DD, S3AV, SEL5, SVLK, SZXQ) 
+
+summary(TaggerEval)
+
+```
+
+## Implement changes made to MFTE since evaluation
+
+```{r feature merging}
+
+TaggerEval <- TaggerEval %>% 
+  mutate(Tag = ifelse(Tag == "PHC", "CC", as.character(Tag))) %>% 
+  mutate(TagGold = ifelse(TagGold == "PHC", "CC", as.character(TagGold))) %>% 
+  mutate(Tag = ifelse(Tag == "QLIKE", "LIKE", as.character(Tag))) %>% 
+  mutate(TagGold = ifelse(TagGold == "QLIKE", "LIKE", as.character(TagGold))) %>% 
+  mutate(Tag = ifelse(Tag == "TO", "IN", as.character(Tag))) %>% 
+  mutate(TagGold = ifelse(TagGold == "TO", "IN", as.character(TagGold))) %>% 
+  mutate_if(is.character, as.factor) %>% 
+  mutate(Evaluation = ifelse(as.character(Tag) == as.character(TagGold), TRUE, FALSE))
+
+head(TaggerEval) # Check sanity of data
+summary(TaggerEval) # Check sanity of data
+
+#saveRDS(TaggerEval, here("MFTE", "Evaluation", "MFTE_PhD_Evaluation_Results.rds")) # Last saved 10 Nov 2021
+
+#write.csv(TaggerEval, here("MFTE", "Evaluation", "MFTE_PhD_Evaluation_Results.csv")) # Last saved 10 Nov 2021
+
+```
+
+### Quick data import
+
+```{r quick-import}
+
+TaggerEval <- readRDS(here("MFTE", "Evaluation", "MFTE_PhD_Evaluation_Results.rds")) 
+summary(TaggerEval)
+
+```
+
+## Estimating MFTE accuracy for TEC only
+
+In this chunk, I calculate the recall and precision rates of each feature, ignoring unclear tokens and all punctuation and symbols.
+
+```{r tagger-accuracy-TEC}
+
+# Total number of TEC tags manually checked
+TaggerEval %>% filter(Corpus %in% c("TEC-Fr", "TEC-Ger", "TEC-Sp")) %>% nrow()
+
+# Number of UNCLEAR evaluation tags
+TaggerEval %>% 
+  filter(Corpus %in% c("TEC-Fr", "TEC-Ger", "TEC-Sp")) %>% 
+  filter(TagGold == "UNCLEAR") %>% 
+  nrow() # 0 in TEC sample
+
+data <- TaggerEval %>% 
+  filter(Corpus %in% c("TEC-Fr", "TEC-Ger", "TEC-Sp")) %>% 
+  filter(TagGold != "UNCLEAR") %>% 
+  filter(Tag %in% c(str_extract(Tag, "[A-Z0-9]+"))) %>% # Remove punctuation tags which are uninteresting here.
+  filter(Tag != "SYM" & Tag != "``") %>% 
+  droplevels(.) %>% 
+  mutate(Tag = factor(Tag, levels = union(levels(Tag), levels(TagGold)))) %>% # Ensure that the factor levels are the same for the next caret operation
+  mutate(TagGold = factor(TagGold, levels = union(levels(Tag), levels(TagGold))))
+
+# Spot gold tag corrections that are not actually errors (should return zero rows if all is well)
+data[data$Tag==data$TagGold & data$Evaluation == FALSE,] %>% as.data.frame()
+
+# Total number of false tags
+summary(data$Evaluation)
+
+cm <- caret::confusionMatrix(data$Tag, data$TagGold) # Create confusion matrix
+cm$overall # Note that is not very representative because it includes tags which are not intended for use in the MDA studies, e.g., LS and FW.
+
+# Accuracy metrics per feature: recall, precision and f1
+cm$byClass[,5:7]
+
+```
+
+## MFTE accuracy for reference corpora or comparable
+
+### Conversation
+
+```{r tagger-accuracy-SpokenBNC2014}
+
+# Number of UNCLEAR evaluation tags
+TaggerEval %>% 
+  filter(Register == "spoken") %>% 
+  filter(TagGold == "UNCLEAR") %>% 
+  nrow() # 7 in Spoken BNC2014 sample
+
+data <- TaggerEval %>% 
+  filter(Register == "spoken") %>% 
+  filter(TagGold != "UNCLEAR") %>% 
+  filter(Tag %in% c(str_extract(Tag, "[A-Z0-9]+"))) %>% # Remove all punctuation tags which are uninteresting here.
+  droplevels(.) %>% 
+  mutate(Tag = factor(Tag, levels = union(levels(Tag), levels(TagGold)))) %>% # Ensure that the factor levels are the same for the next caret operation
+  mutate(TagGold = factor(TagGold, levels = union(levels(Tag), levels(TagGold))))
+
+# Spot gold tag corrections that are not actually errors (should return zero rows if all is well)
+data[data$Tag==data$TagGold & data$Evaluation == FALSE,] %>% as.data.frame()
+
+# Total number of false tags
+summary(data$Evaluation)
+
+cm <- caret::confusionMatrix(data$Tag, data$TagGold) # Create confusion matrix
+cm$overall 
+
+# Accuracy metrics per feature: recall, precision and f1
+cm$byClass[,5:7]
+
+```
+
+### Fiction
+
+```{r tagger-accuracy-Fiction}
+
+# Number of UNCLEAR evaluation tags
+TaggerEval %>% 
+  filter(Register == "fiction") %>% 
+  filter(TagGold == "UNCLEAR") %>% 
+  nrow() # 0 in BNC2014 Baby+ fiction subsample
+
+data <- TaggerEval %>% 
+  filter(Register == "fiction") %>% 
+  filter(TagGold != "UNCLEAR") %>% 
+  filter(Tag %in% c(str_extract(Tag, "[A-Z0-9]+"))) %>% # Remove all punctuation tags which are uninteresting here.
+  filter(Tag != "SYM" & Tag != "``") %>% 
+  droplevels(.) %>% 
+  mutate(Tag = factor(Tag, levels = union(levels(Tag), levels(TagGold)))) %>% # Ensure that the factor levels are the same for the next caret operation
+  mutate(TagGold = factor(TagGold, levels = union(levels(Tag), levels(TagGold))))
+
+# Spot gold tag corrections that are not actually errors (should return zero rows if all is well)
+data[data$Tag==data$TagGold & data$Evaluation == FALSE,] %>% as.data.frame()
+
+# Total number of false tags
+summary(data$Evaluation)
+
+cm <- caret::confusionMatrix(data$Tag, data$TagGold) # Create confusion matrix
+cm$overall 
+
+# Accuracy metrics per feature: recall, precision and f1
+cm$byClass[,5:7]
+
+```
+
+### Informative
+
+```{r tagger-accuracy-Informative}
+
+# Number of files and tags included in this part of the evaluation (intended to match the ITTC data)
+TaggerEval %>% 
+  filter(Register == "news" | FileID %in% c("BNCBEFor32", "BNCBEBl8")) %>% 
+  group_by(FileID) %>% 
+  count() 
+
+# Number of UNCLEAR evaluation tags
+TaggerEval %>% 
+  filter(Register == "news" | FileID %in% c("BNCBEFor32", "BNCBEBl8")) %>% 
+  filter(TagGold == "UNCLEAR") %>% 
+  nrow() # 8
+
+data <- TaggerEval %>% 
+  filter(Register == "news" | FileID %in% c("BNCBEFor32", "BNCBEBl8")) %>% 
+  filter(TagGold != "UNCLEAR") %>% 
+  filter(Tag %in% c(str_extract(Tag, "[A-Z0-9]+"))) %>% # Remove all punctuation tags which are uninteresting here.
+  filter(Tag != "SYM" & Tag != "``") %>% 
+  droplevels(.) %>% 
+  mutate(Tag = factor(Tag, levels = union(levels(Tag), levels(TagGold)))) %>% # Ensure that the factor levels are the same for the next caret operation
+  mutate(TagGold = factor(TagGold, levels = union(levels(Tag), levels(TagGold))))
+
+# Spot gold tag corrections that are not actually errors (should return zero rows if all is well)
+data[data$Tag==data$TagGold & data$Evaluation == FALSE,] %>% as.data.frame()
+
+# Total number of false tags
+summary(data$Evaluation)
+
+cm <- caret::confusionMatrix(data$Tag, data$TagGold) # Create confusion matrix
+cm$overall 
+
+# Accuracy metrics per feature: recall, precision and f1
+cm$byClass[,5:7]
+
+```
+
+## Estimating overall MFTE accuracy for corpora used in thesis
+
+```{r overall-accuracy}
+
+# Number of tags evaluated per file
+TaggerEval %>% group_by(FileID) %>% count(.) %>% arrange(desc(n)) %>% as.data.frame()
+
+# Number of UNCLEAR tokens
+TaggerEval %>% filter(TagGold == "UNCLEAR") %>% nrow()
+
+# Tagger evaluation
+summary(TaggerEval$Evaluation)
+
+data <- TaggerEval %>% 
+  filter(TagGold != "UNCLEAR") %>% 
+  filter(Tag %in% c(str_extract(Tag, "[A-Z0-9]+"))) %>% # Remove all punctuation tags which are uninteresting here.
+  filter(Tag != "SYM" & Tag != "``") %>% 
+  filter(TagGold != "SYM" & TagGold != "``") %>% 
+  droplevels(.) %>% 
+  mutate(Tag = factor(Tag, levels = union(levels(Tag), levels(TagGold)))) %>% # Ensure that the factor levels are the same for the next caret operation
+  mutate(TagGold = factor(TagGold, levels = union(levels(Tag), levels(TagGold))))
+
+cm <- caret::confusionMatrix(data$Tag, data$TagGold) # Create confusion matrix
+cm$overall 
+
+# Quick summary of results: recall, precision and f1
+cm$byClass[,5:7]
+
+# Generate a better formatted results table for export: recall, precision and f1
+confusion_matrix <- cm$table
+total <- sum(confusion_matrix)
+number_of_classes <- nrow(confusion_matrix)
+correct <- diag(confusion_matrix)
+# sum all columns
+total_actual_class <- apply(confusion_matrix, 2, sum)
+# sum all rows
+total_pred_class <- apply(confusion_matrix, 1, sum)
+# Precision = TP / all that were predicted as positive
+precision <- correct / total_pred_class
+# Recall = TP / all that were actually positive
+recall <- correct / total_actual_class
+# F1
+f1 <- (2 * precision * recall) / (precision + recall)
+# create data frame to output results
+results <- data.frame(precision, recall, f1, total_actual_class)
+results
+
+```
+
+````{r plot-accuracy, fig.height = 20}
+
+resultslong <- results %>% 
+  drop_na() %>% 
+  mutate(tag = row.names(.)) %>% 
+  filter(tag != "NULL" & tag != "SYM" & tag != "OCR" & tag != "FW" & tag != "USEDTO") %>% 
+  rename(n = total_actual_class) %>% 
+  pivot_longer(cols = c("precision", "recall", "f1"), names_to = "metric", values_to = "value") %>% 
+  mutate(metric = factor(metric, levels = c("precision", "recall", "f1")))
+
+summary(resultslong$n)
+
+ggplot(resultslong, aes(y = reorder(tag, desc(tag)), x = value, group = metric, colour = n)) +
+  geom_point(size = 2) +
+  ylab("") +
+  xlab("") +
+  facet_wrap(~ metric) +
+  scale_color_paletteer_c("harrypotter::harrypotter", trans = "log", breaks = c(1,10, 100, 1000), labels = c(1,10, 100, 1000), name = "# tokens \nmanually\nevaluated") +
+  theme_bw() +
+  theme(panel.grid.major.y = element_line(colour = "darkgrey")) +
+  theme(legend.position = "right")
+
+#ggsave(here("Plots", "TaggerAccuracyPlot.svg"), width = 7, height = 12)
+
+```
+
+## Exploring tagger errors
+
+```{r errors}
+
+# Adding an error tag with the incorrectly assigned tag and underscore and then the correct "gold" label
+errors <- TaggerEval %>% 
+  filter(Evaluation=="FALSE") %>% 
+  filter(TagGold != "UNCLEAR") %>% 
+  mutate(Error = paste(Tag, TagGold, sep = " -> ")) 
+
+# Total number of errors
+nrow(errors) # 817
+
+FreqErrors <- errors %>% 
+  #filter(Corpus %in% c("TEC-Fr", "TEC-Ger", "TEC-Sp")) %>% 
+  count(Error) %>% 
+  arrange(desc(n))
+
+# Number of error types that only occur once
+FreqErrors %>% 
+  filter(n == 1) %>% 
+  nrow()
+
+# Total number of error types
+nrow(FreqErrors)
+
+FreqErrors %>% 
+  #filter(n > 10) %>% 
+  print.data.frame() 
+
+errors %>% 
+  filter(Error == "THSC -> THRC") %>% 
+  select(FileID, Output, Tag, TagGold) %>% 
+  print(n=30)
+
+errors %>% 
+  filter(Error == "NN -> JJAT") %>% 
+  select(-Output, -Corpus, -Tag, -TagGold) %>% 
+  filter(grepl(x = Token, pattern = "[A-Z]+.")) %>% 
+  print.data.frame() 
+
+errors %>% 
+  filter(Error %in% c("NN -> VB", "VB -> NN", "NN -> VPRT", "VPRT -> NN")) %>% 
+  count(Token) %>% 
+  arrange(desc(n)) %>% 
+  print.data.frame() 
+
+errors %>% 
+  filter(Error == "ACT -> NULL") %>% 
+  count(Token) %>% 
+  arrange(desc(n)) %>% 
+  print.data.frame() 
+
+```
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+

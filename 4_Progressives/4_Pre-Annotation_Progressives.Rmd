@@ -1,0 +1,309 @@
+---
+title: "Semi-automating concordance annotation process for progressives"
+author: "Elen Le Foll"
+date: "05/05/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Aim
+
+Partial automation of some of the concordance annotation workload for progressives.
+
+## Progressives in the BNC Spoken
+
+```{r BNCSpoken}
+BNCprog <- read.csv("/Progressives/BNCspoken_prog_conc.csv", sep = ",", header = TRUE) 
+str(BNCprog)
+names(BNCprog)[4] <- "Concordance2"
+
+## Contractions ##
+
+BNCprog$Concordance2[3] # "'m not going"
+isTRUE(grepl("'", BNCprog$Concordance2)[3]) # TRUE, there is a contraction
+BNCprog$Concordance2[1] # "be inviting"
+isTRUE(grepl("'", BNCprog$Concordance2)[1]) # FALSE, there isn't a contraction
+
+BNCprog$contraction <- ""
+
+for (i in 1:nrow(BNCprog)){
+  if(grepl("'", BNCprog$Concordance2[i])){
+    BNCprog$contraction[i] = "c"
+  }
+}
+
+BNCprog$contraction
+
+## Negation ##
+
+BNCprog$Concordance2[85] # "weren't doing"
+BNCprog$Concordance2[3] # "'m not going"
+
+BNCprog$negation <- ""
+
+for (i in 1:nrow(BNCprog)){
+  if(grepl("n't|not", BNCprog$Concordance2[i])){
+    BNCprog$negation[i] = "n"
+  }
+}
+
+BNCprog$negation
+
+## Lemma ##
+
+library(stringr)
+
+str_extract_all(BNCprog$Concordance2[14], "[:alpha:]*ing")
+
+BNCprog$ing <- ""
+
+for (i in 1:nrow(BNCprog)){
+  BNCprog$ing[i] = str_extract(BNCprog$Concordance2[i], "[:alpha:]*ing")
+}
+
+BNCprog$lemma <- ""
+
+library(textstem)
+BNCprog$lemma = lemmatize_words(BNCprog$ing)
+
+head(BNCprog)
+
+# Re-order columns and get rid of -ing form #
+
+colnames(BNCprog)
+BNCprog <- BNCprog[c(1,2,3,4,5,9,6,7)]
+
+str(BNCprog)
+
+# Tense #
+
+BNCprog$tense <- "present" # This is the default value
+
+for (i in 1:nrow(BNCprog)){
+  if(grepl("\\bwas\\b|\\bwere\\b|\\bwasn't\\b|\\bweren't\\b", BNCprog$Concordance2[i])) {
+    BNCprog$tense[i] = "past"
+  }
+  if(grepl("\\bbeen\\b", BNCprog$Concordance2[i])) {
+    BNCprog$tense[i] = "perfect"
+  }
+  if(grepl("\\bbe\\b", BNCprog$Concordance2[i])) {
+    BNCprog$tense[i] = "modal/infinitive"
+  }
+}
+
+BNCprog[,c("Concordance2","tense")]
+
+## Save file ##
+
+write.csv(BNCprog, file = "/Progressives/BNCspoken_prog_conc_pRepRocessed.csv")
+
+#View(BNCprog) # Warning: big file!
+```
+
+## Progressives in Spoken Textbook English
+
+This is really the same procedure, just with slightly different variables.
+
+```{r SpokenTxB}
+
+# To do before data export from LibreOffice to R to .csv tab separated:
+# Replace all '' with '
+# Remove all trailing " at the end of strings
+TxB_prog <- read.csv("/Progressives/TxB_narrative_prog_conc.csv", sep = "\t", header = TRUE) # WARNING: comma seperation is terribly idea for text data!! 
+str(TxB_prog)
+names(TxB_prog)[5] <- "Concordance2"
+
+## Contractions ##
+
+TxB_prog$Concordance2[3] # 
+isTRUE(grepl("'", TxB_prog$Concordance2)[3]) # TRUE, there is a contraction
+TxB_prog$Concordance2[4] # 
+isTRUE(grepl("'", TxB_prog$Concordance2)[4]) # FALSE, there isn't a contraction
+
+TxB_prog$contraction <- ""
+
+for (i in 1:nrow(TxB_prog)){
+  if(grepl("'", TxB_prog$Concordance2[i])){
+    TxB_prog$contraction[i] = "c"
+  }
+}
+
+TxB_prog$contraction
+
+## Negation ##
+
+TxB_prog$negation <- ""
+
+for (i in 1:nrow(TxB_prog)){
+  if(grepl("n't|not", TxB_prog$Concordance2[i])){
+    TxB_prog$negation[i] = "n"
+  }
+}
+
+TxB_prog$negation
+
+
+## Lemma ##
+
+library(stringr)
+
+TxB_prog$ing <- ""
+
+for (i in 1:nrow(TxB_prog)){
+  TxB_prog$ing[i] = str_extract(TxB_prog$Concordance2[i], "[:alpha:]*ing")
+}
+
+TxB_prog$lemma <- ""
+
+library(textstem)
+TxB_prog$lemma = lemmatize_words(TxB_prog$ing)
+
+head(TxB_prog)
+
+# Re-order columns and get rid of -ing form #
+
+colnames(TxB_prog)
+TxB_prog <- TxB_prog[c(1,2,3,4,5,6,10,7,8)]
+
+str(TxB_prog)
+
+# Tense #
+
+TxB_prog$tense <- "present" # This is going to be the default value
+
+for (i in 1:nrow(TxB_prog)){
+  if(grepl("\\bwas\\b|\\bwere\\b|\\bwasn't\\b|\\bweren't\\b", TxB_prog$Concordance2[i])) {
+    TxB_prog$tense[i] = "past"
+  }
+  if(grepl("\\bbeen\\b", TxB_prog$Concordance2[i])) {
+    TxB_prog$tense[i] = "perfect"
+  }
+  if(grepl("\\bbe\\b", TxB_prog$Concordance2[i])) {
+    TxB_prog$tense[i] = "modal/infinitive"
+  }
+}
+
+TxB_prog[,c("Concordance2","tense")]
+
+## Save file ##
+
+write.table(TxB_prog, file = "/Progressives/NarrativeTxB_prog_conc_pRepRocessed.csv", sep = "\t", row.names = FALSE)
+
+View(TxB_prog)
+
+```
+
+## Progressives in Youth Fiction
+
+This is the same procedure, just with slightly different variables.
+
+```{r YouthFiction}
+YFprog <- read.csv("/Progressives/YouthFiction_prog_conc.csv", sep = "\t", header = TRUE) # WARNING: comma seperation is terribly idea for text data!!
+YFprog <- read.csv("/Progressives/YouthFiction_prog_conc_anno_extra.csv", sep = "\t", header = TRUE)
+str(YFprog)
+names(YFprog)[3] <- "Concordance2"
+
+## Contractions ##
+
+YFprog$contraction <- ""
+for (i in 1:nrow(YFprog)){
+  if(grepl("'", YFprog$Concordance2[i])){
+    YFprog$contraction[i] = "c"
+  }
+}
+YFprog$contraction
+
+## Negation ##
+
+YFprog$negation <- ""
+for (i in 1:nrow(YFprog)){
+  if(grepl("n't|not", YFprog$Concordance2[i])){
+    YFprog$negation[i] = "n"
+  }
+}
+YFprog$negation
+
+## Lemma ##
+
+library(stringr)
+str_extract_all(YFprog$Concordance2[14], "[:alpha:]*ing")
+
+YFprog$ing <- ""
+for (i in 1:nrow(YFprog)){
+  YFprog$ing[i] = str_extract(YFprog$Concordance2[i], "[:alpha:]*ing")
+}
+
+YFprog$lemma <- ""
+
+library(textstem)
+YFprog$lemma = lemmatize_words(YFprog$ing)
+
+head(YFprog)
+
+# Re-order columns and get rid of -ing form #
+
+colnames(YFprog)
+YFprog <- YFprog[c(1,2,3,4,8,5,6)]
+
+str(YFprog)
+
+# Tense #
+
+YFprog$tense <- "present" # This is the default value
+
+for (i in 1:nrow(YFprog)){
+  if(grepl("\\bwas\\b|\\bwere\\b|\\bwasn't\\b|\\bweren't\\b", YFprog$Concordance2[i])) {
+    YFprog$tense[i] = "past"
+  }
+  if(grepl("\\bbeen\\b", YFprog$Concordance2[i])) {
+    YFprog$tense[i] = "perfect"
+  }
+  if(grepl("\\bbe\\b", YFprog$Concordance2[i])) {
+    YFprog$tense[i] = "modal/infinitive"
+  }
+}
+
+YFprog[,c("Concordance2","tense")]
+
+## Save file ##
+
+write.csv(YFprog, file = "/Progressives/YouthFiction_prog_conc_pRepRocessed.csv")
+
+write.csv(YFprog, file = "/Progressives/YouthFiction_prog_conc_extra_pRepRocessed.csv")
+
+```
+
+## This code vastly overestimates the number of questions so I've decided it's not going to save any time.
+
+```{r Questions, eval=FALSE}
+
+## Question ## Vastly overestimates number of questions! DO NOT RUN
+
+TxB_Spoken_prog$Concordance3[109] # includes question mark
+isTRUE(grepl("\\?", TxB_Spoken_prog$Concordance3)[109]==TRUE) # TRUE
+isTRUE(grepl("\\?", TxB_Spoken_prog$Concordance3)[2]==TRUE) # FALSE
+
+TxB_Spoken_prog$question <- FALSE
+
+for (i in 1:nrow(TxB_Spoken_prog)){
+  if(grepl("\\?", TxB_Spoken_prog$Concordance3[i])) {
+    TxB_Spoken_prog$question[i] = TRUE
+  }
+  if(grepl("\\?", TxB_Spoken_prog$Concordance2[i])) {
+    TxB_Spoken_prog$question[i] = TRUE
+  }
+}
+
+TxB_Spoken_prog$question
+sum(TxB_Spoken_prog$question==TRUE) # Vastly overestimates number of questions! Probably useless.
+
+```
+
+
+```{r sessionInfo}
+sessionInfo()
+```
+

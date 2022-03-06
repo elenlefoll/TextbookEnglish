@@ -1,0 +1,84 @@
+---
+title: "Textbook English: A Non-Exhaustive Literature Review"
+author: "Elen Le Foll"
+output: html_document
+---
+
+<style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+
+This table provides a tabular overview of the studies surveyed as part of a literature review on textbook research examining describing and/or evaluating the language of English textbooks designed for English L2 learners in various instructional settings.
+
+It presents the results of this non-exhaustive survey of Textbook English studies published over the past four decades, summarising some of the key information on each study, including its main language focus, methodological approach, information on the textbooks investigated, and, if applicable, on any reference corpora used. Empty cells represent fields for which no information was published.
+
+Table is intended to be a dynamic resource that will grow over time. If you would like to contribute any studies to the table, please either fork [the corresponding CSV file](https://github.com/elenlefoll/TextbookEnglish/blob/main/LitReviewTable.csv) or send me an [e-mail](mailto:elefoll@uos.de?subject=[LitReviewTable]%20Suggestions) with the corresponding details of the studies you think should be added to the list.
+
+**Last updated on `r format(Sys.time(), '%d %B %Y')`.**
+
+Note that this is a fully searchable and filterable table. You can adjust the widths of the individual columns to best fit your screen size. The data can also be downloaded as a comma-separated file from [the project GitHub repository](https://github.com/elenlefoll/TextbookEnglish).
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = TRUE)
+
+library(reactable) 
+library(dplyr)
+
+options(scipen=999)
+```
+
+
+```{r import, include=FALSE}
+
+table <- read.csv("/Users/Elen/Documents/PhD/Writing_Process/2_Lit_Review_Chapter/Literature review_table_2.2.csv")
+
+#View(table)
+```
+
+
+```{r add url, include = FALSE}
+
+# Adding working links
+html.table <- table %>% 
+  mutate(Reference = stringr::str_replace(Full.bibiographic.reference, "doi:|DOI:", "https://doi.org/")) %>% 
+  mutate(Reference = stringr::str_replace_all(
+    string = Reference, 
+    pattern = "(((f|ht)tp(s)?://)[-a-zA-Z?-??-?()0-9@:%_+.~#?&;//=]+)",
+    replacement = "<a href='\\1' target=\"_blank\" rel=\"noopener noreferrer\" > \\1</a>")) %>% 
+  select(-Full.bibiographic.reference) %>% 
+  rename(Method = Methodology) %>% 
+  rename(Ref.corpus = Reference.corpus)
+  
+#View(html.table)
+
+```
+
+
+```{r display, echo=FALSE}
+
+reactable(html.table, 
+          filterable = TRUE, searchable = TRUE, bordered = FALSE, 
+          striped = TRUE, highlight = TRUE, resizable = TRUE,
+          defaultPageSize = 150, showPageSizeOptions = TRUE, 
+          showSortable = TRUE, outlined = TRUE,
+          pageSizeOptions = c(25, 50, 75, 100, 200), 
+          defaultSortOrder = "desc",
+            columns = list(
+            Year = colDef(defaultSortOrder = "asc", minWidth = 70),
+            Title = colDef(minWidth = 200),
+            Setting = colDef(minWidth = 50),
+            TxB.level = colDef(minWidth = 100),
+            Nb.TxBs = colDef(minWidth = 60),
+            TxB.pub.date = colDef(minWidth = 50), 
+            Method = colDef(minWidth = 150),
+            Ref.corpus = colDef(minWidth = 150),
+            Reference = colDef(html = TRUE, minWidth = 400)
+            )
+) 
+
+```

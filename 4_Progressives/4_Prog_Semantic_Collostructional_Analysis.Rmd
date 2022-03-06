@@ -1,0 +1,854 @@
+---
+title: "Progressives semantic and collostructional analysis"
+author: "Elen Le Foll"
+date: "01/06/2019"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+
+---
+
+## Set-up
+
+```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(FactoMineR)
+library(here)
+library(ggplot2)
+library(ggrepel)
+library(gridExtra)
+library(lattice)
+library(lsr)
+library(RColorBrewer)
+library(tidyr)
+library(vcd)
+
+```
+
+## Data Preparation
+
+```{r preparation_BNC_collanalysis}
+
+annotation_file <- read.csv(here("BNCspoken_prog_conc_anno_collanalysis.csv"), sep = "\t", header = TRUE, na.strings="", stringsAsFactors = TRUE)
+glimpse(annotation_file)
+
+# Select only annotated concordance lines
+annotated <- annotation_file[1:4641,]
+
+# Extract only progressives
+BNCprog <- annotated[annotated$Tense != "NOT progressive" & annotated$Tense != "GOING TO" & annotated$Tense != "catenative", ]
+
+BNCprog$Tense <- droplevels(BNCprog)$Tense # Drop unused levels
+
+# Number of progressives extracted
+nrow(BNCprog)
+
+# Ratio of genuine progressives in progressive query
+nrow(BNCprog)/4641
+
+```
+
+# Covarying Collexeme Analysis (CovCA) Verb + Variety
+
+```{r CovCA}
+
+# File to be used for Covayring Collexeme Analysis #
+prog_lemmas <- read.table(here("prog_lemmas.csv"), sep = "\t", stringsAsFactors = TRUE)
+
+say <- prog_lemmas[prog_lemmas$Lemma=="say",]
+summary(say$Corpus)
+
+#source("/Users/Elen/Documents/PhD/Statistics_R/Gries_Collexemes/coll.analysis_mpfr.r")
+#coll.analysis()
+
+```
+
+## Annotation process
+
+```{r Semantic_domains-prep}
+## Preparing list of long lemmas ##
+
+SpokenProg_lemmas <- read.table(file = here("prog_lemmas.csv"), sep = "\t", stringsAsFactors = TRUE)
+FictionProg_lemmas <- read.table(file = here("FictionProg_lemmas.csv"), sep = "\t", stringsAsFactors = TRUE)
+
+prog_lemmas <- rbind(SpokenProg_lemmas, FictionProg_lemmas)
+#write.table(prog_lemmas, file = here("CovCA.csv", sep = "\t"))
+prog_lemmas <- read.table(file = here("CovCA.csv"), sep = "\t", stringsAsFactors = TRUE)
+
+## Coding for semantic domains ##
+prog_semantic_domains <- as.data.frame(sort(unique(prog_lemmas$Lemma)))
+names(prog_semantic_domains)[1] <- "lemma"
+head(prog_semantic_domains)
+
+semantic_Biber <- read.csv(file = here("semantic_domains_Biber2006_p246.csv"), sep = "\t", stringsAsFactors = TRUE) # This is the table I made using the verbs listed in Biber (2006: 246-247)
+semantic_Edwards <- read.csv(here("semantic_domains_Ewards.csv"), sep = "\t", stringsAsFactors = TRUE)
+names(semantic_Biber)[1] <- "lemma"
+names(semantic_Biber)[2] <- "semantic_domain_Biber"
+head(semantic_Biber)
+
+names(semantic_Edwards)[1] <- "lemma"
+names(semantic_Edwards)[2] <- "semantic_domain_Edwards"
+head(semantic_Edwards)
+
+semantic_domains <- merge(semantic_Biber, semantic_Edwards, by = "lemma", all = TRUE)
+head(semantic_domains)
+
+semantic_domains$agreement <- TRUE
+semantic_domains$agreement <- ifelse (
+  (semantic_domains$semantic_domain_Biber == semantic_domains$semantic_domain_Edwards
+), TRUE, FALSE)
+
+#write.table(semantic_domains, file = here("semantic_domains1.csv"), sep = "\t")
+
+# This table has been manually edited so that all disagreements between the two lists have been removed
+semantic_domains <- read.csv(here("4_SemanticDomains_VerbLemmas1.csv"), sep = "\t", header = T, stringsAsFactors = TRUE) 
+                             
+names(semantic_domains)[1] <- "Lemma"
+names(semantic_domains)[2] <- "Semantic domain"
+
+prog_semantics <- merge(prog_lemmas, semantic_domains, by = "Lemma")
+head(prog_semantics, 30); tail(prog_semantics, 30)
+
+#write.table(prog_semantics, file = here("4_prog_semantics_full.csv")) # Saved on 12.08.2019
+```
+
+## Semantic domain analysis
+
+```{r semantic-domains-analysis}
+prog_semantics <- read.table(file = here("4_prog_semantics_full.csv"), stringsAsFactors = TRUE)
+
+## Remove unclear cases which include several light verbs (TAKE, HAVE) and other highly polysemous verbs - WARNING: This means I no longer have the same amount of progressives in from each corpora! ##
+prog_semantics <- prog_semantics[prog_semantics$Semantic.domain != "unclear_other", ]
+prog_semantics$Semantic.domain <- droplevels(prog_semantics)$Semantic.domain # Drop unsused level
+summary(prog_semantics$Semantic.domain)
+
+## Plotting the semantic categories ##
+semantics_corpus <- as.data.frame(prop.table(table(prog_semantics[,2:3]), 1)*100); semantics_corpus # As percentages for each corpora under study
+
+colors <- RColorBrewer::brewer.pal(9, "OrRd")
+
+levels(semantics_corpus$Corpus)[1] <- "Spoken BNC2014"
+levels(semantics_corpus$Corpus)[4] <- "Youth Fiction"
+
+#tiff(here("semantic-domains.tiff"), height = 15, width = 23, units="cm", compression = "lzw", res = 300)
+ggplot(semantics_corpus, aes(x = Semantic.domain, y = Freq, fill = Corpus)) + geom_bar(stat = 'identity', position = 'dodge') + scale_fill_manual(values = c("#BD241E", "#EA7E1E", "#A18A33", "#267226")) + ylab("% of progressives in each corpus") + xlab("Semantic domains") + labs(fill = "Corpora") + scale_x_discrete(labels= c("Activity", "Aspectual", "Communication", "Existence", "Causation", "Mental/state", "Occurrence")) + 
+  theme(legend.position = c(0.8, 0.8), legend.background = element_rect(fill="gray90", size=.5, linetype="solid"), 
+        text = element_text(size = 16), 
+        panel.background = element_rect(fill = 'white', colour = 'darkgrey'), panel.grid.major = element_line(color = 'grey'), panel.grid.minor = element_line(color = 'white'))
+dev.off()
+```
+
+## Covarying Collexeme Analysis (CovCA) Semantic domain + Variety
+
+```{r semantic-domains-CovCA}
+## Preparing the tables for coll.analyses ##
+Spoken_prog_semantics <- prog_semantics[prog_semantics$Corpus %in% c("Spoken BNC 2014", "Textbook Conversation"),c(3:2)]
+summary(Spoken_prog_semantics)
+#write.table(Spoken_prog_semantics, file = here("Spoken_prog_semantics.csv"), sep = "\t", row.names = F) # File for CoVCA 
+
+Fiction_prog_semantics <- prog_semantics[prog_semantics$Corpus %in% c("Youth Fiction Sampled", "Textbook Fiction"),c(2:3)]
+summary(Fiction_prog_semantics)
+#write.table(Fiction_prog_semantics, file = here("Fiction_prog_semantics.csv"), sep = "\t", row.names = F) # File for CoVCA 
+
+# Coll.analysis #
+#source("/Users/Elen/Documents/PhD/Statistics_R/Gries_Collexemes/coll.analysis_mpfr.r")
+#coll.analysis()
+
+```
+
+## Communication verbs analysis
+```{r DCA.communication.verbs}
+## Communication verbs
+
+tibble::as_tibble(BNCprog[BNCprog$Lemma=="say" & BNCprog$Time.reference=="past",c(2,4:6)])
+
+prog <- readRDS(file = here("prog.rds"))
+say_tell <- prog[prog$Lemma=="say" | prog$Lemma=="tell",]
+
+#tiff(here("tell_say_tense.tiff"), height = 14, width = 16, units="cm", compression = "lzw", res = 300)
+par(cex = 1.7, cex.main = 1)
+vcd::mosaic(Tense ~ Corpus, say_tell, rot_labels = c(0, 45, 0, 90), cex=2.5, zero_size = 0, labeling_args = list(rep = TRUE), main = "Tense distribution of SAY and TELL progressives") # Best so far
+dev.off()
+
+```
+
+# Correspondence Analysis
+
+## Preparing data for CA
+
+```{r prep-data}
+
+prog_semantics <- read.table(file = here("4_prog_semantics_full.csv"), stringsAsFactors = TRUE)
+glimpse(prog_semantics)
+head(prog_semantics)
+## Remove unclear cases which include several light verbs (TAKE, HAVE) and other highly polysemous verbs - WARNING: This means I no longer have the same amount of progressives in from each corpora! ##
+prog_semantics <- prog_semantics[prog_semantics$Semantic.domain != "unclear_other", ]
+prog_semantics$Semantic.domain <- droplevels(prog_semantics)$Semantic.domain # Drop unused level
+summary(prog_semantics$Semantic.domain)
+## Remove lemmas ##
+CA_data <- prog_semantics[,2:3]
+levels(CA_data$Semantic.domain)
+levels(CA_data$Semantic.domain) <- c("Activity", "Aspectual", "Communication", "Existence", "Causation", "Mental/state", "Occurrence")
+CA_data <- table(CA_data)
+
+```
+
+## Performing CA
+
+```{r CA}
+
+# Following Desagulier's (2017) method
+ca.object <- CA(CA_data)
+
+#library("factoextra")
+#fviz_ca_biplot(ca.object) # Do not see the immediate advantage of this additional package... The output appears to be exactly the same as above!
+
+V <- sqrt(as.vector(chisq.test(CA_data)$statistic)/(sum(CA_data)*((min(ncol(CA_data), nrow(CA_data)))-1))); V # Cramer's V
+
+chisq <- chisq.test(CA_data)
+inertia <- as.vector(chisq$statistic)/sum(chisq$observed); inertia
+
+## CA with supplementary variable ##
+
+CA_data_sup <- t(CA_data)
+x <- cbind(CA_data_sup, apply(CA_data_sup[,1:2], 1, sum))
+colnames(x)[5] <- "Conversation"
+
+x <- cbind(x, apply(CA_data_sup[,3:4], 1, sum))
+colnames(x)[6] <- "Fiction"
+
+x <- cbind(x, apply(CA_data_sup[,c(2:3)], 1, sum))
+colnames(x)[7] <- "Textbook English"
+
+x <- cbind(x, apply(CA_data_sup[,c(1,4)], 1, sum))
+colnames(x)[8] <- "ENL Reference"
+
+CA_data_sup = x ; CA_data_sup
+ca.object.sup <- CA(CA_data_sup, col.sup = 5:8); ca.object.sup
+```
+
+# Distinctive Collexeme Analysis (DCA)
+
+## Conversation DCAs
+
+```{r DCA-Conv}
+
+prog <- readRDS(file = here("prog_collanalysis.rds")) # Full, annotated prog concordance lines from Textbook Conversation + BNC Spoken sample
+
+glimpse(prog)
+summary(prog$Corpus)
+
+## Prepare prog verb counts ##
+prog_lemmas <- prog[,c("Lemma", "Corpus")]
+prog_lemmas$Lemma <- stringr::word(prog_lemmas$Lemma,1) # Add new variable for lemma without any particles. For now, I will be ignoring phrasal verbs and only looking at the verb lemmas (it's too hard to extract phrasal verbs in FVPs!)
+head(prog_lemmas);tail(prog_lemmas) # Check
+
+levels(prog_lemmas$Corpus) <- c("SpokenBNC_Prog", "TxBSpoken_Prog") # Rename factor levels 
+prog_lemmas <- prog_lemmas[,c(2,1)]
+names(prog_lemmas)[1] <- "corpus"
+names(prog_lemmas)[2] <- "lemma"
+head(prog_lemmas);tail(prog_lemmas)
+summary(factor(prog_lemmas$lemma))
+
+## Creating lemma list used to filter the FVPs for the comparative DCAs ##
+lemmas_with_phrasal_verbs <- sort(unique(prog$Lemma)); lemmas_with_phrasal_verbs # For now, I will be ignoring phrasal verbs and only looking at the verb lemmas
+lemmas_short <- sort(unique(stringr::word(lemmas_with_phrasal_verbs,1))); lemmas_short # This is the lemma list which will be used to extract the FVPs from the full corpora processed with Spacy.
+#saveRDS(lemmas_short, file = here("lemmas_short.rds")) # Last saved on 10 October 2019
+
+## Prepare FVP counts in "Extract_verb_lemmas_spacy.R" script with the list created above. This script leads to the creation of the verb_counts.rds file"
+
+## Prepare non-prog verb counts ##
+verb_counts <- readRDS(file = here("FVP_counts_new.rds"))
+head(verb_counts)
+#verb_counts <- verb_counts[,c(1,2,4)] # Get rid of total BNC verb count because I'm now only interested in the sample corresponding to the number of FVPs found in Textbook Conversation.
+
+## Adjusting sample ratio with adjusted FVP count for Textbook Conversation (+4 FVPs) ##
+verb_counts$BNCSpoken_count_sample <- verb_counts$BNCSpoken_count*(57007/1526439)
+head(verb_counts, 20)
+
+## Subtract progressives from total FVP_counts 
+prog$Lemma_short <- stringr::word(prog$Lemma,1)
+prog_TxB <- as.data.frame(table(prog[prog$Corpus=="Textbook Conversation", "Lemma_short"]))
+names(prog_TxB)[1] <- "lemma"
+names(prog_TxB)[2] <- "TxB_prog_count"
+head(prog_TxB)
+prog_BNC <- as.data.frame(table(prog[prog$Corpus=="Spoken BNC 2014 sample", "Lemma_short"]))
+names(prog_BNC)[1] <- "lemma"
+names(prog_BNC)[2] <- "BNC_prog_count"
+head(prog_BNC)
+
+counttest <- merge(verb_counts, prog_TxB, by = 'lemma', all = TRUE)
+counts <- merge(counttest, prog_BNC, by = 'lemma', all = TRUE)
+counts[is.na(counts)] <- 0 # Replace all NAs with 0
+
+counts$TxBSpoken_non_prog = counts$TxBSpoken_count - counts$TxB_prog_count
+counts$BNC_non_prog = counts$BNCSpoken_count_sample - counts$BNC_prog_count
+
+head(counts); tail(counts) # Problem: lots of negative non-prog values!!
+
+## What shall I do with all these decimal values from the BNC sample??
+# a) Round up and down? Probably less than ideal!
+#verb_counts$BNCSpoken_count_sample <- round(verb_counts$BNCSpoken_count_sample, 0)
+# b) Peter's suggestion was to sample which very low-frequency verbs to remove but this is no longer necessary.
+# c) It turns out that decimal points are not a problem for the coll.analyis script. Solution: just keep them in even if, conceptually, it doesn't make a lot of sense.
+
+verb_counts[verb_counts$TxBSpoken_count==0 & verb_counts$BNCSpoken_count_sample==0,] # These are a few problematic lemmas for which there are progressive counts (because otherwise these lemmas would not have been in the list) but no FVP counts in either Textbook Conversation or the BNC sample. See below more...
+
+#verb_counts <- verb_counts[verb_counts$TxBSpoken_count!=0 & verb_counts$BNCSpoken_count_sample!=0,] # Drop lemmas with zero in both corpora?
+
+#verb_counts <- verb_counts[verb_counts$TxBSpoken_count!=0,] 
+#verb_counts <- verb_counts[verb_counts$BNCSpoken_count_sample!=0,] # Drop lemmas with a zero frequency in either corpus?
+
+counts[counts$lemma=="say",]
+
+## TxB Conversation problem ##
+
+summary(counts$TxBSpoken_non_prog) # We have vegative values!!
+counts[counts$TxBSpoken_non_prog<0,c("lemma", "TxBSpoken_count", "TxB_prog_count", "TxBSpoken_non_prog")] # Four verbs which were, unsurprisingly, not identified as such by the Spacy model
+counts$TxBSpoken_non_prog[counts$TxBSpoken_non_prog<0] <- 0 # We will therefore set the non-prog count to 0 for these four lemmas. This adds four FVPs to the total count for the contingency tables.
+
+## Alternative to the above ##
+#counts <- subset(counts, !(TxBSpoken_non_prog<0)) # A more logical alternative, given the solution used for the Spoken BNC 2014? But it actually slightly increases the gap in total list-FVPs.
+
+summary(counts$TxBSpoken_non_prog) # Check operation
+
+## Bigger problem with reference corpus! ##
+# Sampling (of the Spoken BNC 2014) and tagging errors sometimes lead to negative values, therefore I will have to do something about this. Maybe change all negative values to zero?
+summary(counts$BNC_non_prog)
+
+sum(counts$BNC_prog_count) + sum(counts$BNC_non_prog) # and 57006.63 FVPs in Spoken BNC
+
+negatives <- counts[counts$BNC_non_prog<0,c("lemma", "BNCSpoken_count", "BNC_non_prog", "BNC_prog_count", "TxBSpoken_non_prog")] #
+negatives
+nrow(negatives) # 131 lemmas with negative BNC_non_prog counts
+sum(negatives$BNC_non_prog) # Equivalent to 96.64 FVPs
+
+## Here is a way to think about this: no good! ##
+lostBNC <- if_else(counts$BNC_non_prog<0, counts$BNC_prog_count, 0) 
+sum(lostBNC) # 177 # This is not making things any better, on the contrary!
+
+## Let's think about removing low-frequency lemmas which are only sampling artefacts and only keep the ones which are due to annotation errors:
+counts[counts$lemma=="party",] # This is likely to be a tagging error. KEEP.
+counts[counts$lemma=="action",] # This is most likely a sampling artefact and I am not so interested in it because the CL value will not be insignificant either way.
+counts[counts$lemma=="shine",]
+counts[counts$lemma=="sweat",]
+
+keep <- counts[counts$BNC_non_prog<0 & counts$BNC_prog_count>1,]; keep # These are potentially important ones I'd like to keep like JOKE and KID.
+sum(keep$BNC_prog_count) # This adds 62 FVPs to the total.
+factor(keep$lemma) # For 16 unique lemmas
+
+dispose <- counts[counts$BNC_non_prog<0 & counts$BNC_prog_count<=1,] # These are the low-frequency ones we can get rid of.
+sum(dispose$BNC_prog_count) # This removes 115 FVPs from the total.
+factor(dispose$lemma) # For, as we would expect, 115 unique (low-frequency) lemmas.
+# Question: Should I be getting rid of these if they happen to be more frequent in Textbook Conversation??
+head(dispose[order(dispose$TxBSpoken_count, decreasing = T),], 12) # These lemmas should probably not be deleted because they are potentially relevant for Textbook Conversation!
+
+dispose2 <- counts[counts$BNC_non_prog<0 & counts$BNC_prog_count<=1 & counts$TxBSpoken_count<1,]
+factor(dispose2$lemma) # That would mean that I only delete 97 verb lemmas & therefore 97 FVPs from the BNC total count
+
+nrow(counts)
+counts <- subset(counts, !(BNC_non_prog<0 & BNC_prog_count==1 & TxBSpoken_count<1)) # This excludes the 97 VFPs/hapax legomena lemmas from the count data frame
+nrow(counts) # 492
+
+sum(counts$BNC_prog_count) + sum(counts$BNC_non_prog) # and 56979.33 FVPs in Spoken BNC
+sum(counts$BNC_non_prog)
+summary(counts$BNC_non_prog)
+counts$BNC_non_prog[counts$BNC_non_prog<0] <- 0 # It doesn't make any sense to have negative non-progressive counts, therefore all negative counts will be levelled to 0.
+sum(counts$BNC_non_prog)
+sum(counts$BNC_prog_count) + sum(counts$BNC_non_prog) # and 57006.63 FVPs in Spoken BNC
+
+## Summary
+
+#counts <- counts[,c("lemma","TxB_prog_count", "TxBSpoken_non_prog", "BNC_prog_count", "BNC_non_prog")]
+head(counts); tail(counts)
+
+## Final check ##
+
+sum(counts$TxB_prog_count) + sum(counts$TxBSpoken_non_prog) # that's 57007 FVPs in TxB Spoken
+sum(counts$BNC_prog_count) + sum(counts$BNC_non_prog) # and 57006.63 FVPs in Spoken BNC
+(dif <- sum(counts$TxB_prog_count) + sum(counts$TxBSpoken_non_prog) - sum(counts$BNC_prog_count) - sum(counts$BNC_non_prog)) # Difference of 0.36
+dif / (sum(counts$TxB_prog_count) + sum(counts$TxBSpoken_non_prog)) * 100 # Difference in percentage (being honest and taking the largest of the two percentages ;-)
+
+## Contingency table function ##
+
+TxB_CTable <- function(verb) {
+  x = subset(counts, lemma==verb)
+  vprog = x$TxB_prog_count
+  tverb = x$TxBSpoken_count
+  vnonprog = tverb - vprog
+  tprog = sum(counts$TxB_prog_count)
+  tnonprog = sum(counts$TxBSpoken_non_prog)
+  xvprog = tprog - vprog
+  xvnonprog = tnonprog - vnonprog
+  
+  verb = c(vprog, vnonprog, tverb)
+  other = c(xvprog, xvnonprog, (xvprog+xvnonprog))
+  totals = c(tprog, tnonprog, (tprog + tnonprog))
+  
+  df=data.frame(verb=verb, other=other, row_totals=totals)
+  return(df)
+}
+
+TxB_CTable("say")
+
+##
+
+BNC_CTable <- function(verb) {
+  x = subset(counts, lemma==verb)
+  vprog = x$BNC_prog_count
+  tverb = x$BNCSpoken_count_sample
+  vnonprog = x$BNC_non_prog
+  tprog = sum(counts$BNC_prog_count)
+  tnonprog = sum(counts$BNC_non_prog)
+  xvprog = tprog - vprog
+  xvnonprog = tnonprog - vnonprog
+  
+  verb = c(vprog, vnonprog, tverb)
+  other = c(xvprog, xvnonprog, (xvprog+xvnonprog))
+  totals = c(tprog, tnonprog, (tprog + tnonprog))
+  
+  df=data.frame(verb=verb, other=other, row_totals=totals)
+  return(df)
+}
+
+BNC_CTable("party")
+BNC_CTable("say")
+
+
+# This file can be split into two to be used for two separate DCA analyses à la 2b.csv
+#saveRDS(counts, here("counts4DCA_2b.rds")) # Last saved on 26 January 2020
+counts <- readRDS(file =here("counts4DCA_2b.rds"))
+
+### Files for DCA analysis à la 2b.csv
+# Textbook conversation
+TxB_Spoken_DCA <- counts[,c("lemma", "TxB_prog_count", "TxBSpoken_non_prog")]
+head(TxB_Spoken_DCA); tail(TxB_Spoken_DCA)
+nrow(TxB_Spoken_DCA)
+TxB_Spoken_DCA <- subset(TxB_Spoken_DCA, TxB_prog_count>0 | TxBSpoken_non_prog>0) # # Drop lemmas with zero occurrences in Textbook Conversation
+nrow(TxB_Spoken_DCA)
+sum(TxB_Spoken_DCA$TxB_prog_count) + sum(TxB_Spoken_DCA$TxBSpoken_non_prog)
+#write.table(TxB_Spoken_DCA, file = here("TxB_Spoken_DCA.csv", sep = "\t")) # Last saved on 14 Feb 2020
+
+
+# Spoken BNC2014 sample
+BNC_DCA <- counts[,c("lemma", "BNC_prog_count", "BNC_non_prog")]
+nrow(BNC_DCA)
+BNC_DCA <- subset(BNC_DCA, BNC_non_prog > 0 | BNC_prog_count > 0) # Drop lemmas with zero occurrences in Spoken BNC 2014
+head(BNC_DCA); tail(BNC_DCA)
+(sum(BNC_DCA$BNC_prog_count) + sum(BNC_DCA$BNC_non_prog)) - (sum(TxB_Spoken_DCA$TxB_prog_count) + sum(TxB_Spoken_DCA$TxBSpoken_non_prog)) # Difference in total number of FVPs = 71
+#write.table(BNC_DCA, file = here("BNC_DCA_decimals.csv"), sep = "\t") # Last saved on 14 Feb 2019
+```
+
+```{r Flach-collostructions-DCA}
+
+library(collostructions)
+
+counts <- read.csv(file = here("TxB_Spoken_DCA.csv"), sep = "\t")
+head(counts)
+DCA_TxB <- collex.dist(counts) # default association measure with this package is log-likelihood
+head(DCA_TxB); tail(DCA_TxB)
+
+library(flextable)
+
+DCA_TxB %>% 
+  rename(lemma = COLLEX, G2 = COLL.STR.LOGL) %>% 
+  mutate(G2 = ifelse(ASSOC=="TxBSpoken_non_prog", -G2, G2)) %>% 
+  mutate(G2 = round(G2, 1)) %>% 
+  #mutate(across(.cols = c(E.CXN1, O.CXN2, E.CXN2), round, 0)) %>% 
+  mutate(`O:Enon-prog` = as.character(paste0(O.CXN1,":",E.CXN1))) %>% 
+  mutate(`O:Eprog` = as.character(paste0(O.CXN2,":",E.CXN2))) %>% 
+  select(lemma, `O:Enon-prog`, `O:Eprog`, G2) %>% 
+  filter(abs(G2) > 30) -> resultsTxB
+
+resultsTxB
+
+flextable(resultsTxB) %>% 
+  compose(part = "header", j = "O:Enon-prog", value = as_paragraph("O:E", as_sub("non-prog"))) %>% 
+  compose(part = "header", j = "O:Eprog", value = as_paragraph("O:E", as_sub("prog"))) %>% 
+  compose(part = "header", j = "G2", value = as_paragraph("G", as_sup("2"))) %>% 
+  theme_booktabs() #%>% 
+  #save_as_docx(path = here("DCA_TxBConv.docx"))
+
+# Reference Conversation
+
+BNC_DCA <- read.csv(file = here("BNC_DCA_decimals.csv"), sep = "\t", stringsAsFactors = TRUE)
+head(BNC_DCA)
+DCA_BNC <- collex.dist(BNC_DCA) # Remember that the default AM is log-likelihood
+head(DCA_BNC); tail(DCA_BNC)
+
+DCA_BNC %>% 
+  rename(lemma = COLLEX, G2 = COLL.STR.LOGL) %>% 
+  mutate(G2 = ifelse(ASSOC=="BNC_non_prog", -G2, G2)) %>% 
+  mutate(G2 = round(G2, 1)) %>% 
+  mutate(O.CXN2 = round(O.CXN2, 0)) %>% 
+  mutate(`O:Enon-prog` = as.character(paste0(O.CXN1,":",E.CXN1))) %>% 
+  mutate(`O:Eprog` = as.character(paste0(O.CXN2,":",E.CXN2))) %>% 
+  select(lemma, `O:Enon-prog`, `O:Eprog`, G2) %>% 
+  filter(abs(G2) > 25) -> resultsBNC
+
+resultsBNC
+
+flextable(resultsBNC) %>% 
+  compose(part = "header", j = "O:Enon-prog", value = as_paragraph("O:E", as_sub("non-prog"))) %>% 
+  compose(part = "header", j = "O:Eprog", value = as_paragraph("O:E", as_sub("prog"))) %>% 
+  compose(part = "header", j = "G2", value = as_paragraph("G", as_sup("2"))) %>%
+  theme_booktabs() #%>% 
+  #save_as_docx(path = here("DCA_SpokenBNC.docx"))
+
+```
+
+```{r DCAs-correlation_comparisons}
+
+BNC_collstrength <- read.csv(file = here("BNC_DCA_decimals_LL.csv"), header = TRUE, sep=",", stringsAsFactors = TRUE)
+glimpse(BNC_collstrength)
+names(BNC_collstrength)[1] <- "lemma"
+names(BNC_collstrength)[9] <- "coll.strength.BNC"
+BNC_collstrength <- na.omit(BNC_collstrength) # Exclude lemmas with no data
+BNC_collstrength$coll.strength.BNC <- ifelse(BNC_collstrength$pref.occur=="X.BNC_prog_count.", BNC_collstrength$coll.strength, -(BNC_collstrength$coll.strength))
+BNC_collstrength <- BNC_collstrength[,c(1,9)]
+head(BNC_collstrength); tail(BNC_collstrength)
+
+TxBSpoken_collstrength <- read.csv(file = here("TxB_Spoken_DCA_collstrength_LL.csv"), header = TRUE, sep = ",", stringsAsFactors = TRUE)
+glimpse(TxBSpoken_collstrength)
+names(TxBSpoken_collstrength)[1] <- "lemma"
+names(TxBSpoken_collstrength)[9] <- "coll.strength.TxBSpoken"
+subset(TxBSpoken_collstrength, lemma=="mean")
+TxBSpoken_collstrength <- na.omit(TxBSpoken_collstrength) # Exclude lemmas with no data
+TxBSpoken_collstrength$coll.strength.TxBSpoken <- ifelse(TxBSpoken_collstrength$pref.occur=="X.TxB_prog_count.", TxBSpoken_collstrength$coll.strength, -(TxBSpoken_collstrength$coll.strength))
+TxBSpoken_collstrength <- TxBSpoken_collstrength[,c(1,9)]
+head(TxBSpoken_collstrength); tail(TxBSpoken_collstrength)
+
+coll_strengths <- merge(BNC_collstrength, TxBSpoken_collstrength, by = 'lemma', all = FALSE) # Merge tables, to only look at differences in coll.strength values
+
+#saveRDS(coll_strengths, file = here("coll_strengths_conversation.rds"))
+
+coll_strengths %>%
+  ggplot(aes(x = coll.strength.TxBSpoken, y = coll.strength.BNC)) +
+  labs(x = "Textbook Conversation (TCC)", y = "Spoken BNC2014") +
+  geom_point(shape = "circle filled", fill = "grey") -> fig
+
+fig
+
+# We have one very extreme case: for BE.
+coll_strengths %>%
+  filter(coll.strength.TxBSpoken < -1000, coll.strength.BNC < -1000)
+
+# Let's exclude BE for visualisation purposes then.
+coll_strengths%>%
+  filter(lemma != "be") ->
+  d_not_to_be
+
+fig %+% d_not_to_be
+
+# There is a strong linear association between the tendency to progressive construction in textbook conversations and in natural conversations. Let's quantify it.
+
+d_not_to_be %>%
+  summarise(corr_TxB_BNC = cor(coll.strength.TxBSpoken, coll.strength.BNC))
+
+cor.test(coll_strengths$coll.strength.TxBSpoken, coll_strengths$coll.strength.BNC, method = "pearson")
+
+# According to Susanne Flach, the measures of association are not comparable across corpora even after controlling for the total number of FVPs, so let's standardise the two association variables. The absolute difference between the standardized measures then gives us a measure of the extent to which a verb is associated with the progressive construction in one corpus more than it is in the other corpus.
+
+d_not_to_be %>%
+  mutate(
+    TxBSpoken_scaled = as.vector(scale(coll.strength.TxBSpoken)),
+    BNC_scaled = as.vector(scale(coll.strength.BNC)),
+    dev = abs(BNC_scaled - TxBSpoken_scaled)
+  ) ->
+  d_not_to_be
+
+# We can now identify verbs that are extreme by this measure of deviance.
+
+d_not_to_be %>%
+  filter(dev > 1) %>% 
+  select(lemma, coll.strength.TxBSpoken, coll.strength.BNC, dev) %>% 
+  arrange(-dev)
+
+d_not_to_be %>%
+  filter(dev > 1.28) %>% 
+  arrange(-dev) ->
+  d_extremes
+
+d_extremes
+
+d_not_to_be %>%
+  ggplot(aes(x = TxBSpoken_scaled, y = BNC_scaled, label = lemma)) +
+  coord_fixed() +
+  labs(x = "standardised CL (Textbook Conversation)", y = "standardised CL (Spoken BNC2014 sample)") +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  geom_point(shape = "circle filled", colour = "darkred", fill = "darkred", alpha = 0.5) +
+  geom_text_repel(data = d_extremes, min.segment.length = 1, segment.alpha = 0.6, max.overlaps = Inf, box.padding = 0.2, direction="both", arrow = arrow(length = unit(0.015, "npc"))) +
+  #geom_label_repel(data = d_extremes, hjust = "inward") + 
+  theme_light()
+
+#ggsave(here("DCA_scaled_comparison_Conversation.svg"), dpi = 300, width = 22, height = 16, units = "cm")
+
+```
+
+## Fiction DCAs
+
+```{r DCA-fiction, eval = FALSE}
+
+glimpse(FictionProg)
+lemmas_with_phrasal_verbs <- sort(unique(FictionProg$Lemma))
+lemmas_with_phrasal_verbs
+# For now, I will be ignoring phrasal verbs and only looking at the verb lemmas
+lemmas_short <- sort(unique(stringr::word(lemmas_with_phrasal_verbs,1)))
+lemmas_short
+#saveRDS(lemmas_short, file = here("Fiction_lemmas_short.rds")) # 28 August 2019
+
+## Prepare prog verb counts ##
+glimpse(FictionProg)
+prog_lemmas <- FictionProg[,c("Lemma", "Corpus")]
+prog_lemmas$Lemma <- stringr::word(prog_lemmas$Lemma,1)
+head(prog_lemmas)
+tail(prog_lemmas)
+
+levels(prog_lemmas$Corpus) <- c("SpokenBNC_Prog", "TxBSpoken_Prog") # Rename factor levels 
+prog_lemmas <- prog_lemmas[,c(2,1)]
+names(prog_lemmas)[1] <- "corpus"
+names(prog_lemmas)[2] <- "lemma"
+
+## Prepare non-prog verb counts ##
+
+verb_counts <-readRDS(file = here("FVP_Nar_counts.rds"))
+head(verb_counts)
+verb_counts <- verb_counts[,c(1,2,4)] # Get rid of total YF verb count
+
+verb_counts$YF_count_sample <- round(verb_counts$YF_count_sample, 0)
+verb_counts <- verb_counts[verb_counts$TxBNar_count!=0 & verb_counts$YF_count_sample!=0,] # Drop lemmas with zero in both corpora
+head(verb_counts)
+
+## Substract progressives from total FVP_counts
+
+FictionProg$Lemma_short <- stringr::word(FictionProg$Lemma,1)
+prog_TxB <- as.data.frame(table(FictionProg[FictionProg$Corpus=="Textbook Fiction", "Lemma_short"]))
+names(prog_TxB)[1] <- "lemma"
+names(prog_TxB)[2] <- "TxB_Nar_prog_count"
+head(prog_TxB)
+prog_YF <- as.data.frame(table(FictionProg[FictionProg$Corpus=="Youth Fiction Sampled", "Lemma_short"]))
+names(prog_YF)[1] <- "lemma"
+names(prog_YF)[2] <- "YF_prog_count"
+head(prog_YF)
+
+counttest <- merge(verb_counts, prog_TxB, by = 'lemma', all = TRUE)
+counts <- merge(counttest, prog_YF, by = 'lemma', all = TRUE)
+counts[is.na(counts)] <- 0
+head(counts); tail(counts)
+counts$YF_non_prog = counts$YF_count_sample - counts$YF_prog_count
+counts$TxB_Nar_non_prog = counts$TxBNar_count - counts$TxB_Nar_prog_count
+# Sampling (of the Spoken BNC 2014) and tagging errors sometimes lead to negative values, therefore here we change all negative values to zero
+summary(counts$YF_non_prog)
+counts[counts$YF_non_prog<0,c(1,5,6)]
+sum(counts$YF_non_prog<0) # 116 lemma types "lost"
+
+lost <- counts[counts$YF_non_prog<0,]
+sum(lost$YF_non_prog) # 126 "lost FVPs" tokes
+
+counts$YF_non_prog[counts$YF_non_prog<0] <- 0
+
+summary(counts$TxB_Nar_non_prog)
+counts[counts$TxB_Nar_non_prog<0,c(1,4,7)]
+sum(counts$TxB_Nar_non_pro<0) # 16 types
+
+lost2 <- counts[counts$TxB_Nar_non_prog<0,]
+sum(lost2$TxB_Nar_non_prog) # 20 tokens
+
+counts$TxB_Nar_non_prog[counts$TxB_Nar_non_prog<0] <- 0
+
+counts <- counts[,c("lemma","TxB_Nar_prog_count", "TxB_Nar_non_prog", "YF_prog_count", "YF_non_prog")]
+head(counts); tail(counts)
+
+sum(counts$TxB_Nar_prog_count) + sum(counts$TxB_Nar_non_prog) # 31563 total FVPs
+sum(counts$YF_prog_count) + sum(counts$YF_non_prog) # 31470 total FVPs
+(sum(counts$TxB_Nar_prog_count) + sum(counts$TxB_Nar_non_prog))- (sum(counts$YF_prog_count) + sum(counts$YF_non_prog)) # 93 difference in total FVPs
+
+# This file can be split into two to be used for two separate DCA analyses à la 2b.csv
+#saveRDS(counts, here("counts4DCA_2b_Nar.rds") # Last saved on 28 August 2019
+counts <- readRDS(file = here("counts4DCA_2b_Nar.rds")
+
+
+### Files for DCA analysis à la 2b.csv
+# Textbook Narrative
+TxBNarDCA <- counts[,c("lemma", "TxB_Nar_prog_count", "TxB_Nar_non_prog")]
+head(TxBNarDCA); tail(TxBNarDCA)
+nrow(TxBNarDCA)
+TxBNarDCA <- subset(TxBNarDCA, TxB_Nar_prog_count > 0 | TxB_Nar_non_prog > 0) # Drop lemmas with zero occurrences in Textbook Conversation
+sum(TxBNarDCA$TxB_Nar_prog_count) + sum(TxBNarDCA$TxB_Nar_non_prog)
+write.table(TxBNarDCA, file = here("TxB_Nar_DCA.csv", sep = "\t") # Last saved on 28 August 2019 III
+
+# Youth Fiction sample
+YF_DCA <- counts[,c("lemma", "YF_prog_count", "YF_non_prog")]
+nrow(YF_DCA)
+YF_DCA <- subset(YF_DCA, YF_non_prog > 0 | YF_prog_count > 0) # Drop lemmas with zero occurrences in Spoken BNC 2014
+head(YF_DCA); tail(YF_DCA)
+(sum(YF_DCA$YF_prog_count) + sum(YF_DCA$YF_non_prog)) - (sum(TxBNarDCA$TxB_Nar_prog_count) + sum(TxBNarDCA$TxB_Nar_non_prog)) # Difference in total number of FVPs = 93 more in TxB Narrative than in Youth Fiction
+write.table(YF_DCA, file = here("YF_DCA.csv", sep = "\t") # Last saved on 28 August 2019 II
+
+#source("/Users/Elen/Documents/PhD/Statistics_R/Gries_Collexemes/coll.analysis_mpfr.r")
+coll.analysis()
+
+```
+
+```{r Flach-Fiction-collostructions-DCA}
+# Textbook Fiction
+counts <- read.csv(file = here("TxB_Nar_DCA.csv"), sep = "\t", stringsAsFactors = TRUE)
+head(counts)
+DCA_TxB <- collex.dist(counts) # default association measure with this package is log-likelihood
+head(DCA_TxB); tail(DCA_TxB)
+
+library(flextable)
+
+DCA_TxB %>% 
+  rename(lemma = COLLEX, G2 = COLL.STR.LOGL) %>% 
+  mutate(G2 = ifelse(ASSOC=="TxB_Nar_non_prog", -G2, G2)) %>% 
+  mutate(G2 = round(G2, 1)) %>% 
+  #mutate(across(.cols = c(E.CXN1, O.CXN2, E.CXN2), round, 0)) %>% 
+  mutate(`O:Enon-prog` = as.character(paste0(O.CXN1,":",E.CXN1))) %>% 
+  mutate(`O:Eprog` = as.character(paste0(O.CXN2,":",E.CXN2))) %>% 
+  select(lemma, `O:Enon-prog`, `O:Eprog`, G2) %>% 
+  filter(abs(G2) > 30) -> resultsTxB
+
+nrow(resultsTxB)
+resultsTxB
+
+flextable(resultsTxB) %>% 
+  compose(part = "header", j = "O:Enon-prog", value = as_paragraph("O:E", as_sub("non-prog"))) %>% 
+  compose(part = "header", j = "O:Eprog", value = as_paragraph("O:E", as_sub("prog"))) %>% 
+  compose(part = "header", j = "G2", value = as_paragraph("G", as_sup("2"))) %>% 
+  theme_booktabs() #%>% 
+  #save_as_docx(path = here("DCA_TxB_Nar.docx"))
+
+# Reference Fiction
+
+YF_DCA <- read.csv(file = here("YF_DCA.csv"), sep = "\t", stringsAsFactors = TRUE)
+YF_DCA <- collex.dist(YF_DCA) # Remember that the default AM is log-likelihood
+head(YF_DCA); tail(YF_DCA)
+
+YF_DCA %>% 
+  rename(lemma = COLLEX, G2 = COLL.STR.LOGL) %>% 
+  mutate(G2 = ifelse(ASSOC=="YF_non_prog", -G2, G2)) %>% 
+  mutate(G2 = round(G2, 1)) %>% 
+  mutate(O.CXN2 = round(O.CXN2, 0)) %>% 
+  mutate(`O:Enon-prog` = as.character(paste0(O.CXN1,":",E.CXN1))) %>% 
+  mutate(`O:Eprog` = as.character(paste0(O.CXN2,":",E.CXN2))) %>% 
+  select(lemma, `O:Enon-prog`, `O:Eprog`, G2) %>% 
+  filter(abs(G2) > 23.5) -> resultsYF
+
+nrow(resultsYF)
+resultsYF
+
+flextable(resultsYF) %>% 
+  compose(part = "header", j = "O:Enon-prog", value = as_paragraph("O:E", as_sub("non-prog"))) %>% 
+  compose(part = "header", j = "O:Eprog", value = as_paragraph("O:E", as_sub("prog"))) %>% 
+  compose(part = "header", j = "G2", value = as_paragraph("G", as_sup("2"))) %>%
+  theme_booktabs() #%>% 
+  #save_as_docx(path = here("DCA_FY.docx"))
+
+```
+
+```{r DCAs-Fiction-correlation_comparisons}
+
+YF_collstrength <- read.csv(file = here("YF_DCA_collstrength.csv"), header = TRUE, sep=",")
+glimpse(YF_collstrength)
+names(YF_collstrength)[1] <- "lemma"
+names(YF_collstrength)[9] <- "coll.strength.YF"
+subset(YF_collstrength, lemma=="know")
+YF_collstrength <- na.omit(YF_collstrength) # Exclude lemmas with no data
+YF_collstrength <- YF_collstrength[,c(1,9)]
+head(YF_collstrength); tail(YF_collstrength)
+
+TxBNar_collstrength <- read.csv(file = here("TxB_Nar_DCA_collstrength.csv"), header = TRUE, sep = ",", stringsAsFactors = TRUE)
+glimpse(TxBNar_collstrength)
+names(TxBNar_collstrength)[1] <- "lemma"
+names(TxBNar_collstrength)[9] <- "coll.strength.TxBNar"
+subset(TxBNar_collstrength, lemma=="know")
+TxBNar_collstrength <- na.omit(TxBNar_collstrength) # Exclude lemmas with no data
+TxBNar_collstrength <- TxBNar_collstrength[,c(1,9)]
+head(TxBNar_collstrength); tail(TxBNar_collstrength)
+
+coll_strengths <- merge(YF_collstrength, TxBNar_collstrength, by = 'lemma', all = FALSE) # Merge tables, to only look at differences in coll.strength values
+
+#saveRDS(coll_strengths, file = here("coll_strengths_Fiction.rds")) # Last saved 30 Jan 2022
+
+coll_strengths %>%
+  ggplot(aes(x = coll.strength.TxBNar, y = coll.strength.YF)) +
+  labs(x = "Textbook Fiction", y = "Youth Fiction") +
+  geom_point(shape = "circle filled", fill = "grey") -> fig
+
+fig
+
+# We have one very extreme case: for BE.
+coll_strengths %>%
+  filter(coll.strength.YF < -500)
+
+# Let's exclude BE for visualisation purposes then.
+coll_strengths %>%
+  filter(lemma != "be") ->
+  d_not_to_be
+
+fig %+% d_not_to_be
+
+d_not_to_be %>%
+  summarise(corr_TxB_YF = cor(coll.strength.TxBNar, coll.strength.YF))
+
+cor.test(coll_strengths$coll.strength.TxBNar, coll_strengths$coll.strength.YF, method = "pearson")
+
+d_not_to_be %>%
+  mutate(
+    TxBNar_scaled = as.vector(scale(coll.strength.TxBNar)),
+    YF_scaled = as.vector(scale(coll.strength.YF)),
+    dev = abs(YF_scaled - TxBNar_scaled)
+  ) ->
+  d_not_to_be
+
+# We can now identify verbs that are extreme by this measure of deviance.
+
+d_not_to_be %>%
+  filter(dev > 1) %>% 
+  select(lemma, coll.strength.TxBNar, coll.strength.YF, dev) %>% 
+  arrange(-dev)
+
+d_not_to_be %>%
+  filter(dev > 2.5) %>% 
+  arrange(-dev) ->
+  d_extremes
+
+d_extremes
+
+d_not_to_be %>%
+  ggplot(aes(x = TxBNar_scaled, y = YF_scaled, label = lemma)) +
+  coord_fixed() +
+  labs(x = "standardised CL (Textbook Fiction)", y = "standardised CL (Youth Fiction sample)") +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  geom_point(shape = "circle filled", colour = "darkred", fill = "darkred", alpha = 0.5) +
+  geom_text_repel(data = d_extremes, min.segment.length = 1, segment.alpha = 0.6, max.overlaps = Inf, box.padding = 0.2, direction="both", arrow = arrow(length = unit(0.015, "npc"))) +
+  #geom_label_repel(data = d_extremes, hjust = "inward") + 
+  theme_light()
+
+#ggsave(here("DCA_scaled_comparison_Fiction.svg"), dpi = 300, width = 22, height = 16, units = "cm")
+
+```
+
+## Multiple testing correction
+
+```{r coll.analysis.multiple.testing, eval=FALSE}
+#source("/Users/Elen/Documents/PhD/Statistics_R/Gries_Collexemes/coll.analysis_mpfr.r")
+#coll.analysis()
+
+# From https://rcompanion.org/rcompanion/b_04.html #
+pchisq(3.84, df=1,lower.tail=FALSE) # Threshold of significance at 0.05 for LLR > 3.84 but this is NOT corrected for multiple testing!
+
+qchisq(0.05, df=1, lower.tail=FALSE) # Work out LLR-based CL value based on p-value https://stats.stackexchange.com/questions/250819/r-calculate-p-value-given-chi-squared-and-degrees-of-freedom
+
+qchisq(p.adjust(0.05, method = "holm", n = 20), df=1, lower.tail=FALSE)
+
+```
+
+
