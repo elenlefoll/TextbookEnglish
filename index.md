@@ -2,65 +2,60 @@
 
 Welcome to the companion website to my PhD thesis! **Please note that this website is under construction!**
 
-This is the online appendix. It includes the full code for all the analyses and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under ???. The plots and tables are all licensed under CC-BY 4.0.
+This is the online appendix. It includes the full code for all the analyses and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
 
-The thesis itself is not yet published but is available upon request.
+The thesis itself is not yet published but is available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a>.
 
-You can use the [editor on GitHub](https://github.com/elenlefoll/TextbookEnglish/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+## Chapter 1: Introduction
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-## 1. Introduction
+## Chapter 2: Literature review
 
-The opening chapter features a word cloud of the some of the most frequent lemma collocates of the lemma textbook as found in the EnTenTen20 corpus. This word cloud was created using the Word Sketch function on sketchengine.eu and can be interactively explored at: <a href="https://ske.li/textbook" title="Collocates of TEXTBOOK" target="_blank" rel="noopener noreferrer">https://ske.li/textbook</a>. The following settings were used to create the version of the word cloud printed in Chapter 1:
+### Appendix 2.1 
+This is a <a href="LitReviewTable.html" title="Literature review table" target="_blank" rel="noopener noreferrer">tabular overview</a> of all the Textbook English studies that I examined as part of my literature review.
 
-<img src="1_TextbookWordSketchSettings.png" class="img-responsive" alt="">
+## Chapter 3: Research aims and data
 
-## 2. Literature review
+### Appendix 3.1 
+Textbook English Corpus (TEC) Zenodo link
 
-This is a <a href="LitReviewTable.html" title="Literature review table" target="_blank" rel="noopener noreferrer">tabular overview</a> of all the Textbook English studies I examined as part of my literature review.
+### Appendix 3.2
+R script which was used to pre-process the untagged XML files of the Spoken BNC2014 
 
-Picture of top of table?
-
-Graph of publication years?
-
-Word cloud of titles?
-
-## 3. Research aims and corpus data
-
-# Textbook English Corpus (TEC)
-
-Zenodo TEC
-
-# Reference corpora
-
+### Appendix 3.3
 Youth Fiction metadata
 
-Info Teens metadata
+### Appendix 3.2
+Info Teens python script?
 
-Spoken BNC2014 link
+## Chapter 4: Exploring the progressive in Textbook English
 
-## 4. What are you doing? Exploring the progressive in Textbook English
+### Appendix 4.1
+Data and code
 
-Pre-annotation script
-
+### Appendix 4.2
 <a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Progressives in Textbook Conversation" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Conversation</a>
 
+### Appendix 4.3
 <a href="4_Prog_Fiction_Morphosyntactic_Analysis.html" title="Progressives in Textbook Fiction" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Fiction</a>
 
+### Appendix 4.4
 <a href="4_Prog_Semantic_Collostructional_Analysis.html" title="Semantic and collostructional analyses" target="_blank" rel="noopener noreferrer">The semantic and collostructional analysis of progressives in Textbook Conversation and Fiction</a>
 
-## 5. Making sense of MAKE in Textbook English
+## Chapter 5: Making sense of MAKE in Textbook English
 
-## 6. Modelling Textbook English using additive MDA
+## Chapter 6: A multi-dimensional description of Textbook English
 
+### Appendix 6.1
 Link to MAT
 
-Data
+### Appendix 6.2
+Data, code and plots
 
-Code + plots
+### Appendix 6.3
+notebook
 
-## 7. A new multi-dimensional model of Textbook English
+## Chapter 7. Towards a new multi-dimensional understanding of Textbook English
 
 Link to MFTE
 
@@ -68,7 +63,7 @@ Data
 
 Code + plots
 
-## 8. Summary and pedagogical implications
+## Chapter 8: Summary and general discussion
 
 
 
@@ -76,7 +71,15 @@ Code + plots
 
 # R packagages and python libraries
 
-# Bibliography?
+## Bibliography?
+
+
+
+
+
+
+
+# Manual
 
 ```markdown
 Syntax highlighted code block
