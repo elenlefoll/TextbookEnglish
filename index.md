@@ -4,18 +4,21 @@ Welcome to the companion website to my PhD thesis! **Please note that this websi
 
 This is the online appendix. It includes the full code for all the analyses and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
 
-The thesis has not yet been defended and is therefore not yet published but can be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a>.
+The thesis was submitted on 7 March 2022 but has not yet been defended. It is therefore not yet published but can be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a>.
+
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
+
 
 ## Chapter 1: Introduction
 
-- _Where is Brian?
-- _Brian is in the kitchen. 
-- _Where is Jenny, the sister of Brian?
-- _Jenny is in the bathroom.
+- _Where is Brian?_
+- _Brian is in the kitchen._
+- _Where is Jenny, the sister of Brian?_
+- _Jenny is in the bathroom._
 
-More information on the context of this textbook dialogue can be found here: https://fr.wikipedia.org/wiki/Where_is_Brian%3F
+More information on the context of this textbook dialogue can be found here: <a href="https://fr.wikipedia.org/wiki/Where_is_Brian%3F" target="_blank" rel="noopener noreferrer">https://fr.wikipedia.org/wiki/Where_is_Brian%3F</a>
 
-An extract of the comedy sketch by Gad Elmaleh that popularised the dialogue can be viewed here with English subtitles: https://youtu.be/11jG7lkwDwU?t=50
+An extract of the comedy sketch by Gad Elmaleh that popularised the dialogue can be viewed here with English subtitles: <a href="https://youtu.be/11jG7lkwDwU?t=50" target="_blank" rel="noopener noreferrer">https://youtu.be/11jG7lkwDwU?t=50</a> 
 
 ## Chapter 2: Literature review
 
@@ -25,31 +28,36 @@ This is a <a href="LitReviewTable.html" title="Literature review table" target="
 ## Chapter 3: Research aims and data
 
 ### Appendix 3.1
-Open Science statement
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/3_Data/OpenScienceStatement.pdf" target="_blank" rel="noopener noreferrer">Open Science statement</a> (as printed in Section 3.2.2 of the thesis)
 
 ### Appendix 3.2
-A detailed tabular overview of the composition of the Textbook English Corpus (TEC) together with the full bibliographic metadata is available on doi.org/10.5281/zenodo.4922819.
-Note that, for copyright reasons, the corpus itself cannot be made available.
+A detailed tabular overview of the composition of the Textbook English Corpus (TEC) together with the full bibliographic metadata is available on <a href="https://zenodo.org/record/4922819" target="_blank" rel="noopener noreferrer">doi.org/10.5281/zenodo.4922819</a>.
+
+Note that, for copyright reasons, the corpus itself cannot be published.
 
 ### Appendix 3.3
-R script used to pre-process the untagged XML version of the Spoken BNC2014
 
-The original corpus files of the Spoken BNC2014 can be downloaded for free for research purposes from: http://corpora.lancs.ac.uk/bnc2014/signup.php
+The original corpus files of the Spoken BNC2014 can be downloaded for free for research purposes from: <a href="http://corpora.lancs.ac.uk/bnc2014/signup.php" target="_blank" rel="noopener noreferrer">http://corpora.lancs.ac.uk/bnc2014/signup.php</a>
+
+
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/3_Data/BNCspoken_nomark-up_JackJill.R" target="_blank" rel="noopener noreferrer">R script</a> used to pre-process the untagged XML version of the Spoken BNC2014
 
 ### Appendix 3.4
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Youth Fiction metadata
 Note that, for copyright reasons, the corpus itself cannot be made available.
 
 ### Appendix 3.5
-Info Teens python script?
+Info Teens python script
 Note that, for copyright reasons, the corpus itself cannot be made available.
 
 ## Chapter 4: Exploring the progressive in Textbook English
 
 ### Appendix 4.1
-R script for the automatic pre-annotation of concordance lines
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/4_Progressives/4_Pre-Annotation_Progressives.Rmd" target="_blank" rel="noopener noreferrer">R script</a> for the automatic pre-annotation of concordance lines
 
 ### Appendix 4.2
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 List of verbs and their semantic domains
 
 ### Appendix 4.3
@@ -63,46 +71,64 @@ List of verbs and their semantic domains
 
 ## Chapter 5: Making sense of MAKE in Textbook English
 
+### Appendix 5.1
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
+code+ data + plots
+
+### Appendix 5.2
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
+Data analysis script
+
 ## Chapter 6: A multi-dimensional description of Textbook English
 
 ### Appendix 6.1
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Link to MAT
 
 ### Appendix 6.2
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Data, code and plots
 
 ### Appendix 6.3
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Analysis of intra-textbook linguistic variation
 
 ### Appendix 6.4
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Analysis of Textbook English vs. 'real-life' English variation
 
 ## Chapter 7. Towards a new multi-dimensional understanding of Textbook English
 
 ### Appendix 7.1
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Link to MFTE + list of features
 
 ### Appendix 7.2
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Data + Code + plots
 
 ### Appendix 7.3
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Evaluation of the MFTE
 
 ### Appendix 7.4
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Analysis of intra-textbook linguistic variation
 
 ### Appendix 7.5
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 Analysis of Textbook English vs. 'real-life' English variation
 
 ## Chapter 8: Summary and general discussion
 
+Links to corpora and corpus tools mentioned in the pedagogical implications section:
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
+<a href="link" target="_blank" rel="noopener noreferrer">text</a>
 
 
-# Acknowledgements
-
-# R packagages and python libraries
-
-## Bibliography?
+# Bibliography
 
 
 
