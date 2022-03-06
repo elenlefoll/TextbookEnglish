@@ -12,13 +12,16 @@ The thesis was submitted on 7 March 2022 but has not yet been defended. It can b
 ## Chapter 1: Introduction
 
 \- _Where is Brian?_
+
 \- _Brian is in the kitchen._
+
 \- _Where is Jenny, the sister of Brian?_
+
 \- _Jenny is in the bathroom._
 
-More information on the context of this textbook dialogue can be found here: <a href="https://fr.wikipedia.org/wiki/Where_is_Brian%3F" target="_blank" rel="noopener noreferrer">https://fr.wikipedia.org/wiki/Where_is_Brian%3F</a>
-
 An extract of the comedy sketch by Gad Elmaleh that popularised the dialogue can be viewed here with English subtitles: <a href="https://youtu.be/11jG7lkwDwU?t=50" target="_blank" rel="noopener noreferrer">https://youtu.be/11jG7lkwDwU?t=50</a> 
+
+More information on the context of this textbook dialogue can be found <a href="https://fr.wikipedia.org/wiki/Where_is_Brian%3F" target="_blank" rel="noopener noreferrer">here</a>.
 
 ## Chapter 2: Literature review
 
