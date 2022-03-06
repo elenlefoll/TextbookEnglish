@@ -2,7 +2,7 @@
 
 Welcome to the companion website to my PhD thesis! **Please note that this website is under construction!**
 
-This is the online appendix. It includes the full code for all the analyses and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
+This is the Online Appendix. It includes the full code for all the analyses and the figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
 
 The thesis was submitted on 7 March 2022 but has not yet been defended. It is therefore not yet published but can be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a>.
 
@@ -40,62 +40,55 @@ Note that, for copyright reasons, the corpus itself cannot be published.
 The original corpus files of the Spoken BNC2014 can be downloaded for free for research purposes from: <a href="http://corpora.lancs.ac.uk/bnc2014/signup.php" target="_blank" rel="noopener noreferrer">http://corpora.lancs.ac.uk/bnc2014/signup.php</a>
 
 
-<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/3_Data/BNCspoken_nomark-up_JackJill.R" target="_blank" rel="noopener noreferrer">R script</a> used to pre-process the untagged XML version of the Spoken BNC2014
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/3_Data/BNCspoken_nomark-up_JackJill.R" target="_blank" rel="noopener noreferrer">R script used to pre-process the untagged XML version of the Spoken BNC2014</a>
 
 ### Appendix 3.4
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Youth Fiction metadata
-Note that, for copyright reasons, the corpus itself cannot be made available.
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/3_Data/3_Youth_Fiction_Index.csv" target="_blank" rel="noopener noreferrer">Youth Fiction metadata
+</a>
 
-### Appendix 3.5
-Info Teens python script
 Note that, for copyright reasons, the corpus itself cannot be made available.
 
 ## Chapter 4: Exploring the progressive in Textbook English
 
 ### Appendix 4.1
-<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/4_Progressives/4_Pre-Annotation_Progressives.Rmd" target="_blank" rel="noopener noreferrer">R script</a> for the automatic pre-annotation of concordance lines
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/4_Progressives" target="_blank" rel="noopener noreferrer">Data and code for entire chapter</a>
+
+### Appendix 4.1
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/4_Progressives/4_Pre-Annotation_Progressives.Rmd" target="_blank" rel="noopener noreferrer">R script for the automatic pre-annotation of concordance lines</a>
 
 ### Appendix 4.2
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-List of verbs and their semantic domains
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/4_Progressives/4_prog_semantics_full.csv" target="_blank" rel="noopener noreferrer">List of verbs and their (main) semantic domains</a>
 
 ### Appendix 4.3
-<a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Progressives in Textbook Conversation" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Conversation</a>
+<a href="4_Prog_Conversation_Morphosyntactic_Analysis.html" title="Progressives in Textbook Conversation" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Conversation (in HTML format)</a>
 
 ### Appendix 4.4
-<a href="4_Prog_Fiction_Morphosyntactic_Analysis.html" title="Progressives in Textbook Fiction" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Fiction</a>
+<a href="4_Prog_Fiction_Morphosyntactic_Analysis.html" title="Progressives in Textbook Fiction" target="_blank" rel="noopener noreferrer">The morphosyntactic analysis of progressives in Textbook Fiction (in HTML format)</a>
 
 ### Appendix 4.5
-<a href="4_Prog_Semantic_Collostructional_Analysis.html" title="Semantic and collostructional analyses" target="_blank" rel="noopener noreferrer">The semantic and collostructional analysis of progressives in Textbook Conversation and Fiction</a>
+<a href="4_Prog_Semantic_Collostructional_Analysis.html" title="Semantic and collostructional analyses" target="_blank" rel="noopener noreferrer">The semantic and collostructional analysis of progressives in Textbook Conversation and Fiction (in HTML format)</a>
 
 ## Chapter 5: Making sense of MAKE in Textbook English
 
 ### Appendix 5.1
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-code+ data + plots
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/5_MAKE" target="_blank" rel="noopener noreferrer">Data and code for entire chapter</a>
 
 ### Appendix 5.2
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Data analysis script
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/5_MAKE/5_MAKE_Data_analysis.html" target="_blank" rel="noopener noreferrer">Data analysis script in HTML format</a>
 
 ## Chapter 6: A multi-dimensional description of Textbook English
 
 ### Appendix 6.1
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Link to MAT
+
+<a href="https://sites.google.com/site/multidimensionaltagger" target="_blank" rel="noopener noreferrer">More information about the MAT (the Multidimensional Analysis Tagger) by Andrea Nini</a>
+
+<a href="https://github.com/andreanini/multidimensionalanalysistagger" target="_blank" rel="noopener noreferrer">Link to the GitHub repository of the MAT</a>
 
 ### Appendix 6.2
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Data, code and plots
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_MDAs" target="_blank" rel="noopener noreferrer">Data and code for entire chapter</a>
 
 ### Appendix 6.3
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Analysis of intra-textbook linguistic variation
-
-### Appendix 6.4
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-Analysis of Textbook English vs. 'real-life' English variation
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/6_7_MDAs/6_AdditiveMDA_code.html" target="_blank" rel="noopener noreferrer">R script for the analyses of the additive MDAs based on Biber's (1988) model of General Spoken and Written English (in HTML format)</a>
 
 ## Chapter 7. Towards a new multi-dimensional understanding of Textbook English
 
