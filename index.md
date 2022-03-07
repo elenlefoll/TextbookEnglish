@@ -1,7 +1,7 @@
 # Textbook English
 
 Welcome to the companion website to my PhD thesis:
--Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. Unpublished PhD thesis. Osnabrück University.
+-Le Foll, Elen. 2022. _Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain._ Unpublished PhD thesis. Osnabrück University.
 
 **Please note that this online appendix is under construction!**
 
@@ -19,9 +19,9 @@ The thesis was submitted on 7 March 2022 but has not yet been defended. It can b
 
 \- _Jenny is in the bathroom._
 
-An extract of the comedy sketch by Gad Elmaleh that popularised the dialogue can be viewed here with English subtitles: <a href="https://youtu.be/11jG7lkwDwU?t=50" target="_blank" rel="noopener noreferrer">https://youtu.be/11jG7lkwDwU?t=50</a> 
-
 More information on the context of this textbook dialogue can be found <a href="https://fr.wikipedia.org/wiki/Where_is_Brian%3F" target="_blank" rel="noopener noreferrer">here</a>.
+
+An extract of the comedy sketch by Gad Elmaleh that popularised the dialogue can be viewed here with English subtitles: <a href="https://youtu.be/11jG7lkwDwU?t=50" target="_blank" rel="noopener noreferrer">https://youtu.be/11jG7lkwDwU?t=50</a> 
 
 ## Chapter 2: Literature review
 
