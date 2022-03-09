@@ -1,7 +1,8 @@
 # Textbook English
 
 Welcome to the companion website to my PhD thesis:
--Le Foll, Elen. 2022. _Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain._ Unpublished PhD thesis. Osnabrück University.
+
+Le Foll, Elen. 2022. _Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain._ Unpublished PhD thesis. Osnabrück University.
 
 **Please note that this online appendix is under construction!**
 
