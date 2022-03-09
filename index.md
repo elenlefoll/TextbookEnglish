@@ -8,7 +8,7 @@ Le Foll, Elen. 2022. _Textbook English: A Corpus-Based Analysis of the Language 
 
 This is the Online Appendix. It includes the full code for all the analyses, tables and figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
 
-The thesis was submitted on 7 March 2022 but has not yet been defended. It can be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a>.
+The thesis was submitted on 7 March 2022 but has not yet been defended. It will be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a> after the defense in May 2022.
 
 ## Chapter 1: Introduction
 
@@ -121,44 +121,8 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 ## Chapter 8: Summary and general discussion
 
 Links to the corpora and corpus tools mentioned in the pedagogical implications section:
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-<a href="link" target="_blank" rel="noopener noreferrer">text</a>
-
-
-# Bibliography
-
-
-
-----
-
-# Editing manual
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/elenlefoll/TextbookEnglish/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+- <a href="https://www.english-corpora.org/coca/" target="_blank" rel="noopener noreferrer">Corpus of Contemporary American English (COCA) and text analysis tool</a>
+- <a href="https://www.english-corpora.org/movies/" target="_blank" rel="noopener noreferrer">The Movies Corpus</a>
+<a href="https://www.english-corpora.org/TV/" target="_blank" rel="noopener noreferrer">The TV Corpus</a>
+<a href="https://yohasebe.com/tcse/" target="_blank" rel="noopener noreferrer">TCSE: TED talk corpus and search engine</a>
+<a href="https://cqpweb.lancs.ac.uk/" target="_blank" rel="noopener noreferrer">CQPweb (for the Spoken BNC2014 among many other corpora)</a>
