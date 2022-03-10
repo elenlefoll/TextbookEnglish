@@ -1,14 +1,12 @@
-# Textbook English
-
 Welcome to the companion website to my PhD thesis:
 
 Le Foll, Elen. 2022. _Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain._ Unpublished PhD thesis. Osnabrück University.
 
-**Please note that this online appendix is under construction!**
-
 This is the Online Appendix. It includes the full code for all the analyses, tables and figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
 
 The thesis was submitted on 7 March 2022 but has not yet been defended. It will be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a> after the defense in May 2022.
+
+# Textbook English: Online Appendix
 
 ## Chapter 1: Introduction
 
