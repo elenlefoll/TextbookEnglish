@@ -8,10 +8,23 @@ output:
     toc_depth: 3
     toc_float:
       collapsed: false
+bibliography: "packages.bib"
+nocite: '@*'
 
 ---
 
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: 
+Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: https://elenlefoll.github.io/TextbookEnglish/
+
+Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
+
 ## Set-up
+
+*Built with R `r getRversion()`*  
 
 ```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -31,7 +44,7 @@ library(vcd)
 ## Data Preparation
 
 ```{r preparation_BNC}
-annotation_file <- read.csv(here("BNCspoken_prog_conc_anno.csv"), sep = "\t", header = TRUE, na.strings="")
+annotation_file <- read.csv(here("BNCspoken_prog_conc_anno.csv"), sep = "\t", header = TRUE, na.strings="", stringsAsFactors = TRUE)
 glimpse(annotation_file)
 
 # Select only annotated concordance lines
@@ -54,7 +67,7 @@ glimpse(BNCprog)
 
 ```{r preparation_TxB}
 # Before saving annotation file as .csv, make sure to have deleted all trailing inverted commas as they serve as string deliminators. This can easily be done with a regex search and replace in calc $" --> nothing.
-annotation_file_TxB <- read.csv(here("TxB_spoken_prog_conc_anno.csv"), sep = "\t", header = TRUE, na.strings="")
+annotation_file_TxB <- read.csv(here("TxB_spoken_prog_conc_anno.csv"), sep = "\t", header = TRUE, na.strings="", stringsAsFactors = TRUE)
 glimpse(annotation_file_TxB)
 
 # Select only annotated concordance lines
@@ -109,8 +122,8 @@ levels(prog$Tense)[levels(prog$Tense)=="modal/infinitive"] <- "modal/inf."
 
 summary(prog$Corpus) # Number of annotated progressive concordances in each subcorpus
 
-#saveRDS(prog, file = here("prog.rds") last saved on 14/02/20
-#saveRDS(prog, file = here("prog_collanalysis.rds")
+#saveRDS(prog, file = here("prog.rds")) 
+#saveRDS(prog, file = here("prog_collanalysis.rds"))
 
 ```
 
@@ -726,3 +739,13 @@ vcd::assocstats(politeness) #
 
 ```
 
+# Package used in this script
+```{r package-citations}
+
+#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
+
+sessionInfo()
+
+```

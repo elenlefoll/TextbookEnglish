@@ -1,0 +1,15 @@
+lattice
+ggplot2
+caret
+dplyr
+forcats
+here
+zoo
+xts
+PerformanceAnalytics
+purrr
+psych
+suffrager
+tidyr
+tibble
+DescTools

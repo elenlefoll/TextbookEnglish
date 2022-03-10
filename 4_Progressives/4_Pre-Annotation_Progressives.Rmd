@@ -5,8 +5,19 @@ date: "05/05/2019"
 output: html_document
 ---
 
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: 
+Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: https://elenlefoll.github.io/TextbookEnglish/
+
+Please note that this script cannot be run because the corpus data cannot be made available for copyright reasons. 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# Built in R 3.5.3 #
 ```
 
 ## Aim

@@ -1,0 +1,1246 @@
+lemma	semantic_domain
+abandon	activity
+accept	mental
+accompany	activity
+accord	mental
+accuse	communication
+ache	activity
+acknowledge	communication
+acquire	activity
+act	activity
+act out	activity
+action	occurrence
+add	activity
+address	unclear_other
+adjust	mental
+admit	communication
+advance	activity
+advise	communication
+advocate	communication
+affect	facilitation_causation
+afford	mental
+agree	mental
+aim	mental
+aim for	mental
+allow	facilitation_causation
+amuse	activity
+announce	communication
+annoy	activity
+answer	communication
+appeal	communication
+appear	existence_relationship
+apply	activity
+apply for	activity
+appoint	activity
+appreciate	mental
+approach	aspectual
+approve	mental
+argue	communication
+arise	occurrence
+arrange	activity
+arrest	activity
+arrive	activity
+ask	communication
+ask for	communication
+asphalt	activity
+assess	mental
+assist	facilitation_causation
+assume	mental
+assure	communication
+astonish	activity
+attack	activity
+attain	activity
+attempt	activity
+attend	activity
+attract	activity
+average	existence_relationship
+await	activity
+bake	activity
+balloon	occurrence
+bark	activity
+bask in	activity
+battle	activity
+bay	activity
+be	unclear_other
+be derived	existence_relationship
+be located	existence_relationship
+bear	mental
+bear aloft	unclear_other
+bear down on	existence_relationship
+beat	activity
+beat up	activity
+beckon	occurrence
+become	occurrence
+beef up	activity
+beg	communication
+begin	aspectual
+behave	activity
+believe	mental
+believe in	mental
+bend over	activity
+bet	communication
+blame	mental
+bleed	activity
+blink	activity
+block	activity
+bloom	occurrence
+blow	activity
+blow up	occurrence
+bluff	mental
+blush	occurrence
+board	activity
+bob	occurrence
+boil	occurrence
+bomb	activity
+boom	occurrence
+bore	activity
+born	occurrence
+borrow	activity
+bother	mental
+bottle	activity
+bow	activity
+brag	communication
+break	unclear_other
+break down	occurrence
+break through	occurrence
+break up	activity
+breathe	occurrence
+breathe in	activity
+bring	activity
+bring about	facilitation_causation
+bristle	activity
+browse	activity
+bubble	occurrence
+budge	occurrence
+bug	mental
+build	activity
+build up	occurrence
+burgeon	occurrence
+burn	activity
+burst	occurrence
+burst with	occurrence
+buy	activity
+buzz	occurrence
+calculate	mental
+call	communication
+call for	existence_relationship
+call in	activity
+camp	activity
+campaign	activity
+care	mental
+carry	activity
+carry out	activity
+cat-sit	activity
+catch	activity
+catch up	activity
+cause	facilitation_causation
+cease	aspectual
+celebrate	activity
+chain up	activity
+challenge	communication
+change	occurrence
+charge	activity
+chase	activity
+chat	communication
+cheat	activity
+check	activity
+cheer	communication
+chew	activity
+chew away	activity
+chip in	activity
+chirp	activity
+choke	activity
+choke up	activity
+choose	mental
+chop	activity
+chop up	activity
+chuck	activity
+cite	communication
+claim	communication
+clap	activity
+clarify	communication
+clash	activity
+clean	activity
+clean up	activity
+clear	activity
+clear out	activity
+clear up	activity
+climb	activity
+cling on	activity
+close	activity
+cluck	communication
+collaborate	activity
+collapse	occurrence
+collect	activity
+combine	activity
+come	unclear_other
+come along	activity
+come back	activity
+come down	unclear_other
+come from	existence_relationship
+come in	activity
+come off	activity
+come on	occurrence
+come out	activity
+come over	activity
+come to an end	aspectual
+come up	occurrence
+comment	communication
+commit	unclear_other
+communicate	communication
+compare	mental
+compel	facilitation_causation
+compete	activity
+complain	communication
+complain about	communication
+complete	aspectual
+compose	activity
+compress	activity
+conceive	mental
+concentrate	mental
+concern	unclear_other
+conclude	mental
+condemn	mental
+confer with	communication
+confirm	mental
+confuse	mental
+consider	mental
+constitute	existence_relationship
+consult	communication
+consume	activity
+contain	existence_relationship
+contemplate	mental
+continue	aspectual
+contradict	communication
+control	activity
+converse	communication
+convince	communication
+cook	activity
+cope	mental
+copy	activity
+cost	existence_relationship
+cosy up	activity
+count	mental
+count on	existence_relationship
+cover	activity
+cower	activity
+crack	occurrence
+crack up	activity
+crash	occurrence
+crawl	activity
+create	activity
+creep	activity
+cringe	communication
+criticise	communication
+cross	activity
+crouch	activity
+crowdfund	activity
+crumble	occurrence
+crush	occurrence
+cry	activity
+cry out	activity
+cut	activity
+cut down	occurrence
+cut off	existence_relationship
+cycle	activity
+dance	activity
+dare	mental
+darken	occurrence
+dash	activity
+date	activity
+dawn	mental
+daydream	mental
+deal	mental
+deal with	unclear_other
+decide	mental
+declare	communication
+decline	communication
+decorate	activity
+decrease	occurrence
+defend	activity
+define	existence_relationship
+delete	activity
+deliver	activity
+demand	communication
+deny	communication
+depend on	existence_relationship
+derive	existence_relationship
+descend	activity
+descibe	communication
+desert	activity
+deserve	existence_relationship
+design	activity
+desire	mental
+detect	mental
+determine	mental
+develop	unclear_other
+die	occurrence
+die out	occurrence
+dig	activity
+dig in	activity
+digress	communication
+dip	unclear_other
+disappear	occurrence
+disclose	communication
+discount	activity
+discover	activity
+discuss	communication
+dismiss	mental
+disobey	activity
+dissect	activity
+distinguish	mental
+disturb	activity
+diversify	activity
+divide	activity
+do	activity
+doubt	mental
+download	activity
+doze off	activity
+drag	activity
+draw	activity
+draw in	activity
+dread	mental
+dream	activity
+dream of	activity
+drench	activity
+dress	activity
+dress up	activity
+drift	occurrence
+drink	activity
+drip	occurrence
+drive	activity
+drool	activity
+drop	activity
+drown	occurrence
+dry	occurrence
+dust	activity
+dwindle	occurrence
+dying	occurrence
+earn	activity
+eat	activity
+eavesdrop	activity
+edge away	existence_relationship
+elect	activity
+elude	occurrence
+emerge	occurrence
+emphasise	communication
+emphasize	communication
+employ	activity
+enable	facilitation_causation
+encounter	activity
+encourage	communication
+end	aspectual
+engage	activity
+engage in	activity
+engulf	occurrence
+enjoy	mental
+ensure	facilitation_causation
+entertain	activity
+escape	activity
+establish	aspectual
+estimate	mental
+evaluate	mental
+evaporate	occurrence
+evolve	occurrence
+exaggerate	communication
+examine	mental
+except	activity
+exclaim	communication
+exclude	activity
+excuse	communication
+exercise	activity
+exert	activity
+exhibit	existence_relationship
+exist	existence_relationship
+expand	unclear_other
+expect	mental
+experience	mental
+experiment	activity
+explain	communication
+explode	occurrence
+exploit	activity
+explore	activity
+express	communication
+extend	unclear_other
+extract	activity
+face	mental
+face up	mental
+facilitate	facilitation_causation
+fade	occurrence
+fade away	aspectual
+fake	mental
+fall	occurrence
+fall apart	occurrence
+fall asleep	occurrence
+fall down	unclear_other
+fall in love	mental
+fear	mental
+feed	activity
+feel	mental
+fight	activity
+fight about	activity
+fight back	activity
+fight down	activity
+fight for	activity
+fill	activity
+fill up	activity
+film	activity
+find	unclear_other
+finger	activity
+finish	aspectual
+finish off	activity
+fire	unclear_other
+fish	activity
+fit	existence_relationship
+fix	activity
+fix up	activity
+flame	occurrence
+flap	occurrence
+flash	occurrence
+flick	activity
+flick through	activity
+flirt	activity
+flit	occurrence
+float	occurrence
+float away	existence_relationship
+flood out	occurrence
+flounder	existence_relationship
+flourish	occurrence
+flow	occurrence
+fly	activity
+fly around	activity
+fly over	occurrence
+focus	mental
+fold	activity
+follow	unclear_other
+fool	activity
+fool around	activity
+force	facilitation_causation
+force open	activity
+forget	mental
+forgive	mental
+form	activity
+form up	occurrence
+freewheel	activity
+freeze	occurrence
+frighten	mental
+frown	communication
+fry	activity
+function	existence_relationship
+fundraise	activity
+gain	occurrence
+garden	activity
+gasp	communication
+gather	activity
+gaze	mental
+gear up	activity
+get	unclear_other
+get along	existence_relationship
+get at	unclear_other
+get away	activity
+get back	activity
+get in	activity
+get in touch w someone	communication
+get into	aspectual
+get married	activity
+get off	activity
+get on	existence_relationship
+get onto	unclear_other
+get out	activity
+get ready	activity
+get started	aspectual
+get through	mental
+get underway	aspectual
+get up	activity
+get used	mental
+give	unclear_other
+give away	activity
+give cause for	facilitation_causation
+give in	mental
+give off	occurrence
+give up	mental
+glow	occurrence
+gnaw	unclear_other
+go	unclear_other
+go ahead	activity
+go along	unclear_other
+go away	activity
+go back	activity
+go crazy	mental
+go down	occurrence
+go for	unclear_other
+go in	activity
+go off	activity
+go on	occurrence
+go out	activity
+go over	communication
+go round	occurrence
+go through	mental
+go under	occurrence
+go up	unclear_other
+go wrong	occurrence
+gorge on	activity
+grab	activity
+grasp	activity
+greet	communication
+grill	activity
+grin	communication
+grip	activity
+groan	communication
+grope	activity
+grow	occurrence
+grow up	occurrence
+growl	communication
+grumble	communication
+guarantee	facilitation_causation
+guard	activity
+guess	mental
+hail	unclear_other
+half-expect	mental
+hamper	unclear_other
+hand	activity
+hand out	activity
+hand over	activity
+handcuff	activity
+hang	activity
+hang  out	activity
+hang about	activity
+hang on	activity
+hang out	activity
+hang out with	activity
+happen	occurrence
+harass	activity
+harm	activity
+hassle	activity
+hate	mental
+have	unclear_other
+have fun	activity
+have on	unclear_other
+have to	existence_relationship
+head	activity
+hear	mental
+heat up	activity
+help	facilitation_causation
+hesitate	mental
+hide	mental
+hike	activity
+hit	activity
+hog	activity
+hoist	activity
+hold	unclear_other
+hold back	unclear_other
+hold on	activity
+hold out	unclear_other
+hold up	occurrence
+hop	activity
+hope	mental
+host	activity
+hover	activity
+huff	communication
+hum	communication
+hunt	activity
+hurry	activity
+hurry after	activity
+hurt	activity
+identify	mental
+ignore	mental
+illuminate	occurrence
+illustrate	existence_relationship
+imagine	mental
+imitate	activity
+imply	existence_relationship
+impoverish	unclear_other
+impress	mental
+incite	facilitation_causation
+include	existence_relationship
+increase	occurrence
+indicate	existence_relationship
+induce	facilitation_causation
+influence	facilitation_causation
+inform	communication
+insist	communication
+inspect	activity
+inspire	facilitation_causation
+inspire 	mental
+instigate	facilitation_causation
+insure	facilitation_causation
+intend	mental
+interfere	facilitation_causation
+interpret	mental
+interrogate	communication
+interrupt	communication
+interview	communication
+introduce	unclear_other
+invent	activity
+investigate	mental
+invite	communication
+involve	existence_relationship
+iron	activity
+issue	communication
+jangle	activity
+jerk	facilitation_causation
+jest	communication
+jog	activity
+join	unclear_other
+joke	communication
+judge	mental
+juggle	activity
+jump	activity
+justify	mental
+keel over	activity
+keep	unclear_other
+keep alive	aspectual
+keep from	facilitation_causation
+keep pace	aspectual
+keep up	aspectual
+kick	activity
+kid	communication
+kill	unclear_other
+kiss	activity
+kneel	activity
+knit	activity
+knock	activity
+knock out	activity
+know	mental
+label	communication
+lack	existence_relationship
+lag	existence_relationship
+land	activity
+languish	mental
+last	existence_relationship
+laugh	activity
+laugh about	activity
+lay	activity
+laze around	activity
+lead	unclear_other
+leak	occurrence
+lean	activity
+lean back	activity
+lean in	activity
+leap	activity
+leap aside	activity
+learn	mental
+leave	activity
+let	facilitation_causation
+level	existence_relationship
+lick	activity
+lie	unclear_other
+lie asleep	occurrence
+lift	activity
+light up	occurrence
+like	mental
+limp	activity
+link	existence_relationship
+listen	mental
+live	existence_relationship
+live up	unclear_other
+long	mental
+long for	mental
+look	unclear_other
+look after	activity
+look around	activity
+look at	mental
+look for	activity
+look forwad	mental
+look into	activity
+look over	activity
+look through	activity
+look up	activity
+loom	occurrence
+loop up	activity
+lose	activity
+lose interest	mental
+lounge	activity
+love	mental
+lower	activity
+lurk	activity
+lust	mental
+make	unclear_other
+make fun	activity
+make it	unclear_other
+make sense	existence_relationship
+make up	activity
+manage	activity
+manage 	mental
+manipulate	mental
+march	activity
+mark	activity
+matter	existence_relationship
+maximise	activity
+mean	unclear_other
+measure	existence_relationship
+meddle	activity
+meet	activity
+melt	activity
+memorise	activity
+memorize	activity
+mention	communication
+mess	activity
+mess up	activity
+milk	activity
+mind	mental
+mislead	activity
+miss	unclear_other
+mix	activity
+moan	communication
+mock	communication
+monitor	activity
+monopolize	activity
+mount up	occurrence
+mouth	communication
+move	activity
+move in	activity
+munch	activity
+murder	activity
+murmur	communication
+mutter	communication
+name	communication
+near	occurrence
+need	mental
+negotiate	communication
+nest	activity
+nibble	activity
+nod	communication
+nod off	activity
+note	communication
+notice	mental
+nourish	activity
+object	communication
+oblige	facilitation_causation
+observe	mental
+obtain	activity
+occur	occurrence
+offer	communication
+ooze	occurrence
+open	activity
+operate	existence_relationship
+opt	mental
+order	existence_relationship
+organise	activity
+organize	activity
+overchange	unclear_other
+overflow	occurrence
+overlap	existence_relationship
+overreact	mental
+overthink	mental
+owe	existence_relationship
+own	existence_relationship
+pack	activity
+paint	activity
+panic	mental
+park	activity
+participate	activity
+party	activity
+pass	unclear_other
+pass through	existence_relationship
+pay	activity
+pay attention	mental
+pay for	activity
+pay sb attention	mental
+pedal	activity
+peep in	activity
+perceive	mental
+perform	activity
+permit	facilitation_causation
+persevere	mental
+persuade	communication
+pester	activity
+phone	communication
+pick	activity
+pick up	activity
+pile up	activity
+pinch	activity
+piss	activity
+pitch	activity
+placate	communication
+place	activity
+plan	mental
+plan on	mental
+plant	activity
+play	activity
+play out	occurrence
+playact	activity
+plead	communication
+plow on	aspectual
+pluck	activity
+plug away	activity
+point	communication
+pollute	activity
+ponder	mental
+pop	occurrence
+pop out	activity
+pop over	activity
+pop up	occurrence
+pose	unclear_other
+possess	existence_relationship
+post	activity
+pound	activity
+pour	activity
+pour down	activity
+practice	activity
+practise	activity
+pray	mental
+predict	mental
+preen	activity
+prefer	mental
+prepare	activity
+present	activity
+press	activity
+presume	mental
+pretend	mental
+prevent	facilitation_causation
+print	activity
+proclaim	communication
+produce	activity
+progress	occurrence
+promise	communication
+prompt	facilitation_causation
+propose	communication
+protect	activity
+protest	activity
+prove	communication
+provide	activity
+provoke	facilitation_causation
+prowl	activity
+publish	communication
+pull	activity
+pulse	occurrence
+pump	activity
+punch	activity
+puncture	occurrence
+purse	activity
+push	unclear_other
+push against	unclear_other
+push for	activity
+push out	unclear_other
+push through	unclear_other
+put	unclear_other
+put about	unclear_other
+put at ease	activity
+put in	activity
+put into	activity
+put off	mental
+put on	activity
+put out	activity
+put together	activity
+put up	mental
+question	communication
+queue	activity
+queue up	activity
+quit	activity
+quiver	activity
+quote	communication
+race	activity
+rain	occurrence
+raise	unclear_other
+rake in	activity
+rap	activity
+rasp	activity
+reach	activity
+reach up	activity
+react	activity
+read	mental
+read out	activity
+realise	mental
+realize	mental
+reappear	occurrence
+recall	mental
+receive	activity
+recharge	occurrence
+reckon	mental
+recognise	mental
+recognize	mental
+recollect	mental
+recommend	communication
+record	activity
+recover	mental
+recycle	activity
+reduce	activity
+reel	unclear_other
+refer	communication
+refer to	existence_relationship
+reflect	existence_relationship
+refuse	communication
+regard	mental
+register	mental
+regress	occurrence
+regret	mental
+rehearse	activity
+relate	existence_relationship
+relax	activity
+release	occurrence
+rely	existence_relationship
+rely on	existence_relationship
+remain	existence_relationship
+remark	communication
+remember	mental
+remind	mental
+render	facilitation_causation
+renovate	activity
+rent	activity
+reopen	activity
+repair	activity
+repeat	activity
+reply	communication
+report	communication
+represent	existence_relationship
+require	facilitation_causation
+research	activity
+resonate	occurrence
+respond	communication
+rest	activity
+retch	activity
+retire	activity
+return	activity
+rev	activity
+reveal	existence_relationship
+review	activity
+revise	activity
+rewrite	activity
+ride	activity
+ride high	unclear_other
+ring	activity
+riot	activity
+rip off	activity
+rip up	occurrence
+rise	occurrence
+risk	activity
+roam about	activity
+roar	communication
+roast	activity
+rob	activity
+roll	unclear_other
+roll around	unclear_other
+roll over	activity
+romanticise	mental
+row	communication
+rub	activity
+rub in	communication
+ruin	activity
+run	activity
+run away	activity
+run down	unclear_other
+run high	unclear_other
+run late	activity
+run low	occurrence
+run out	occurrence
+run out/short	occurrence
+run short	occurrence
+run up	unclear_other
+rush	activity
+rush over	activity
+sabotage	activity
+sail	activity
+satisfy	mental
+save	activity
+savour	mental
+say	communication
+scam	activity
+scan	activity
+scare away	activity
+scoot	activity
+scramble	activity
+scrape together	activity
+scream	communication
+scream out	activity
+search	activity
+search for	activity
+see	unclear_other
+see to	activity
+seek	activity
+seem	existence_relationship
+seep	occurrence
+seethe	unclear_other
+sell	activity
+send	activity
+send back	activity
+send in	activity
+send up	occurrence
+sense	mental
+serve	activity
+set	unclear_other
+set up	activity
+settle	aspectual
+settle down	activity
+shake	activity
+share	activity
+shift	occurrence
+shine	occurrence
+ship	activity
+shiver	activity
+shoot	activity
+shootle	unclear_other
+shop	activity
+shout	communication
+show	unclear_other
+show in	unclear_other
+show off	communication
+shower	unclear_other
+shrink	occurrence
+shrug	communication
+shut	activity
+shut up	activity
+sign	communication
+sing	communication
+singe	occurrence
+sink	occurrence
+sit	activity
+sit down	activity
+sit up	activity
+skinny-dip	activity
+slam	activity
+slap	activity
+sleep	activity
+slide	unclear_other
+slip	occurrence
+slip away	occurrence
+slow	occurrence
+smash	activity
+smell	activity
+smile	activity
+smile about	activity
+smirk	activity
+smoke	activity
+smuggle	activity
+sniff	activity
+snigger	communication
+snip	activity
+snore	activity
+snort	activity
+snow	occurrence
+snub	communication
+soak	unclear_other
+sob	activity
+socialise	activity
+solve	mental
+something	unclear_other
+sort out	activity
+sound	existence_relationship
+speak	communication
+specify	communication
+speed	unclear_other
+spin	occurrence
+spit	activity
+splash	activity
+split	activity
+split off	occurrence
+sponsor	activity
+spread	unclear_other
+spring up	occurrence
+sprint	activity
+spy	activity
+spy on	activity
+squander	activity
+squeeze	activity
+squint	activity
+stalk up	unclear_other
+stall	activity
+stand	existence_relationship
+stand back	activity
+stand by	activity
+stand up	activity
+stare	activity
+stare at	activity
+stare into	activity
+stare up	activity
+start	aspectual
+start up	activity
+starve	activity
+state	communication
+stay	existence_relationship
+steal	activity
+stick	activity
+stimulate	facilitation_causation
+stir up	facilitation_causation
+stop	aspectual
+store	activity
+straighten up	unclear_other
+stream	unclear_other
+stream in	unclear_other
+stress	activity
+stretch	activity
+strip	activity
+strip off	activity
+stroll	activity
+stroll around	activity
+struggle	mental
+strut	activity
+study	activity
+stumble	activity
+suck	occurrence
+suck wind	occurrence
+suffer	mental
+suffer from	mental
+suggest	communication
+suggest 	communication
+suit	existence_relationship
+sulk	communication
+sunbathe	activity
+supply	activity
+support	unclear_other
+suppose	mental
+surf	activity
+surface	occurrence
+surround	existence_relationship
+suspect	mental
+swallow	activity
+swarm	existence_relationship
+swear	communication
+sweat	activity
+sweep up	occurrence
+swell	occurrence
+swim	activity
+swim out	activity
+swing	unclear_other
+swish	unclear_other
+swivel	activity
+take	unclear_other
+take away	activity
+take back	communication
+take care	activity
+take in	unclear_other
+take off	activity
+take on	activity
+take out	unclear_other
+take over	activity
+take part	activity
+take place	occurrence
+take revenge	activity
+take up	unclear_other
+talk	communication
+talk about	communication
+talk to	communication
+talk with	communication
+tan	occurrence
+taste	mental
+tax	unclear_other
+teach	communication
+tear	occurrence
+teem	existence_relationship
+teeter	occurrence
+telephone	activity
+televise	activity
+tell	communication
+tempt	mental
+tend	existence_relationship
+tessellate	existence_relationship
+test	activity
+text	activity
+thank	communication
+think	mental
+think about	mental
+think of	mental
+threaten	communication
+thrive	occurrence
+throb	occurrence
+throw	activity
+throw up	activity
+thud	occurrence
+tick	occurrence
+tick along	occurrence
+tidy	activity
+tilt	occurrence
+tingle	occurrence
+tip	occurrence
+top	occurrence
+touch	activity
+track	activity
+train	activity
+tramp about	activity
+transcribe	activity
+travel	activity
+traverse	unclear_other
+treat	activity
+treat oneself	activity
+tremble	occurrence
+trend	occurrence
+trouble	facilitation_causation
+trust	mental
+try	unclear_other
+try on	activity
+turn	unclear_other
+turn into	unclear_other
+turn off	activity
+turn over	activity
+turn up	activity
+tweet	activity
+twist	activity
+twitch	occurrence
+type	activity
+undergo	activity
+understand	mental
+unfold	occurrence
+update	activity
+upload	activity
+upset	facilitation_causation
+urge	communication
+use	activity
+vanish	occurrence
+vary	existence_relationship
+vibrate	occurrence
+visit	activity
+visualise	mental
+voice	communication
+volunteer	activity
+vomit	activity
+wade	activity
+wag	activity
+wail	communication
+wait	activity
+wait for	activity
+wake up	activity
+walk	activity
+walk along	activity
+walk around	activity
+walk away	activity
+wander	activity
+wander about	activity
+want	mental
+warm up	activity
+warn	communication
+wash	activity
+wash up	activity
+waste	unclear_other
+watch	activity
+water	activity
+wave	activity
+wave goodbye	activity
+weaken	occurrence
+wear	activity
+wear through	occurrence
+weep	activity
+weigh down	occurrence
+welcome	communication
+well up	unclear_other
+wheel	activity
+wheeze	activity
+whine	communication
+whip off	activity
+whirl	occurrence
+whisper	communication
+whistle	activity
+widen	occurrence
+win	activity
+wind up	aspectual
+winkle out	facilitation_causation
+wipe	activity
+wish	mental
+wither	occurrence
+witness	mental
+wonder	mental
+work	unclear_other
+work at	activity
+work away	activity
+work on	activity
+work out	mental
+worry	mental
+worry about	mental
+wrap	activity
+wreck	activity
+write	communication
+write down	communication
+write off	mental
+write out	communication
+yawn	activity
+yearn	mental
+yell	communication

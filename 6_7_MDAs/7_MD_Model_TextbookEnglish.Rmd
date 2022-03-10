@@ -11,17 +11,28 @@ output:
   editor_options: 
     markdown: 
       wrap: sentence
-
+bibliography: "packages.bib"
+nocite: '@*'
+      
 ---
+
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: 
+Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: https://elenlefoll.github.io/TextbookEnglish/
+
+Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
+
 
 # Set-up
 
 *Built with R `r getRversion()`*  
-*Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
 
 ```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
 
-knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, paged.print=TRUE, fig.width = 10, warning=FALSE, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, paged.print=TRUE, fig.width = 10, warning=FALSE)
 
 library(car) # For data wrangling
 library(caret) # For its confusion matrix function
@@ -500,7 +511,7 @@ res.ind <- res.ind %>%
   mutate(Subsubcorpus = as.factor(Subsubcorpus))
   
 res.ind %>% 
-  select(PC1, PC2, PC3, PC4, PC5, PC6, Subsubcorpus) %>% 
+  select(PC1, PC2, PC3, PC4, Subsubcorpus) %>% 
   tbl_summary(by = Subsubcorpus,
               digits = list(all_continuous() ~ c(2, 2)),
               statistic = all_continuous() ~  "{mean} ({sd})")
@@ -682,6 +693,12 @@ anova(md_source, md_corpus, md_register, md_both, md_interaction)
 
 tab_model(md_interaction, wrap.labels = 200)
 
+```
+
+## PC5 and PC6 were not included in the PhD thesis in the end.
+
+```{r eval=FALSE}
+
 # PC5
 #md_source <- lmer(PC5 ~ 1 + (Register|Source), res.ind, REML = FALSE) # Fails to converge
 md_source <- lmer(PC5 ~ 1 + (1|Source), res.ind, REML = FALSE) 
@@ -781,6 +798,13 @@ summary(subcorpus_results)
 ```
 
 
-```{r sessionInfo}
+# Package used in this script
+```{r package-citations}
+
+#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
+
 sessionInfo()
+
 ```

@@ -8,10 +8,23 @@ output:
     toc_depth: 3
     toc_float:
       collapsed: false
+bibliography: "packages.bib"
+nocite: '@*'
 
 ---
 
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: 
+Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: https://elenlefoll.github.io/TextbookEnglish/
+
+Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
+
 ## Set-up
+
+*Built with R `r getRversion()`*  
 
 ```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
 
@@ -64,12 +77,12 @@ prog_lemmas <- read.table(here("prog_lemmas.csv"), sep = "\t", stringsAsFactors 
 say <- prog_lemmas[prog_lemmas$Lemma=="say",]
 summary(say$Corpus)
 
-#source("/Users/Elen/Documents/PhD/Statistics_R/Gries_Collexemes/coll.analysis_mpfr.r")
+#source(here("coll.analysis_mpfr.r"))
 #coll.analysis()
 
 ```
 
-## Annotation process
+## Annotation process)
 
 ```{r Semantic_domains-prep}
 ## Preparing list of long lemmas ##
@@ -78,7 +91,7 @@ SpokenProg_lemmas <- read.table(file = here("prog_lemmas.csv"), sep = "\t", stri
 FictionProg_lemmas <- read.table(file = here("FictionProg_lemmas.csv"), sep = "\t", stringsAsFactors = TRUE)
 
 prog_lemmas <- rbind(SpokenProg_lemmas, FictionProg_lemmas)
-#write.table(prog_lemmas, file = here("CovCA.csv", sep = "\t"))
+#write.table(prog_lemmas, file = here("CovCA.csv"), sep = "\t")
 prog_lemmas <- read.table(file = here("CovCA.csv"), sep = "\t", stringsAsFactors = TRUE)
 
 ## Coding for semantic domains ##
@@ -115,7 +128,7 @@ names(semantic_domains)[2] <- "Semantic domain"
 prog_semantics <- merge(prog_lemmas, semantic_domains, by = "Lemma")
 head(prog_semantics, 30); tail(prog_semantics, 30)
 
-#write.table(prog_semantics, file = here("4_prog_semantics_full.csv")) # Saved on 12.08.2019
+#write.table(prog_semantics, file = here("4_prog_semantics_full.csv")) 
 ```
 
 ## Semantic domain analysis
@@ -157,7 +170,7 @@ summary(Fiction_prog_semantics)
 #write.table(Fiction_prog_semantics, file = here("Fiction_prog_semantics.csv"), sep = "\t", row.names = F) # File for CoVCA 
 
 # Coll.analysis #
-#source("/Users/Elen/Documents/PhD/Statistics_R/Gries_Collexemes/coll.analysis_mpfr.r")
+#source(here("coll.analysis_mpfr.r"))
 #coll.analysis()
 
 ```
@@ -259,7 +272,7 @@ summary(factor(prog_lemmas$lemma))
 ## Creating lemma list used to filter the FVPs for the comparative DCAs ##
 lemmas_with_phrasal_verbs <- sort(unique(prog$Lemma)); lemmas_with_phrasal_verbs # For now, I will be ignoring phrasal verbs and only looking at the verb lemmas
 lemmas_short <- sort(unique(stringr::word(lemmas_with_phrasal_verbs,1))); lemmas_short # This is the lemma list which will be used to extract the FVPs from the full corpora processed with Spacy.
-#saveRDS(lemmas_short, file = here("lemmas_short.rds")) # Last saved on 10 October 2019
+#saveRDS(lemmas_short, file = here("lemmas_short.rds")) 
 
 ## Prepare FVP counts in "Extract_verb_lemmas_spacy.R" script with the list created above. This script leads to the creation of the verb_counts.rds file"
 
@@ -325,7 +338,7 @@ summary(counts$BNC_non_prog)
 sum(counts$BNC_prog_count) + sum(counts$BNC_non_prog) # and 57006.63 FVPs in Spoken BNC
 
 negatives <- counts[counts$BNC_non_prog<0,c("lemma", "BNCSpoken_count", "BNC_non_prog", "BNC_prog_count", "TxBSpoken_non_prog")] #
-negatives
+head(negatives)
 nrow(negatives) # 131 lemmas with negative BNC_non_prog counts
 sum(negatives$BNC_non_prog) # Equivalent to 96.64 FVPs
 
@@ -433,7 +446,7 @@ nrow(TxB_Spoken_DCA)
 TxB_Spoken_DCA <- subset(TxB_Spoken_DCA, TxB_prog_count>0 | TxBSpoken_non_prog>0) # # Drop lemmas with zero occurrences in Textbook Conversation
 nrow(TxB_Spoken_DCA)
 sum(TxB_Spoken_DCA$TxB_prog_count) + sum(TxB_Spoken_DCA$TxBSpoken_non_prog)
-#write.table(TxB_Spoken_DCA, file = here("TxB_Spoken_DCA.csv", sep = "\t")) # Last saved on 14 Feb 2020
+#write.table(TxB_Spoken_DCA, file = here("TxB_Spoken_DCA.csv"), sep = "\t") 
 
 
 # Spoken BNC2014 sample
@@ -442,7 +455,7 @@ nrow(BNC_DCA)
 BNC_DCA <- subset(BNC_DCA, BNC_non_prog > 0 | BNC_prog_count > 0) # Drop lemmas with zero occurrences in Spoken BNC 2014
 head(BNC_DCA); tail(BNC_DCA)
 (sum(BNC_DCA$BNC_prog_count) + sum(BNC_DCA$BNC_non_prog)) - (sum(TxB_Spoken_DCA$TxB_prog_count) + sum(TxB_Spoken_DCA$TxBSpoken_non_prog)) # Difference in total number of FVPs = 71
-#write.table(BNC_DCA, file = here("BNC_DCA_decimals.csv"), sep = "\t") # Last saved on 14 Feb 2019
+#write.table(BNC_DCA, file = here("BNC_DCA_decimals.csv"), sep = "\t") 
 ```
 
 ```{r Flach-collostructions-DCA}
@@ -775,7 +788,7 @@ head(TxBNar_collstrength); tail(TxBNar_collstrength)
 
 coll_strengths <- merge(YF_collstrength, TxBNar_collstrength, by = 'lemma', all = FALSE) # Merge tables, to only look at differences in coll.strength values
 
-#saveRDS(coll_strengths, file = here("coll_strengths_Fiction.rds")) # Last saved 30 Jan 2022
+#saveRDS(coll_strengths, file = here("coll_strengths_Fiction.rds")) 
 
 coll_strengths %>%
   ggplot(aes(x = coll.strength.TxBNar, y = coll.strength.YF)) +
@@ -839,7 +852,7 @@ d_not_to_be %>%
 ## Multiple testing correction
 
 ```{r coll.analysis.multiple.testing, eval=FALSE}
-#source("/Users/Elen/Documents/PhD/Statistics_R/Gries_Collexemes/coll.analysis_mpfr.r")
+#source(here(coll.analysis_mpfr.r"))
 #coll.analysis()
 
 # From https://rcompanion.org/rcompanion/b_04.html #
@@ -848,6 +861,17 @@ pchisq(3.84, df=1,lower.tail=FALSE) # Threshold of significance at 0.05 for LLR 
 qchisq(0.05, df=1, lower.tail=FALSE) # Work out LLR-based CL value based on p-value https://stats.stackexchange.com/questions/250819/r-calculate-p-value-given-chi-squared-and-degrees-of-freedom
 
 qchisq(p.adjust(0.05, method = "holm", n = 20), df=1, lower.tail=FALSE)
+
+```
+
+# Package used in this script
+```{r package-citations}
+
+#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
+
+sessionInfo()
 
 ```
 

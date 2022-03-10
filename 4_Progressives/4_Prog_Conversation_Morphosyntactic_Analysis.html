@@ -61,6 +61,28 @@ if (window.hljs) {
 
 
 
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
 
 
 
@@ -254,8 +276,13 @@ div.tocify {
 </div>
 
 
+<p>This script is part of the Online Appendix to my PhD thesis.</p>
+<p>Please cite as: Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.</p>
+<p>For more information, see: <a href="https://elenlefoll.github.io/TextbookEnglish/" class="uri">https://elenlefoll.github.io/TextbookEnglish/</a></p>
+<p>Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.</p>
 <div id="set-up" class="section level2">
 <h2>Set-up</h2>
+<p><em>Built with R 4.0.3</em></p>
 <pre class="r"><code>knitr::opts_chunk$set(echo = TRUE)
 
 library(dplyr)
@@ -270,28 +297,28 @@ library(vcd)</code></pre>
 </div>
 <div id="data-preparation" class="section level2">
 <h2>Data Preparation</h2>
-<pre class="r"><code>annotation_file &lt;- read.csv(here(&quot;BNCspoken_prog_conc_anno.csv&quot;), sep = &quot;\t&quot;, header = TRUE, na.strings=&quot;&quot;)
+<pre class="r"><code>annotation_file &lt;- read.csv(here(&quot;BNCspoken_prog_conc_anno.csv&quot;), sep = &quot;\t&quot;, header = TRUE, na.strings=&quot;&quot;, stringsAsFactors = TRUE)
 glimpse(annotation_file)</code></pre>
 <pre><code>## Rows: 4,099
 ## Columns: 18
-## $ SE_Filename    &lt;chr&gt; &quot;filename#0&quot;, &quot;filename#0&quot;, &quot;filename#0&quot;, &quot;filename#2&quot;,…
-## $ BNC_Filename   &lt;chr&gt; &quot;SAAB&quot;, &quot;SAAB&quot;, &quot;SAAB&quot;, &quot;SAA3&quot;, &quot;SAA3&quot;, &quot;SAA3&quot;, &quot;SAA3&quot;,…
-## $ Rand.          &lt;chr&gt; &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;,…
-## $ Concordance1   &lt;chr&gt; &quot;going to make a comment on the sleeping arrangements y…
-## $ Concor.dance2  &lt;chr&gt; &quot;be inviting&quot;, &quot;were having&quot;, &quot;&#39;m not going&quot;, &quot;&#39;s not g…
-## $ Concordance3   &lt;chr&gt; &quot;him to come and stay at their house stay at their hous…
-## $ Lemma          &lt;chr&gt; &quot;invite&quot;, &quot;have&quot;, NA, NA, NA, NA, &quot;play&quot;, &quot;come&quot;, &quot;say&quot;…
-## $ X.             &lt;chr&gt; NA, NA, NA, NA, NA, NA, &quot;c&quot;, NA, NA, NA, NA, NA, NA, &quot;c…
-## $ NOT            &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Tense          &lt;chr&gt; &quot;modal&quot;, &quot;past&quot;, &quot;GOING TO&quot;, &quot;GOING TO&quot;, &quot;GOING TO&quot;, &quot;G…
-## $ Voice          &lt;chr&gt; &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, …
-## $ X..1           &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Time.reference &lt;chr&gt; &quot;future&quot;, &quot;future&quot;, &quot;present&quot;, &quot;present&quot;, &quot;present&quot;, &quot;p…
-## $ Continuous     &lt;chr&gt; &quot;no&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, …
-## $ Repeated       &lt;chr&gt; &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;…
-## $ Extra.function &lt;chr&gt; NA, &quot;other interesting function&quot;, NA, NA, NA, NA, NA, N…
-## $ Comment        &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Annotator      &lt;chr&gt; &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, …</code></pre>
+## $ SE_Filename    &lt;fct&gt; filename#0, filename#0, filename#0, filename#2, filenam…
+## $ BNC_Filename   &lt;fct&gt; SAAB, SAAB, SAAB, SAA3, SAA3, SAA3, SAA3, SABT, SAB7, S…
+## $ Rand.          &lt;fct&gt; done, done, done, done, done, done, done, done, done, d…
+## $ Concordance1   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Concor.dance2  &lt;fct&gt; be inviting, were having, &#39;m not going, &#39;s not going, i…
+## $ Concordance3   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Lemma          &lt;fct&gt; invite, have, NA, NA, NA, NA, play, come, say, NA, NA, …
+## $ X.             &lt;fct&gt; NA, NA, NA, NA, NA, NA, c, NA, NA, NA, NA, NA, NA, c, N…
+## $ NOT            &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Tense          &lt;fct&gt; modal, past, GOING TO, GOING TO, GOING TO, GOING TO, pr…
+## $ Voice          &lt;fct&gt; A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A…
+## $ X..1           &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Time.reference &lt;fct&gt; future, future, present, present, present, present, pre…
+## $ Continuous     &lt;fct&gt; no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, y…
+## $ Repeated       &lt;fct&gt; no, no, no, no, no, no, no, no, no, no, no, no, no, no,…
+## $ Extra.function &lt;fct&gt; NA, other interesting function, NA, NA, NA, NA, NA, NA,…
+## $ Comment        &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Annotator      &lt;fct&gt; E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E…</code></pre>
 <pre class="r"><code># Select only annotated concordance lines
 annotated &lt;- annotation_file[71:3380,] # So far, I&#39;ve only annotated to line 4006. This current selection ensures that we have the same number of progressives as in the Textbook Conversation subcorpus (namely 2423 progressives)
 
@@ -309,47 +336,47 @@ nrow(BNCprog)</code></pre>
 <pre class="r"><code>glimpse(BNCprog)</code></pre>
 <pre><code>## Rows: 2,423
 ## Columns: 18
-## $ SE_Filename    &lt;chr&gt; &quot;filename#19&quot;, &quot;filename#19&quot;, &quot;filename#19&quot;, &quot;filename#…
-## $ BNC_Filename   &lt;chr&gt; &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;,…
-## $ Rand.          &lt;chr&gt; &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;,…
-## $ Concordance1   &lt;chr&gt; &quot;and things like that yeah mm processed that burger for…
-## $ Concor.dance2  &lt;chr&gt; &quot;was mostly travelling&quot;, &quot;be lying&quot;, &quot;&#39;re getting&quot;, &quot;is…
-## $ Concordance3   &lt;chr&gt; &quot;it was just erm that food poisoning we got that foo ye…
-## $ Lemma          &lt;chr&gt; &quot;travel&quot;, &quot;lie&quot;, &quot;attack&quot;, &quot;pilot&quot;, &quot;have&quot;, &quot;lose&quot;, &quot;be…
-## $ X.             &lt;chr&gt; NA, NA, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;, NA, NA, &quot;c&quot;, &quot;c&quot;, NA, &quot;c&quot;, …
-## $ NOT            &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;n&quot;, &quot;n&quot;, NA, N…
+## $ SE_Filename    &lt;fct&gt; filename#19, filename#19, filename#19, filename#19, fil…
+## $ BNC_Filename   &lt;fct&gt; SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, S…
+## $ Rand.          &lt;fct&gt; done, done, done, done, done, done, done, done, done, d…
+## $ Concordance1   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Concor.dance2  &lt;fct&gt; was mostly travelling, be lying, &#39;re getting, is piloti…
+## $ Concordance3   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Lemma          &lt;fct&gt; travel, lie, attack, pilot, have, lose, be, sabotage, p…
+## $ X.             &lt;fct&gt; NA, NA, c, c, c, c, NA, NA, c, c, NA, c, c, NA, NA, NA,…
+## $ NOT            &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, n, n, NA, NA, N…
 ## $ Tense          &lt;fct&gt; past, modal, present, present, present, present, presen…
-## $ Voice          &lt;chr&gt; &quot;A&quot;, &quot;A&quot;, &quot;P&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, …
-## $ X..1           &lt;chr&gt; NA, NA, NA, NA, NA, NA, &quot;q&quot;, &quot;q&quot;, NA, NA, NA, NA, NA, &quot;…
+## $ Voice          &lt;fct&gt; A, A, P, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A…
+## $ X..1           &lt;fct&gt; NA, NA, NA, NA, NA, NA, q, q, NA, NA, NA, NA, NA, q, NA…
 ## $ Time.reference &lt;fct&gt; past, present, present, present, present, past/present,…
-## $ Continuous     &lt;chr&gt; &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;,…
-## $ Repeated       &lt;chr&gt; &quot;no&quot;, &quot;unclear&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;y…
-## $ Extra.function &lt;chr&gt; NA, NA, NA, NA, NA, NA, &quot;emphasis/shock&quot;, NA, NA, NA, N…
-## $ Comment        &lt;chr&gt; NA, NA, &quot;get passive&quot;, NA, NA, &quot;gradual change&quot;, NA, NA…
-## $ Annotator      &lt;chr&gt; &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, …</code></pre>
+## $ Continuous     &lt;fct&gt; yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, …
+## $ Repeated       &lt;fct&gt; no, unclear, no, no, no, no, no, no, yes, no, no, no, u…
+## $ Extra.function &lt;fct&gt; NA, NA, NA, NA, NA, NA, emphasis/shock, NA, NA, NA, NA,…
+## $ Comment        &lt;fct&gt; NA, NA, get passive, NA, NA, gradual change, NA, NA, NA…
+## $ Annotator      &lt;fct&gt; E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E…</code></pre>
 <pre class="r"><code># Before saving annotation file as .csv, make sure to have deleted all trailing inverted commas as they serve as string deliminators. This can easily be done with a regex search and replace in calc $&quot; --&gt; nothing.
-annotation_file_TxB &lt;- read.csv(here(&quot;TxB_spoken_prog_conc_anno.csv&quot;), sep = &quot;\t&quot;, header = TRUE, na.strings=&quot;&quot;)
+annotation_file_TxB &lt;- read.csv(here(&quot;TxB_spoken_prog_conc_anno.csv&quot;), sep = &quot;\t&quot;, header = TRUE, na.strings=&quot;&quot;, stringsAsFactors = TRUE)
 glimpse(annotation_file_TxB)</code></pre>
 <pre><code>## Rows: 3,380
 ## Columns: 18
-## $ Register       &lt;chr&gt; &quot;spoken&quot;, &quot;spoken&quot;, &quot;spoken&quot;, &quot;spoken&quot;, &quot;spoken&quot;, &quot;spok…
-## $ Level          &lt;chr&gt; &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, …
-## $ Textbook       &lt;chr&gt; &quot;Hi there&quot;, &quot;Hi there&quot;, &quot;Hi there&quot;, &quot;Hi there&quot;, &quot;Hi the…
-## $ Concordance1   &lt;chr&gt; &quot;pupils about their favourite activities. Pupil A: What…
-## $ Concor.dance2  &lt;chr&gt; &quot;is swimming&quot;, &quot;&#39;m eating&quot;, &quot;&#39;m eating&quot;, &quot;&#39;m cooking&quot;, …
-## $ Concordance3   &lt;chr&gt; &quot;. c. With your teacher, decide what the favourite acti…
-## $ Lemma          &lt;chr&gt; NA, &quot;eat&quot;, &quot;eat&quot;, &quot;cook&quot;, &quot;eat&quot;, &quot;dance&quot;, &quot;joke&quot;, &quot;teac…
-## $ X.             &lt;chr&gt; NA, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;, NA, NA, &quot;c&quot;, &quot;c&quot;, NA, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;,…
-## $ NOT            &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Tense          &lt;chr&gt; &quot;NOT progressive&quot;, &quot;present&quot;, &quot;present&quot;, &quot;present&quot;, &quot;pr…
-## $ Voice          &lt;chr&gt; &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, …
-## $ X..1           &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, &quot;q&quot;, NA, &quot;q&quot;, NA, NA, N…
-## $ Time.reference &lt;chr&gt; &quot;present&quot;, &quot;present&quot;, &quot;present&quot;, &quot;present&quot;, &quot;present&quot;, …
-## $ Continuous     &lt;chr&gt; &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;,…
-## $ Repeated       &lt;chr&gt; &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;…
-## $ Extra.function &lt;chr&gt; NA, NA, NA, NA, NA, NA, &quot;emphasis/shock&quot;, NA, NA, NA, N…
-## $ Comment        &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Annotator      &lt;chr&gt; &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, …</code></pre>
+## $ Register       &lt;fct&gt; spoken, spoken, spoken, spoken, spoken, spoken, spoken,…
+## $ Level          &lt;fct&gt; A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A…
+## $ Textbook       &lt;fct&gt; Hi there, Hi there, Hi there, Hi there, Hi there, Hi th…
+## $ Concordance1   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Concor.dance2  &lt;fct&gt; &quot;is swimming&quot;, &quot;&#39;m eating&quot;, &quot;&#39;m eating&quot;, &quot;&#39;m cooking&quot;, …
+## $ Concordance3   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Lemma          &lt;fct&gt; NA, eat, eat, cook, eat, dance, joke, teach, come, leav…
+## $ X.             &lt;fct&gt; NA, c, c, c, NA, NA, c, c, NA, c, c, c, c, NA, NA, c, c…
+## $ NOT            &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Tense          &lt;fct&gt; NOT progressive, present, present, present, present, pr…
+## $ Voice          &lt;fct&gt; A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A…
+## $ X..1           &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, q, NA, q, NA, NA, NA, N…
+## $ Time.reference &lt;fct&gt; present, present, present, present, present, present, p…
+## $ Continuous     &lt;fct&gt; yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, …
+## $ Repeated       &lt;fct&gt; no, no, no, no, no, no, no, no, no, no, no, no, no, no,…
+## $ Extra.function &lt;fct&gt; NA, NA, NA, NA, NA, NA, emphasis/shock, NA, NA, NA, NA,…
+## $ Comment        &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Annotator      &lt;fct&gt; E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E…</code></pre>
 <pre class="r"><code># Select only annotated concordance lines
 annotated_TxB &lt;- annotation_file_TxB
 
@@ -373,53 +400,53 @@ glimpse(prog)</code></pre>
 <pre><code>## Rows: 4,846
 ## Columns: 22
 ## $ Corpus         &lt;chr&gt; &quot;Spoken BNC2014 sample&quot;, &quot;Spoken BNC2014 sample&quot;, &quot;Spok…
-## $ SE_Filename    &lt;chr&gt; &quot;filename#19&quot;, &quot;filename#19&quot;, &quot;filename#19&quot;, &quot;filename#…
-## $ BNC_Filename   &lt;chr&gt; &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;,…
-## $ Rand.          &lt;chr&gt; &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;,…
-## $ Concordance1   &lt;chr&gt; &quot;and things like that yeah mm processed that burger for…
-## $ Concor.dance2  &lt;chr&gt; &quot;was mostly travelling&quot;, &quot;be lying&quot;, &quot;&#39;re getting&quot;, &quot;is…
-## $ Concordance3   &lt;chr&gt; &quot;it was just erm that food poisoning we got that foo ye…
-## $ Lemma          &lt;chr&gt; &quot;travel&quot;, &quot;lie&quot;, &quot;attack&quot;, &quot;pilot&quot;, &quot;have&quot;, &quot;lose&quot;, &quot;be…
-## $ X.             &lt;chr&gt; NA, NA, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;, NA, NA, &quot;c&quot;, &quot;c&quot;, NA, &quot;c&quot;, …
-## $ NOT            &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;n&quot;, &quot;n&quot;, NA, N…
+## $ SE_Filename    &lt;fct&gt; filename#19, filename#19, filename#19, filename#19, fil…
+## $ BNC_Filename   &lt;fct&gt; SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, S…
+## $ Rand.          &lt;fct&gt; done, done, done, done, done, done, done, done, done, d…
+## $ Concordance1   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Concor.dance2  &lt;fct&gt; &quot;was mostly travelling&quot;, &quot;be lying&quot;, &quot;&#39;re getting&quot;, &quot;is…
+## $ Concordance3   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Lemma          &lt;fct&gt; travel, lie, attack, pilot, have, lose, be, sabotage, p…
+## $ X.             &lt;fct&gt; NA, NA, c, c, c, c, NA, NA, c, c, NA, c, c, NA, NA, NA,…
+## $ NOT            &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, n, n, NA, NA, N…
 ## $ Tense          &lt;fct&gt; past, modal, present, present, present, present, presen…
-## $ Voice          &lt;chr&gt; &quot;A&quot;, &quot;A&quot;, &quot;P&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, …
-## $ X..1           &lt;chr&gt; NA, NA, NA, NA, NA, NA, &quot;q&quot;, &quot;q&quot;, NA, NA, NA, NA, NA, &quot;…
+## $ Voice          &lt;fct&gt; A, A, P, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A…
+## $ X..1           &lt;fct&gt; NA, NA, NA, NA, NA, NA, q, q, NA, NA, NA, NA, NA, q, NA…
 ## $ Time.reference &lt;fct&gt; past, present, present, present, present, past/present,…
-## $ Continuous     &lt;chr&gt; &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;,…
-## $ Repeated       &lt;chr&gt; &quot;no&quot;, &quot;unclear&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;y…
-## $ Extra.function &lt;chr&gt; NA, NA, NA, NA, NA, NA, &quot;emphasis/shock&quot;, NA, NA, NA, N…
-## $ Comment        &lt;chr&gt; NA, NA, &quot;get passive&quot;, NA, NA, &quot;gradual change&quot;, NA, NA…
-## $ Annotator      &lt;chr&gt; &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, …
-## $ Register       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Level          &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Textbook       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…</code></pre>
+## $ Continuous     &lt;fct&gt; yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, …
+## $ Repeated       &lt;fct&gt; no, unclear, no, no, no, no, no, no, yes, no, no, no, u…
+## $ Extra.function &lt;fct&gt; NA, NA, NA, NA, NA, NA, emphasis/shock, NA, NA, NA, NA,…
+## $ Comment        &lt;fct&gt; NA, NA, &quot;get passive&quot;, NA, NA, &quot;gradual change&quot;, NA, NA…
+## $ Annotator      &lt;fct&gt; E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E…
+## $ Register       &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Level          &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Textbook       &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…</code></pre>
 <pre class="r"><code>prog &lt;- prog %&gt;% dplyr::rename(Contraction = X., Question = X..1, Negation = NOT) # Rename variables
 glimpse(prog)</code></pre>
 <pre><code>## Rows: 4,846
 ## Columns: 22
 ## $ Corpus         &lt;chr&gt; &quot;Spoken BNC2014 sample&quot;, &quot;Spoken BNC2014 sample&quot;, &quot;Spok…
-## $ SE_Filename    &lt;chr&gt; &quot;filename#19&quot;, &quot;filename#19&quot;, &quot;filename#19&quot;, &quot;filename#…
-## $ BNC_Filename   &lt;chr&gt; &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;, &quot;SAUR&quot;,…
-## $ Rand.          &lt;chr&gt; &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;, &quot;done&quot;,…
-## $ Concordance1   &lt;chr&gt; &quot;and things like that yeah mm processed that burger for…
-## $ Concor.dance2  &lt;chr&gt; &quot;was mostly travelling&quot;, &quot;be lying&quot;, &quot;&#39;re getting&quot;, &quot;is…
-## $ Concordance3   &lt;chr&gt; &quot;it was just erm that food poisoning we got that foo ye…
-## $ Lemma          &lt;chr&gt; &quot;travel&quot;, &quot;lie&quot;, &quot;attack&quot;, &quot;pilot&quot;, &quot;have&quot;, &quot;lose&quot;, &quot;be…
-## $ Contraction    &lt;chr&gt; NA, NA, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;, NA, NA, &quot;c&quot;, &quot;c&quot;, NA, &quot;c&quot;, …
-## $ Negation       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;n&quot;, &quot;n&quot;, NA, N…
+## $ SE_Filename    &lt;fct&gt; filename#19, filename#19, filename#19, filename#19, fil…
+## $ BNC_Filename   &lt;fct&gt; SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, SAUR, S…
+## $ Rand.          &lt;fct&gt; done, done, done, done, done, done, done, done, done, d…
+## $ Concordance1   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Concor.dance2  &lt;fct&gt; &quot;was mostly travelling&quot;, &quot;be lying&quot;, &quot;&#39;re getting&quot;, &quot;is…
+## $ Concordance3   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Lemma          &lt;fct&gt; travel, lie, attack, pilot, have, lose, be, sabotage, p…
+## $ Contraction    &lt;fct&gt; NA, NA, c, c, c, c, NA, NA, c, c, NA, c, c, NA, NA, NA,…
+## $ Negation       &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, n, n, NA, NA, N…
 ## $ Tense          &lt;fct&gt; past, modal, present, present, present, present, presen…
-## $ Voice          &lt;chr&gt; &quot;A&quot;, &quot;A&quot;, &quot;P&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, &quot;A&quot;, …
-## $ Question       &lt;chr&gt; NA, NA, NA, NA, NA, NA, &quot;q&quot;, &quot;q&quot;, NA, NA, NA, NA, NA, &quot;…
+## $ Voice          &lt;fct&gt; A, A, P, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A…
+## $ Question       &lt;fct&gt; NA, NA, NA, NA, NA, NA, q, q, NA, NA, NA, NA, NA, q, NA…
 ## $ Time.reference &lt;fct&gt; past, present, present, present, present, past/present,…
-## $ Continuous     &lt;chr&gt; &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;, &quot;yes&quot;,…
-## $ Repeated       &lt;chr&gt; &quot;no&quot;, &quot;unclear&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;no&quot;, &quot;y…
-## $ Extra.function &lt;chr&gt; NA, NA, NA, NA, NA, NA, &quot;emphasis/shock&quot;, NA, NA, NA, N…
-## $ Comment        &lt;chr&gt; NA, NA, &quot;get passive&quot;, NA, NA, &quot;gradual change&quot;, NA, NA…
-## $ Annotator      &lt;chr&gt; &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, …
-## $ Register       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Level          &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Textbook       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…</code></pre>
+## $ Continuous     &lt;fct&gt; yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, …
+## $ Repeated       &lt;fct&gt; no, unclear, no, no, no, no, no, no, yes, no, no, no, u…
+## $ Extra.function &lt;fct&gt; NA, NA, NA, NA, NA, NA, emphasis/shock, NA, NA, NA, NA,…
+## $ Comment        &lt;fct&gt; NA, NA, &quot;get passive&quot;, NA, NA, &quot;gradual change&quot;, NA, NA…
+## $ Annotator      &lt;fct&gt; E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E…
+## $ Register       &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Level          &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ Textbook       &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…</code></pre>
 <pre class="r"><code># Replace NA with meaningful levels
 summary(as.factor(prog$Negation))</code></pre>
 <pre><code>##    n NA&#39;s 
@@ -455,8 +482,8 @@ levels(prog$Tense)[levels(prog$Tense)==&quot;modal/infinitive&quot;] &lt;- &quot
 summary(prog$Corpus) # Number of annotated progressive concordances in each subcorpus</code></pre>
 <pre><code>## Spoken BNC2014 sample Textbook Conversation 
 ##                  2423                  2423</code></pre>
-<pre class="r"><code>#saveRDS(prog, file = here(&quot;prog.rds&quot;) last saved on 14/02/20
-#saveRDS(prog, file = here(&quot;prog_collanalysis.rds&quot;)</code></pre>
+<pre class="r"><code>#saveRDS(prog, file = here(&quot;prog.rds&quot;)) 
+#saveRDS(prog, file = here(&quot;prog_collanalysis.rds&quot;))</code></pre>
 <pre class="r"><code>prog &lt;- readRDS(file = here(&quot;prog.rds&quot;))</code></pre>
 </div>
 <div id="proportion-of-progressives" class="section level1">
@@ -574,12 +601,12 @@ prog %&gt;%
   tbl_summary(by = Corpus) %&gt;% 
   #add_p() %&gt;% 
   modify_header(label = &quot;**Form**&quot;) #%&gt;% </code></pre>
-<div id="oiultgshgz" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="nacyjembix" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#oiultgshgz .gt_table {
+#nacyjembix .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -604,7 +631,7 @@ prog %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#oiultgshgz .gt_heading {
+#nacyjembix .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -616,7 +643,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#oiultgshgz .gt_title {
+#nacyjembix .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -626,7 +653,7 @@ prog %&gt;%
   border-bottom-width: 0;
 }
 
-#oiultgshgz .gt_subtitle {
+#nacyjembix .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -636,13 +663,13 @@ prog %&gt;%
   border-top-width: 0;
 }
 
-#oiultgshgz .gt_bottom_border {
+#nacyjembix .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#oiultgshgz .gt_col_headings {
+#nacyjembix .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -657,7 +684,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#oiultgshgz .gt_col_heading {
+#nacyjembix .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -677,7 +704,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#oiultgshgz .gt_column_spanner_outer {
+#nacyjembix .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -689,15 +716,15 @@ prog %&gt;%
   padding-right: 4px;
 }
 
-#oiultgshgz .gt_column_spanner_outer:first-child {
+#nacyjembix .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#oiultgshgz .gt_column_spanner_outer:last-child {
+#nacyjembix .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#oiultgshgz .gt_column_spanner {
+#nacyjembix .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -709,7 +736,7 @@ prog %&gt;%
   width: 100%;
 }
 
-#oiultgshgz .gt_group_heading {
+#nacyjembix .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -731,7 +758,7 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#oiultgshgz .gt_empty_group_heading {
+#nacyjembix .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -746,15 +773,15 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#oiultgshgz .gt_from_md > :first-child {
+#nacyjembix .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#oiultgshgz .gt_from_md > :last-child {
+#nacyjembix .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#oiultgshgz .gt_row {
+#nacyjembix .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -773,7 +800,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#oiultgshgz .gt_stub {
+#nacyjembix .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -785,7 +812,7 @@ prog %&gt;%
   padding-left: 12px;
 }
 
-#oiultgshgz .gt_summary_row {
+#nacyjembix .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -795,7 +822,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#oiultgshgz .gt_first_summary_row {
+#nacyjembix .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -805,7 +832,7 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#oiultgshgz .gt_grand_summary_row {
+#nacyjembix .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -815,7 +842,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#oiultgshgz .gt_first_grand_summary_row {
+#nacyjembix .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -825,11 +852,11 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#oiultgshgz .gt_striped {
+#nacyjembix .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#oiultgshgz .gt_table_body {
+#nacyjembix .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -838,7 +865,7 @@ prog %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#oiultgshgz .gt_footnotes {
+#nacyjembix .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -852,13 +879,13 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#oiultgshgz .gt_footnote {
+#nacyjembix .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#oiultgshgz .gt_sourcenotes {
+#nacyjembix .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -872,41 +899,41 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#oiultgshgz .gt_sourcenote {
+#nacyjembix .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#oiultgshgz .gt_left {
+#nacyjembix .gt_left {
   text-align: left;
 }
 
-#oiultgshgz .gt_center {
+#nacyjembix .gt_center {
   text-align: center;
 }
 
-#oiultgshgz .gt_right {
+#nacyjembix .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#oiultgshgz .gt_font_normal {
+#nacyjembix .gt_font_normal {
   font-weight: normal;
 }
 
-#oiultgshgz .gt_font_bold {
+#nacyjembix .gt_font_bold {
   font-weight: bold;
 }
 
-#oiultgshgz .gt_font_italic {
+#nacyjembix .gt_font_italic {
   font-style: italic;
 }
 
-#oiultgshgz .gt_super {
+#nacyjembix .gt_super {
   font-size: 65%;
 }
 
-#oiultgshgz .gt_footnote_marks {
+#nacyjembix .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -963,12 +990,12 @@ prog %&gt;%
   tbl_summary(by = Level) %&gt;% 
   #add_p() %&gt;% 
   modify_header(label = &quot;**Form**&quot;) #%&gt;% </code></pre>
-<div id="objjxgucbr" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="utyhyhqqti" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#objjxgucbr .gt_table {
+#utyhyhqqti .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -993,7 +1020,7 @@ prog %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#objjxgucbr .gt_heading {
+#utyhyhqqti .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1005,7 +1032,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#objjxgucbr .gt_title {
+#utyhyhqqti .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1015,7 +1042,7 @@ prog %&gt;%
   border-bottom-width: 0;
 }
 
-#objjxgucbr .gt_subtitle {
+#utyhyhqqti .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1025,13 +1052,13 @@ prog %&gt;%
   border-top-width: 0;
 }
 
-#objjxgucbr .gt_bottom_border {
+#utyhyhqqti .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#objjxgucbr .gt_col_headings {
+#utyhyhqqti .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1046,7 +1073,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#objjxgucbr .gt_col_heading {
+#utyhyhqqti .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1066,7 +1093,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#objjxgucbr .gt_column_spanner_outer {
+#utyhyhqqti .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1078,15 +1105,15 @@ prog %&gt;%
   padding-right: 4px;
 }
 
-#objjxgucbr .gt_column_spanner_outer:first-child {
+#utyhyhqqti .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#objjxgucbr .gt_column_spanner_outer:last-child {
+#utyhyhqqti .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#objjxgucbr .gt_column_spanner {
+#utyhyhqqti .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1098,7 +1125,7 @@ prog %&gt;%
   width: 100%;
 }
 
-#objjxgucbr .gt_group_heading {
+#utyhyhqqti .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1120,7 +1147,7 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#objjxgucbr .gt_empty_group_heading {
+#utyhyhqqti .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1135,15 +1162,15 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#objjxgucbr .gt_from_md > :first-child {
+#utyhyhqqti .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#objjxgucbr .gt_from_md > :last-child {
+#utyhyhqqti .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#objjxgucbr .gt_row {
+#utyhyhqqti .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1162,7 +1189,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#objjxgucbr .gt_stub {
+#utyhyhqqti .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1174,7 +1201,7 @@ prog %&gt;%
   padding-left: 12px;
 }
 
-#objjxgucbr .gt_summary_row {
+#utyhyhqqti .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1184,7 +1211,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#objjxgucbr .gt_first_summary_row {
+#utyhyhqqti .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1194,7 +1221,7 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#objjxgucbr .gt_grand_summary_row {
+#utyhyhqqti .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1204,7 +1231,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#objjxgucbr .gt_first_grand_summary_row {
+#utyhyhqqti .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1214,11 +1241,11 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#objjxgucbr .gt_striped {
+#utyhyhqqti .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#objjxgucbr .gt_table_body {
+#utyhyhqqti .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1227,7 +1254,7 @@ prog %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#objjxgucbr .gt_footnotes {
+#utyhyhqqti .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1241,13 +1268,13 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#objjxgucbr .gt_footnote {
+#utyhyhqqti .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#objjxgucbr .gt_sourcenotes {
+#utyhyhqqti .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1261,41 +1288,41 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#objjxgucbr .gt_sourcenote {
+#utyhyhqqti .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#objjxgucbr .gt_left {
+#utyhyhqqti .gt_left {
   text-align: left;
 }
 
-#objjxgucbr .gt_center {
+#utyhyhqqti .gt_center {
   text-align: center;
 }
 
-#objjxgucbr .gt_right {
+#utyhyhqqti .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#objjxgucbr .gt_font_normal {
+#utyhyhqqti .gt_font_normal {
   font-weight: normal;
 }
 
-#objjxgucbr .gt_font_bold {
+#utyhyhqqti .gt_font_bold {
   font-weight: bold;
 }
 
-#objjxgucbr .gt_font_italic {
+#utyhyhqqti .gt_font_italic {
   font-style: italic;
 }
 
-#objjxgucbr .gt_super {
+#utyhyhqqti .gt_super {
   font-size: 65%;
 }
 
-#objjxgucbr .gt_footnote_marks {
+#utyhyhqqti .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -1777,12 +1804,12 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   tbl_summary(by = Corpus) %&gt;% 
   add_p() %&gt;% 
   modify_header(label = &quot;**Form**&quot;) #%&gt;% </code></pre>
-<div id="ckjbwgenmx" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="yrdcddsfmn" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#ckjbwgenmx .gt_table {
+#yrdcddsfmn .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -1807,7 +1834,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-left-color: #D3D3D3;
 }
 
-#ckjbwgenmx .gt_heading {
+#yrdcddsfmn .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1819,7 +1846,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-right-color: #D3D3D3;
 }
 
-#ckjbwgenmx .gt_title {
+#yrdcddsfmn .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1829,7 +1856,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-bottom-width: 0;
 }
 
-#ckjbwgenmx .gt_subtitle {
+#yrdcddsfmn .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1839,13 +1866,13 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-top-width: 0;
 }
 
-#ckjbwgenmx .gt_bottom_border {
+#yrdcddsfmn .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ckjbwgenmx .gt_col_headings {
+#yrdcddsfmn .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1860,7 +1887,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-right-color: #D3D3D3;
 }
 
-#ckjbwgenmx .gt_col_heading {
+#yrdcddsfmn .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1880,7 +1907,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   overflow-x: hidden;
 }
 
-#ckjbwgenmx .gt_column_spanner_outer {
+#yrdcddsfmn .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1892,15 +1919,15 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   padding-right: 4px;
 }
 
-#ckjbwgenmx .gt_column_spanner_outer:first-child {
+#yrdcddsfmn .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ckjbwgenmx .gt_column_spanner_outer:last-child {
+#yrdcddsfmn .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ckjbwgenmx .gt_column_spanner {
+#yrdcddsfmn .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1912,7 +1939,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   width: 100%;
 }
 
-#ckjbwgenmx .gt_group_heading {
+#yrdcddsfmn .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1934,7 +1961,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   vertical-align: middle;
 }
 
-#ckjbwgenmx .gt_empty_group_heading {
+#yrdcddsfmn .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1949,15 +1976,15 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   vertical-align: middle;
 }
 
-#ckjbwgenmx .gt_from_md > :first-child {
+#yrdcddsfmn .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ckjbwgenmx .gt_from_md > :last-child {
+#yrdcddsfmn .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ckjbwgenmx .gt_row {
+#yrdcddsfmn .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1976,7 +2003,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   overflow-x: hidden;
 }
 
-#ckjbwgenmx .gt_stub {
+#yrdcddsfmn .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1988,7 +2015,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   padding-left: 12px;
 }
 
-#ckjbwgenmx .gt_summary_row {
+#yrdcddsfmn .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1998,7 +2025,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   padding-right: 5px;
 }
 
-#ckjbwgenmx .gt_first_summary_row {
+#yrdcddsfmn .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2008,7 +2035,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-top-color: #D3D3D3;
 }
 
-#ckjbwgenmx .gt_grand_summary_row {
+#yrdcddsfmn .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2018,7 +2045,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   padding-right: 5px;
 }
 
-#ckjbwgenmx .gt_first_grand_summary_row {
+#yrdcddsfmn .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2028,11 +2055,11 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-top-color: #D3D3D3;
 }
 
-#ckjbwgenmx .gt_striped {
+#yrdcddsfmn .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ckjbwgenmx .gt_table_body {
+#yrdcddsfmn .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2041,7 +2068,7 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-bottom-color: #D3D3D3;
 }
 
-#ckjbwgenmx .gt_footnotes {
+#yrdcddsfmn .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2055,13 +2082,13 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-right-color: #D3D3D3;
 }
 
-#ckjbwgenmx .gt_footnote {
+#yrdcddsfmn .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#ckjbwgenmx .gt_sourcenotes {
+#yrdcddsfmn .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2075,41 +2102,41 @@ vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols),
   border-right-color: #D3D3D3;
 }
 
-#ckjbwgenmx .gt_sourcenote {
+#yrdcddsfmn .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#ckjbwgenmx .gt_left {
+#yrdcddsfmn .gt_left {
   text-align: left;
 }
 
-#ckjbwgenmx .gt_center {
+#yrdcddsfmn .gt_center {
   text-align: center;
 }
 
-#ckjbwgenmx .gt_right {
+#yrdcddsfmn .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ckjbwgenmx .gt_font_normal {
+#yrdcddsfmn .gt_font_normal {
   font-weight: normal;
 }
 
-#ckjbwgenmx .gt_font_bold {
+#yrdcddsfmn .gt_font_bold {
   font-weight: bold;
 }
 
-#ckjbwgenmx .gt_font_italic {
+#yrdcddsfmn .gt_font_italic {
   font-style: italic;
 }
 
-#ckjbwgenmx .gt_super {
+#yrdcddsfmn .gt_super {
   font-size: 65%;
 }
 
-#ckjbwgenmx .gt_footnote_marks {
+#yrdcddsfmn .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -2224,12 +2251,12 @@ prog %&gt;%
   tbl_summary(by = Textbook) %&gt;% 
   modify_header(label = &quot;**Form**&quot;) %&gt;% 
   modify_footnote(update = everything() ~ NA)</code></pre>
-<div id="bacocazwcz" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="vizlmpsbkh" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#bacocazwcz .gt_table {
+#vizlmpsbkh .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -2254,7 +2281,7 @@ prog %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#bacocazwcz .gt_heading {
+#vizlmpsbkh .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2266,7 +2293,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#bacocazwcz .gt_title {
+#vizlmpsbkh .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2276,7 +2303,7 @@ prog %&gt;%
   border-bottom-width: 0;
 }
 
-#bacocazwcz .gt_subtitle {
+#vizlmpsbkh .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2286,13 +2313,13 @@ prog %&gt;%
   border-top-width: 0;
 }
 
-#bacocazwcz .gt_bottom_border {
+#vizlmpsbkh .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#bacocazwcz .gt_col_headings {
+#vizlmpsbkh .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2307,7 +2334,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#bacocazwcz .gt_col_heading {
+#vizlmpsbkh .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2327,7 +2354,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#bacocazwcz .gt_column_spanner_outer {
+#vizlmpsbkh .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2339,15 +2366,15 @@ prog %&gt;%
   padding-right: 4px;
 }
 
-#bacocazwcz .gt_column_spanner_outer:first-child {
+#vizlmpsbkh .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#bacocazwcz .gt_column_spanner_outer:last-child {
+#vizlmpsbkh .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#bacocazwcz .gt_column_spanner {
+#vizlmpsbkh .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2359,7 +2386,7 @@ prog %&gt;%
   width: 100%;
 }
 
-#bacocazwcz .gt_group_heading {
+#vizlmpsbkh .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2381,7 +2408,7 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#bacocazwcz .gt_empty_group_heading {
+#vizlmpsbkh .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2396,15 +2423,15 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#bacocazwcz .gt_from_md > :first-child {
+#vizlmpsbkh .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#bacocazwcz .gt_from_md > :last-child {
+#vizlmpsbkh .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#bacocazwcz .gt_row {
+#vizlmpsbkh .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2423,7 +2450,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#bacocazwcz .gt_stub {
+#vizlmpsbkh .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2435,7 +2462,7 @@ prog %&gt;%
   padding-left: 12px;
 }
 
-#bacocazwcz .gt_summary_row {
+#vizlmpsbkh .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2445,7 +2472,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#bacocazwcz .gt_first_summary_row {
+#vizlmpsbkh .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2455,7 +2482,7 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#bacocazwcz .gt_grand_summary_row {
+#vizlmpsbkh .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2465,7 +2492,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#bacocazwcz .gt_first_grand_summary_row {
+#vizlmpsbkh .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2475,11 +2502,11 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#bacocazwcz .gt_striped {
+#vizlmpsbkh .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#bacocazwcz .gt_table_body {
+#vizlmpsbkh .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2488,7 +2515,7 @@ prog %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#bacocazwcz .gt_footnotes {
+#vizlmpsbkh .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2502,13 +2529,13 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#bacocazwcz .gt_footnote {
+#vizlmpsbkh .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#bacocazwcz .gt_sourcenotes {
+#vizlmpsbkh .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2522,41 +2549,41 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#bacocazwcz .gt_sourcenote {
+#vizlmpsbkh .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#bacocazwcz .gt_left {
+#vizlmpsbkh .gt_left {
   text-align: left;
 }
 
-#bacocazwcz .gt_center {
+#vizlmpsbkh .gt_center {
   text-align: center;
 }
 
-#bacocazwcz .gt_right {
+#vizlmpsbkh .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#bacocazwcz .gt_font_normal {
+#vizlmpsbkh .gt_font_normal {
   font-weight: normal;
 }
 
-#bacocazwcz .gt_font_bold {
+#vizlmpsbkh .gt_font_bold {
   font-weight: bold;
 }
 
-#bacocazwcz .gt_font_italic {
+#vizlmpsbkh .gt_font_italic {
   font-style: italic;
 }
 
-#bacocazwcz .gt_super {
+#vizlmpsbkh .gt_super {
   font-size: 65%;
 }
 
-#bacocazwcz .gt_footnote_marks {
+#vizlmpsbkh .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -2623,12 +2650,12 @@ prog %&gt;%
   tbl_summary(by = Textbook) %&gt;% 
   modify_header(label = &quot;**Form**&quot;) %&gt;% 
   modify_footnote(update = everything() ~ NA)</code></pre>
-<div id="dhlbwyhavg" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="hzvommrlzi" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#dhlbwyhavg .gt_table {
+#hzvommrlzi .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -2653,7 +2680,7 @@ prog %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#dhlbwyhavg .gt_heading {
+#hzvommrlzi .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2665,7 +2692,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#dhlbwyhavg .gt_title {
+#hzvommrlzi .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2675,7 +2702,7 @@ prog %&gt;%
   border-bottom-width: 0;
 }
 
-#dhlbwyhavg .gt_subtitle {
+#hzvommrlzi .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2685,13 +2712,13 @@ prog %&gt;%
   border-top-width: 0;
 }
 
-#dhlbwyhavg .gt_bottom_border {
+#hzvommrlzi .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#dhlbwyhavg .gt_col_headings {
+#hzvommrlzi .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2706,7 +2733,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#dhlbwyhavg .gt_col_heading {
+#hzvommrlzi .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2726,7 +2753,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#dhlbwyhavg .gt_column_spanner_outer {
+#hzvommrlzi .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2738,15 +2765,15 @@ prog %&gt;%
   padding-right: 4px;
 }
 
-#dhlbwyhavg .gt_column_spanner_outer:first-child {
+#hzvommrlzi .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dhlbwyhavg .gt_column_spanner_outer:last-child {
+#hzvommrlzi .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dhlbwyhavg .gt_column_spanner {
+#hzvommrlzi .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2758,7 +2785,7 @@ prog %&gt;%
   width: 100%;
 }
 
-#dhlbwyhavg .gt_group_heading {
+#hzvommrlzi .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2780,7 +2807,7 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#dhlbwyhavg .gt_empty_group_heading {
+#hzvommrlzi .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2795,15 +2822,15 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#dhlbwyhavg .gt_from_md > :first-child {
+#hzvommrlzi .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dhlbwyhavg .gt_from_md > :last-child {
+#hzvommrlzi .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dhlbwyhavg .gt_row {
+#hzvommrlzi .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2822,7 +2849,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#dhlbwyhavg .gt_stub {
+#hzvommrlzi .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2834,7 +2861,7 @@ prog %&gt;%
   padding-left: 12px;
 }
 
-#dhlbwyhavg .gt_summary_row {
+#hzvommrlzi .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2844,7 +2871,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#dhlbwyhavg .gt_first_summary_row {
+#hzvommrlzi .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2854,7 +2881,7 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#dhlbwyhavg .gt_grand_summary_row {
+#hzvommrlzi .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2864,7 +2891,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#dhlbwyhavg .gt_first_grand_summary_row {
+#hzvommrlzi .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2874,11 +2901,11 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#dhlbwyhavg .gt_striped {
+#hzvommrlzi .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#dhlbwyhavg .gt_table_body {
+#hzvommrlzi .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2887,7 +2914,7 @@ prog %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#dhlbwyhavg .gt_footnotes {
+#hzvommrlzi .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2901,13 +2928,13 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#dhlbwyhavg .gt_footnote {
+#hzvommrlzi .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#dhlbwyhavg .gt_sourcenotes {
+#hzvommrlzi .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2921,41 +2948,41 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#dhlbwyhavg .gt_sourcenote {
+#hzvommrlzi .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#dhlbwyhavg .gt_left {
+#hzvommrlzi .gt_left {
   text-align: left;
 }
 
-#dhlbwyhavg .gt_center {
+#hzvommrlzi .gt_center {
   text-align: center;
 }
 
-#dhlbwyhavg .gt_right {
+#hzvommrlzi .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dhlbwyhavg .gt_font_normal {
+#hzvommrlzi .gt_font_normal {
   font-weight: normal;
 }
 
-#dhlbwyhavg .gt_font_bold {
+#hzvommrlzi .gt_font_bold {
   font-weight: bold;
 }
 
-#dhlbwyhavg .gt_font_italic {
+#hzvommrlzi .gt_font_italic {
   font-style: italic;
 }
 
-#dhlbwyhavg .gt_super {
+#hzvommrlzi .gt_super {
   font-size: 65%;
 }
 
-#dhlbwyhavg .gt_footnote_marks {
+#hzvommrlzi .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -3021,12 +3048,12 @@ prog %&gt;%
   select(Corpus, Negation) %&gt;% 
   tbl_summary(by = Corpus) %&gt;% 
   modify_header(label = &quot;**Form**&quot;)</code></pre>
-<div id="xoenqofovc" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="mokmbdaiyu" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#xoenqofovc .gt_table {
+#mokmbdaiyu .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -3051,7 +3078,7 @@ prog %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#xoenqofovc .gt_heading {
+#mokmbdaiyu .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3063,7 +3090,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#xoenqofovc .gt_title {
+#mokmbdaiyu .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3073,7 +3100,7 @@ prog %&gt;%
   border-bottom-width: 0;
 }
 
-#xoenqofovc .gt_subtitle {
+#mokmbdaiyu .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3083,13 +3110,13 @@ prog %&gt;%
   border-top-width: 0;
 }
 
-#xoenqofovc .gt_bottom_border {
+#mokmbdaiyu .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#xoenqofovc .gt_col_headings {
+#mokmbdaiyu .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3104,7 +3131,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#xoenqofovc .gt_col_heading {
+#mokmbdaiyu .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3124,7 +3151,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#xoenqofovc .gt_column_spanner_outer {
+#mokmbdaiyu .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3136,15 +3163,15 @@ prog %&gt;%
   padding-right: 4px;
 }
 
-#xoenqofovc .gt_column_spanner_outer:first-child {
+#mokmbdaiyu .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#xoenqofovc .gt_column_spanner_outer:last-child {
+#mokmbdaiyu .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#xoenqofovc .gt_column_spanner {
+#mokmbdaiyu .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3156,7 +3183,7 @@ prog %&gt;%
   width: 100%;
 }
 
-#xoenqofovc .gt_group_heading {
+#mokmbdaiyu .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3178,7 +3205,7 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#xoenqofovc .gt_empty_group_heading {
+#mokmbdaiyu .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3193,15 +3220,15 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#xoenqofovc .gt_from_md > :first-child {
+#mokmbdaiyu .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#xoenqofovc .gt_from_md > :last-child {
+#mokmbdaiyu .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#xoenqofovc .gt_row {
+#mokmbdaiyu .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3220,7 +3247,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#xoenqofovc .gt_stub {
+#mokmbdaiyu .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3232,7 +3259,7 @@ prog %&gt;%
   padding-left: 12px;
 }
 
-#xoenqofovc .gt_summary_row {
+#mokmbdaiyu .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3242,7 +3269,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#xoenqofovc .gt_first_summary_row {
+#mokmbdaiyu .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3252,7 +3279,7 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#xoenqofovc .gt_grand_summary_row {
+#mokmbdaiyu .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3262,7 +3289,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#xoenqofovc .gt_first_grand_summary_row {
+#mokmbdaiyu .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3272,11 +3299,11 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#xoenqofovc .gt_striped {
+#mokmbdaiyu .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#xoenqofovc .gt_table_body {
+#mokmbdaiyu .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3285,7 +3312,7 @@ prog %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#xoenqofovc .gt_footnotes {
+#mokmbdaiyu .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3299,13 +3326,13 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#xoenqofovc .gt_footnote {
+#mokmbdaiyu .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#xoenqofovc .gt_sourcenotes {
+#mokmbdaiyu .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3319,41 +3346,41 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#xoenqofovc .gt_sourcenote {
+#mokmbdaiyu .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#xoenqofovc .gt_left {
+#mokmbdaiyu .gt_left {
   text-align: left;
 }
 
-#xoenqofovc .gt_center {
+#mokmbdaiyu .gt_center {
   text-align: center;
 }
 
-#xoenqofovc .gt_right {
+#mokmbdaiyu .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#xoenqofovc .gt_font_normal {
+#mokmbdaiyu .gt_font_normal {
   font-weight: normal;
 }
 
-#xoenqofovc .gt_font_bold {
+#mokmbdaiyu .gt_font_bold {
   font-weight: bold;
 }
 
-#xoenqofovc .gt_font_italic {
+#mokmbdaiyu .gt_font_italic {
   font-style: italic;
 }
 
-#xoenqofovc .gt_super {
+#mokmbdaiyu .gt_super {
   font-size: 65%;
 }
 
-#xoenqofovc .gt_footnote_marks {
+#mokmbdaiyu .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -3400,12 +3427,12 @@ prog %&gt;%
   select(Corpus, Question) %&gt;% 
   tbl_summary(by = Corpus) %&gt;% 
   modify_header(label = &quot;**Form**&quot;)</code></pre>
-<div id="tceviynrjq" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="xrroslzbbd" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#tceviynrjq .gt_table {
+#xrroslzbbd .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -3430,7 +3457,7 @@ prog %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#tceviynrjq .gt_heading {
+#xrroslzbbd .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3442,7 +3469,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#tceviynrjq .gt_title {
+#xrroslzbbd .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3452,7 +3479,7 @@ prog %&gt;%
   border-bottom-width: 0;
 }
 
-#tceviynrjq .gt_subtitle {
+#xrroslzbbd .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3462,13 +3489,13 @@ prog %&gt;%
   border-top-width: 0;
 }
 
-#tceviynrjq .gt_bottom_border {
+#xrroslzbbd .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#tceviynrjq .gt_col_headings {
+#xrroslzbbd .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3483,7 +3510,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#tceviynrjq .gt_col_heading {
+#xrroslzbbd .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3503,7 +3530,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#tceviynrjq .gt_column_spanner_outer {
+#xrroslzbbd .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3515,15 +3542,15 @@ prog %&gt;%
   padding-right: 4px;
 }
 
-#tceviynrjq .gt_column_spanner_outer:first-child {
+#xrroslzbbd .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#tceviynrjq .gt_column_spanner_outer:last-child {
+#xrroslzbbd .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#tceviynrjq .gt_column_spanner {
+#xrroslzbbd .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3535,7 +3562,7 @@ prog %&gt;%
   width: 100%;
 }
 
-#tceviynrjq .gt_group_heading {
+#xrroslzbbd .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3557,7 +3584,7 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#tceviynrjq .gt_empty_group_heading {
+#xrroslzbbd .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3572,15 +3599,15 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#tceviynrjq .gt_from_md > :first-child {
+#xrroslzbbd .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#tceviynrjq .gt_from_md > :last-child {
+#xrroslzbbd .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#tceviynrjq .gt_row {
+#xrroslzbbd .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3599,7 +3626,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#tceviynrjq .gt_stub {
+#xrroslzbbd .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3611,7 +3638,7 @@ prog %&gt;%
   padding-left: 12px;
 }
 
-#tceviynrjq .gt_summary_row {
+#xrroslzbbd .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3621,7 +3648,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#tceviynrjq .gt_first_summary_row {
+#xrroslzbbd .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3631,7 +3658,7 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#tceviynrjq .gt_grand_summary_row {
+#xrroslzbbd .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3641,7 +3668,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#tceviynrjq .gt_first_grand_summary_row {
+#xrroslzbbd .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3651,11 +3678,11 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#tceviynrjq .gt_striped {
+#xrroslzbbd .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#tceviynrjq .gt_table_body {
+#xrroslzbbd .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3664,7 +3691,7 @@ prog %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#tceviynrjq .gt_footnotes {
+#xrroslzbbd .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3678,13 +3705,13 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#tceviynrjq .gt_footnote {
+#xrroslzbbd .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#tceviynrjq .gt_sourcenotes {
+#xrroslzbbd .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3698,41 +3725,41 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#tceviynrjq .gt_sourcenote {
+#xrroslzbbd .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#tceviynrjq .gt_left {
+#xrroslzbbd .gt_left {
   text-align: left;
 }
 
-#tceviynrjq .gt_center {
+#xrroslzbbd .gt_center {
   text-align: center;
 }
 
-#tceviynrjq .gt_right {
+#xrroslzbbd .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#tceviynrjq .gt_font_normal {
+#xrroslzbbd .gt_font_normal {
   font-weight: normal;
 }
 
-#tceviynrjq .gt_font_bold {
+#xrroslzbbd .gt_font_bold {
   font-weight: bold;
 }
 
-#tceviynrjq .gt_font_italic {
+#xrroslzbbd .gt_font_italic {
   font-style: italic;
 }
 
-#tceviynrjq .gt_super {
+#xrroslzbbd .gt_super {
   font-size: 65%;
 }
 
-#tceviynrjq .gt_footnote_marks {
+#xrroslzbbd .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -3782,12 +3809,12 @@ prog %&gt;%
   select(Corpus, Voice) %&gt;% 
   tbl_summary(by = Corpus) %&gt;% 
   modify_header(label = &quot;**Form**&quot;)</code></pre>
-<div id="dqoabputoy" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="fechljmqzr" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#dqoabputoy .gt_table {
+#fechljmqzr .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -3812,7 +3839,7 @@ prog %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#dqoabputoy .gt_heading {
+#fechljmqzr .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3824,7 +3851,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#dqoabputoy .gt_title {
+#fechljmqzr .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3834,7 +3861,7 @@ prog %&gt;%
   border-bottom-width: 0;
 }
 
-#dqoabputoy .gt_subtitle {
+#fechljmqzr .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3844,13 +3871,13 @@ prog %&gt;%
   border-top-width: 0;
 }
 
-#dqoabputoy .gt_bottom_border {
+#fechljmqzr .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#dqoabputoy .gt_col_headings {
+#fechljmqzr .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3865,7 +3892,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#dqoabputoy .gt_col_heading {
+#fechljmqzr .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3885,7 +3912,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#dqoabputoy .gt_column_spanner_outer {
+#fechljmqzr .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3897,15 +3924,15 @@ prog %&gt;%
   padding-right: 4px;
 }
 
-#dqoabputoy .gt_column_spanner_outer:first-child {
+#fechljmqzr .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dqoabputoy .gt_column_spanner_outer:last-child {
+#fechljmqzr .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dqoabputoy .gt_column_spanner {
+#fechljmqzr .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3917,7 +3944,7 @@ prog %&gt;%
   width: 100%;
 }
 
-#dqoabputoy .gt_group_heading {
+#fechljmqzr .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3939,7 +3966,7 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#dqoabputoy .gt_empty_group_heading {
+#fechljmqzr .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3954,15 +3981,15 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#dqoabputoy .gt_from_md > :first-child {
+#fechljmqzr .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dqoabputoy .gt_from_md > :last-child {
+#fechljmqzr .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dqoabputoy .gt_row {
+#fechljmqzr .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3981,7 +4008,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#dqoabputoy .gt_stub {
+#fechljmqzr .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3993,7 +4020,7 @@ prog %&gt;%
   padding-left: 12px;
 }
 
-#dqoabputoy .gt_summary_row {
+#fechljmqzr .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4003,7 +4030,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#dqoabputoy .gt_first_summary_row {
+#fechljmqzr .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4013,7 +4040,7 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#dqoabputoy .gt_grand_summary_row {
+#fechljmqzr .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4023,7 +4050,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#dqoabputoy .gt_first_grand_summary_row {
+#fechljmqzr .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4033,11 +4060,11 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#dqoabputoy .gt_striped {
+#fechljmqzr .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#dqoabputoy .gt_table_body {
+#fechljmqzr .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4046,7 +4073,7 @@ prog %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#dqoabputoy .gt_footnotes {
+#fechljmqzr .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4060,13 +4087,13 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#dqoabputoy .gt_footnote {
+#fechljmqzr .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#dqoabputoy .gt_sourcenotes {
+#fechljmqzr .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4080,41 +4107,41 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#dqoabputoy .gt_sourcenote {
+#fechljmqzr .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#dqoabputoy .gt_left {
+#fechljmqzr .gt_left {
   text-align: left;
 }
 
-#dqoabputoy .gt_center {
+#fechljmqzr .gt_center {
   text-align: center;
 }
 
-#dqoabputoy .gt_right {
+#fechljmqzr .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dqoabputoy .gt_font_normal {
+#fechljmqzr .gt_font_normal {
   font-weight: normal;
 }
 
-#dqoabputoy .gt_font_bold {
+#fechljmqzr .gt_font_bold {
   font-weight: bold;
 }
 
-#dqoabputoy .gt_font_italic {
+#fechljmqzr .gt_font_italic {
   font-style: italic;
 }
 
-#dqoabputoy .gt_super {
+#fechljmqzr .gt_super {
   font-size: 65%;
 }
 
-#dqoabputoy .gt_footnote_marks {
+#fechljmqzr .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -4164,12 +4191,12 @@ prog %&gt;%
   select(Corpus, Time.reference) %&gt;% 
   tbl_summary(by = Corpus) %&gt;% 
   modify_header(label = &quot;**Time reference**&quot;) </code></pre>
-<div id="lwpsfmkgud" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="wvyaoihfqm" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#lwpsfmkgud .gt_table {
+#wvyaoihfqm .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -4194,7 +4221,7 @@ prog %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#lwpsfmkgud .gt_heading {
+#wvyaoihfqm .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4206,7 +4233,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#lwpsfmkgud .gt_title {
+#wvyaoihfqm .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4216,7 +4243,7 @@ prog %&gt;%
   border-bottom-width: 0;
 }
 
-#lwpsfmkgud .gt_subtitle {
+#wvyaoihfqm .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4226,13 +4253,13 @@ prog %&gt;%
   border-top-width: 0;
 }
 
-#lwpsfmkgud .gt_bottom_border {
+#wvyaoihfqm .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#lwpsfmkgud .gt_col_headings {
+#wvyaoihfqm .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4247,7 +4274,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#lwpsfmkgud .gt_col_heading {
+#wvyaoihfqm .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4267,7 +4294,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#lwpsfmkgud .gt_column_spanner_outer {
+#wvyaoihfqm .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4279,15 +4306,15 @@ prog %&gt;%
   padding-right: 4px;
 }
 
-#lwpsfmkgud .gt_column_spanner_outer:first-child {
+#wvyaoihfqm .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#lwpsfmkgud .gt_column_spanner_outer:last-child {
+#wvyaoihfqm .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#lwpsfmkgud .gt_column_spanner {
+#wvyaoihfqm .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4299,7 +4326,7 @@ prog %&gt;%
   width: 100%;
 }
 
-#lwpsfmkgud .gt_group_heading {
+#wvyaoihfqm .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4321,7 +4348,7 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#lwpsfmkgud .gt_empty_group_heading {
+#wvyaoihfqm .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4336,15 +4363,15 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#lwpsfmkgud .gt_from_md > :first-child {
+#wvyaoihfqm .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#lwpsfmkgud .gt_from_md > :last-child {
+#wvyaoihfqm .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#lwpsfmkgud .gt_row {
+#wvyaoihfqm .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4363,7 +4390,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#lwpsfmkgud .gt_stub {
+#wvyaoihfqm .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4375,7 +4402,7 @@ prog %&gt;%
   padding-left: 12px;
 }
 
-#lwpsfmkgud .gt_summary_row {
+#wvyaoihfqm .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4385,7 +4412,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#lwpsfmkgud .gt_first_summary_row {
+#wvyaoihfqm .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4395,7 +4422,7 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#lwpsfmkgud .gt_grand_summary_row {
+#wvyaoihfqm .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4405,7 +4432,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#lwpsfmkgud .gt_first_grand_summary_row {
+#wvyaoihfqm .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4415,11 +4442,11 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#lwpsfmkgud .gt_striped {
+#wvyaoihfqm .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#lwpsfmkgud .gt_table_body {
+#wvyaoihfqm .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4428,7 +4455,7 @@ prog %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#lwpsfmkgud .gt_footnotes {
+#wvyaoihfqm .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4442,13 +4469,13 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#lwpsfmkgud .gt_footnote {
+#wvyaoihfqm .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#lwpsfmkgud .gt_sourcenotes {
+#wvyaoihfqm .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4462,41 +4489,41 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#lwpsfmkgud .gt_sourcenote {
+#wvyaoihfqm .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#lwpsfmkgud .gt_left {
+#wvyaoihfqm .gt_left {
   text-align: left;
 }
 
-#lwpsfmkgud .gt_center {
+#wvyaoihfqm .gt_center {
   text-align: center;
 }
 
-#lwpsfmkgud .gt_right {
+#wvyaoihfqm .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#lwpsfmkgud .gt_font_normal {
+#wvyaoihfqm .gt_font_normal {
   font-weight: normal;
 }
 
-#lwpsfmkgud .gt_font_bold {
+#wvyaoihfqm .gt_font_bold {
   font-weight: bold;
 }
 
-#lwpsfmkgud .gt_font_italic {
+#wvyaoihfqm .gt_font_italic {
   font-style: italic;
 }
 
-#lwpsfmkgud .gt_super {
+#wvyaoihfqm .gt_super {
   font-size: 65%;
 }
 
-#lwpsfmkgud .gt_footnote_marks {
+#wvyaoihfqm .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -4558,12 +4585,12 @@ prog %&gt;%
   select(Corpus, Repeated) %&gt;% 
   tbl_summary(by = Corpus) %&gt;% 
   modify_header(label = &quot;**Function**&quot;) </code></pre>
-<div id="gspsymoqhz" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="tidruqxwzr" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#gspsymoqhz .gt_table {
+#tidruqxwzr .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -4588,7 +4615,7 @@ prog %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#gspsymoqhz .gt_heading {
+#tidruqxwzr .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4600,7 +4627,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#gspsymoqhz .gt_title {
+#tidruqxwzr .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4610,7 +4637,7 @@ prog %&gt;%
   border-bottom-width: 0;
 }
 
-#gspsymoqhz .gt_subtitle {
+#tidruqxwzr .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4620,13 +4647,13 @@ prog %&gt;%
   border-top-width: 0;
 }
 
-#gspsymoqhz .gt_bottom_border {
+#tidruqxwzr .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#gspsymoqhz .gt_col_headings {
+#tidruqxwzr .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4641,7 +4668,7 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#gspsymoqhz .gt_col_heading {
+#tidruqxwzr .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4661,7 +4688,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#gspsymoqhz .gt_column_spanner_outer {
+#tidruqxwzr .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4673,15 +4700,15 @@ prog %&gt;%
   padding-right: 4px;
 }
 
-#gspsymoqhz .gt_column_spanner_outer:first-child {
+#tidruqxwzr .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#gspsymoqhz .gt_column_spanner_outer:last-child {
+#tidruqxwzr .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#gspsymoqhz .gt_column_spanner {
+#tidruqxwzr .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4693,7 +4720,7 @@ prog %&gt;%
   width: 100%;
 }
 
-#gspsymoqhz .gt_group_heading {
+#tidruqxwzr .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4715,7 +4742,7 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#gspsymoqhz .gt_empty_group_heading {
+#tidruqxwzr .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4730,15 +4757,15 @@ prog %&gt;%
   vertical-align: middle;
 }
 
-#gspsymoqhz .gt_from_md > :first-child {
+#tidruqxwzr .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#gspsymoqhz .gt_from_md > :last-child {
+#tidruqxwzr .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#gspsymoqhz .gt_row {
+#tidruqxwzr .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4757,7 +4784,7 @@ prog %&gt;%
   overflow-x: hidden;
 }
 
-#gspsymoqhz .gt_stub {
+#tidruqxwzr .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4769,7 +4796,7 @@ prog %&gt;%
   padding-left: 12px;
 }
 
-#gspsymoqhz .gt_summary_row {
+#tidruqxwzr .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4779,7 +4806,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#gspsymoqhz .gt_first_summary_row {
+#tidruqxwzr .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4789,7 +4816,7 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#gspsymoqhz .gt_grand_summary_row {
+#tidruqxwzr .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4799,7 +4826,7 @@ prog %&gt;%
   padding-right: 5px;
 }
 
-#gspsymoqhz .gt_first_grand_summary_row {
+#tidruqxwzr .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4809,11 +4836,11 @@ prog %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#gspsymoqhz .gt_striped {
+#tidruqxwzr .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#gspsymoqhz .gt_table_body {
+#tidruqxwzr .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4822,7 +4849,7 @@ prog %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#gspsymoqhz .gt_footnotes {
+#tidruqxwzr .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4836,13 +4863,13 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#gspsymoqhz .gt_footnote {
+#tidruqxwzr .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#gspsymoqhz .gt_sourcenotes {
+#tidruqxwzr .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4856,41 +4883,41 @@ prog %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#gspsymoqhz .gt_sourcenote {
+#tidruqxwzr .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#gspsymoqhz .gt_left {
+#tidruqxwzr .gt_left {
   text-align: left;
 }
 
-#gspsymoqhz .gt_center {
+#tidruqxwzr .gt_center {
   text-align: center;
 }
 
-#gspsymoqhz .gt_right {
+#tidruqxwzr .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#gspsymoqhz .gt_font_normal {
+#tidruqxwzr .gt_font_normal {
   font-weight: normal;
 }
 
-#gspsymoqhz .gt_font_bold {
+#tidruqxwzr .gt_font_bold {
   font-weight: bold;
 }
 
-#gspsymoqhz .gt_font_italic {
+#tidruqxwzr .gt_font_italic {
   font-style: italic;
 }
 
-#gspsymoqhz .gt_super {
+#tidruqxwzr .gt_super {
   font-size: 65%;
 }
 
-#gspsymoqhz .gt_footnote_marks {
+#tidruqxwzr .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -4943,12 +4970,12 @@ prog1 %&gt;%
   select(Corpus, Extra.function) %&gt;% 
   tbl_summary(by = Corpus, missing = &quot;ifany&quot;) %&gt;% 
   modify_header(label = &quot;**Function**&quot;) </code></pre>
-<div id="vrdmuovegj" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="fturmiuyyq" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#vrdmuovegj .gt_table {
+#fturmiuyyq .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -4973,7 +5000,7 @@ prog1 %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#vrdmuovegj .gt_heading {
+#fturmiuyyq .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4985,7 +5012,7 @@ prog1 %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#vrdmuovegj .gt_title {
+#fturmiuyyq .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4995,7 +5022,7 @@ prog1 %&gt;%
   border-bottom-width: 0;
 }
 
-#vrdmuovegj .gt_subtitle {
+#fturmiuyyq .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -5005,13 +5032,13 @@ prog1 %&gt;%
   border-top-width: 0;
 }
 
-#vrdmuovegj .gt_bottom_border {
+#fturmiuyyq .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#vrdmuovegj .gt_col_headings {
+#fturmiuyyq .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5026,7 +5053,7 @@ prog1 %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#vrdmuovegj .gt_col_heading {
+#fturmiuyyq .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5046,7 +5073,7 @@ prog1 %&gt;%
   overflow-x: hidden;
 }
 
-#vrdmuovegj .gt_column_spanner_outer {
+#fturmiuyyq .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5058,15 +5085,15 @@ prog1 %&gt;%
   padding-right: 4px;
 }
 
-#vrdmuovegj .gt_column_spanner_outer:first-child {
+#fturmiuyyq .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#vrdmuovegj .gt_column_spanner_outer:last-child {
+#fturmiuyyq .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#vrdmuovegj .gt_column_spanner {
+#fturmiuyyq .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -5078,7 +5105,7 @@ prog1 %&gt;%
   width: 100%;
 }
 
-#vrdmuovegj .gt_group_heading {
+#fturmiuyyq .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -5100,7 +5127,7 @@ prog1 %&gt;%
   vertical-align: middle;
 }
 
-#vrdmuovegj .gt_empty_group_heading {
+#fturmiuyyq .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -5115,15 +5142,15 @@ prog1 %&gt;%
   vertical-align: middle;
 }
 
-#vrdmuovegj .gt_from_md > :first-child {
+#fturmiuyyq .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#vrdmuovegj .gt_from_md > :last-child {
+#fturmiuyyq .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#vrdmuovegj .gt_row {
+#fturmiuyyq .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5142,7 +5169,7 @@ prog1 %&gt;%
   overflow-x: hidden;
 }
 
-#vrdmuovegj .gt_stub {
+#fturmiuyyq .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5154,7 +5181,7 @@ prog1 %&gt;%
   padding-left: 12px;
 }
 
-#vrdmuovegj .gt_summary_row {
+#fturmiuyyq .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5164,7 +5191,7 @@ prog1 %&gt;%
   padding-right: 5px;
 }
 
-#vrdmuovegj .gt_first_summary_row {
+#fturmiuyyq .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5174,7 +5201,7 @@ prog1 %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#vrdmuovegj .gt_grand_summary_row {
+#fturmiuyyq .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5184,7 +5211,7 @@ prog1 %&gt;%
   padding-right: 5px;
 }
 
-#vrdmuovegj .gt_first_grand_summary_row {
+#fturmiuyyq .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5194,11 +5221,11 @@ prog1 %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#vrdmuovegj .gt_striped {
+#fturmiuyyq .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#vrdmuovegj .gt_table_body {
+#fturmiuyyq .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5207,7 +5234,7 @@ prog1 %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#vrdmuovegj .gt_footnotes {
+#fturmiuyyq .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5221,13 +5248,13 @@ prog1 %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#vrdmuovegj .gt_footnote {
+#fturmiuyyq .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#vrdmuovegj .gt_sourcenotes {
+#fturmiuyyq .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5241,41 +5268,41 @@ prog1 %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#vrdmuovegj .gt_sourcenote {
+#fturmiuyyq .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#vrdmuovegj .gt_left {
+#fturmiuyyq .gt_left {
   text-align: left;
 }
 
-#vrdmuovegj .gt_center {
+#fturmiuyyq .gt_center {
   text-align: center;
 }
 
-#vrdmuovegj .gt_right {
+#fturmiuyyq .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#vrdmuovegj .gt_font_normal {
+#fturmiuyyq .gt_font_normal {
   font-weight: normal;
 }
 
-#vrdmuovegj .gt_font_bold {
+#fturmiuyyq .gt_font_bold {
   font-weight: bold;
 }
 
-#vrdmuovegj .gt_font_italic {
+#fturmiuyyq .gt_font_italic {
   font-style: italic;
 }
 
-#vrdmuovegj .gt_super {
+#fturmiuyyq .gt_super {
   font-size: 65%;
 }
 
-#vrdmuovegj .gt_footnote_marks {
+#fturmiuyyq .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -5306,12 +5333,12 @@ prog1 %&gt;%
     <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">other interesting function</td>
 <td class="gt_row gt_center">3 (0.1%)</td>
 <td class="gt_row gt_center">3 (0.1%)</td></tr>
-    <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">politeness or softening</td>
-<td class="gt_row gt_center">0 (0%)</td>
-<td class="gt_row gt_center">1 (&lt;0.1%)</td></tr>
     <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">politeness/softening</td>
 <td class="gt_row gt_center">8 (0.3%)</td>
 <td class="gt_row gt_center">4 (0.2%)</td></tr>
+    <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">politeness or softening</td>
+<td class="gt_row gt_center">0 (0%)</td>
+<td class="gt_row gt_center">1 (&lt;0.1%)</td></tr>
     <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">none</td>
 <td class="gt_row gt_center">2,261 (93%)</td>
 <td class="gt_row gt_center">2,233 (92%)</td></tr>
@@ -5337,12 +5364,12 @@ prog1 %&gt;%
   select(Corpus, Continuous) %&gt;% 
   tbl_summary(by = Corpus) %&gt;% 
   modify_header(label = &quot;**Function**&quot;) </code></pre>
-<div id="hvopxjvvhi" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="xexkuviuvw" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#hvopxjvvhi .gt_table {
+#xexkuviuvw .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -5367,7 +5394,7 @@ prog1 %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#hvopxjvvhi .gt_heading {
+#xexkuviuvw .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -5379,7 +5406,7 @@ prog1 %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#hvopxjvvhi .gt_title {
+#xexkuviuvw .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -5389,7 +5416,7 @@ prog1 %&gt;%
   border-bottom-width: 0;
 }
 
-#hvopxjvvhi .gt_subtitle {
+#xexkuviuvw .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -5399,13 +5426,13 @@ prog1 %&gt;%
   border-top-width: 0;
 }
 
-#hvopxjvvhi .gt_bottom_border {
+#xexkuviuvw .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#hvopxjvvhi .gt_col_headings {
+#xexkuviuvw .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5420,7 +5447,7 @@ prog1 %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#hvopxjvvhi .gt_col_heading {
+#xexkuviuvw .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5440,7 +5467,7 @@ prog1 %&gt;%
   overflow-x: hidden;
 }
 
-#hvopxjvvhi .gt_column_spanner_outer {
+#xexkuviuvw .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5452,15 +5479,15 @@ prog1 %&gt;%
   padding-right: 4px;
 }
 
-#hvopxjvvhi .gt_column_spanner_outer:first-child {
+#xexkuviuvw .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#hvopxjvvhi .gt_column_spanner_outer:last-child {
+#xexkuviuvw .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#hvopxjvvhi .gt_column_spanner {
+#xexkuviuvw .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -5472,7 +5499,7 @@ prog1 %&gt;%
   width: 100%;
 }
 
-#hvopxjvvhi .gt_group_heading {
+#xexkuviuvw .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -5494,7 +5521,7 @@ prog1 %&gt;%
   vertical-align: middle;
 }
 
-#hvopxjvvhi .gt_empty_group_heading {
+#xexkuviuvw .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -5509,15 +5536,15 @@ prog1 %&gt;%
   vertical-align: middle;
 }
 
-#hvopxjvvhi .gt_from_md > :first-child {
+#xexkuviuvw .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#hvopxjvvhi .gt_from_md > :last-child {
+#xexkuviuvw .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#hvopxjvvhi .gt_row {
+#xexkuviuvw .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5536,7 +5563,7 @@ prog1 %&gt;%
   overflow-x: hidden;
 }
 
-#hvopxjvvhi .gt_stub {
+#xexkuviuvw .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5548,7 +5575,7 @@ prog1 %&gt;%
   padding-left: 12px;
 }
 
-#hvopxjvvhi .gt_summary_row {
+#xexkuviuvw .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5558,7 +5585,7 @@ prog1 %&gt;%
   padding-right: 5px;
 }
 
-#hvopxjvvhi .gt_first_summary_row {
+#xexkuviuvw .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5568,7 +5595,7 @@ prog1 %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#hvopxjvvhi .gt_grand_summary_row {
+#xexkuviuvw .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5578,7 +5605,7 @@ prog1 %&gt;%
   padding-right: 5px;
 }
 
-#hvopxjvvhi .gt_first_grand_summary_row {
+#xexkuviuvw .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5588,11 +5615,11 @@ prog1 %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#hvopxjvvhi .gt_striped {
+#xexkuviuvw .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#hvopxjvvhi .gt_table_body {
+#xexkuviuvw .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5601,7 +5628,7 @@ prog1 %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#hvopxjvvhi .gt_footnotes {
+#xexkuviuvw .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5615,13 +5642,13 @@ prog1 %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#hvopxjvvhi .gt_footnote {
+#xexkuviuvw .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#hvopxjvvhi .gt_sourcenotes {
+#xexkuviuvw .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5635,41 +5662,41 @@ prog1 %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#hvopxjvvhi .gt_sourcenote {
+#xexkuviuvw .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#hvopxjvvhi .gt_left {
+#xexkuviuvw .gt_left {
   text-align: left;
 }
 
-#hvopxjvvhi .gt_center {
+#xexkuviuvw .gt_center {
   text-align: center;
 }
 
-#hvopxjvvhi .gt_right {
+#xexkuviuvw .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#hvopxjvvhi .gt_font_normal {
+#xexkuviuvw .gt_font_normal {
   font-weight: normal;
 }
 
-#hvopxjvvhi .gt_font_bold {
+#xexkuviuvw .gt_font_bold {
   font-weight: bold;
 }
 
-#hvopxjvvhi .gt_font_italic {
+#xexkuviuvw .gt_font_italic {
   font-style: italic;
 }
 
-#hvopxjvvhi .gt_super {
+#xexkuviuvw .gt_super {
   font-size: 65%;
 }
 
-#hvopxjvvhi .gt_footnote_marks {
+#xexkuviuvw .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -6188,12 +6215,21 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   act             2       0    0    2
 ##   add             1       0    0    1
 ##   advise          1       0    0    1
+##   affect          0       0    0    0
+##   allow           0       0    0    0
+##   amaze           0       0    0    0
+##   amaziiing       0       0    0    0
+##   annoy           0       0    0    0
 ##   answer          2       0    1    3
+##   appeal          0       0    0    0
 ##   appoint         1       0    0    1
+##   appreciate      0       0    0    0
 ##   approach        2       0    0    2
 ##   argue           1       0    0    1
 ##   arrive          3       0    0    3
 ##   ask             9       0    6   15
+##   assist          0       0    0    0
+##   attack          0       0    0    0
 ##   attract         0       0    1    1
 ##   bake            1       0    0    1
 ##   bark            2       0    0    2
@@ -6204,6 +6240,8 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   block           1       0    0    1
 ##   blow            0       0    1    1
 ##   board           2       0    0    2
+##   bootleg         0       0    0    0
+##   bore            0       0    0    0
 ##   borrow          0       0    1    1
 ##   bother          1       0    1    2
 ##   bow             1       0    0    1
@@ -6217,6 +6255,7 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   call           12       0    0   12
 ##   call for        0       0    1    1
 ##   camp            1       0    0    1
+##   care            0       0    0    0
 ##   carry           3       0    0    3
 ##   catch           1       0    0    1
 ##   cause           1       0    2    3
@@ -6224,6 +6263,7 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   change          4       0    4    8
 ##   chase           3       0    0    3
 ##   chat            2       0    2    4
+##   cheat           0       0    0    0
 ##   check           2       0    0    2
 ##   cheer           3       0    1    4
 ##   chew            0       0    1    1
@@ -6242,19 +6282,26 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   communicate     0       0    1    1
 ##   complain        1       0    1    2
 ##   concentrate     1       0    1    2
+##   connect         0       0    0    0
 ##   consume         0       0    1    1
 ##   continue        0       0    2    2
+##   convert         0       0    0    0
 ##   cook            5       0    0    5
 ##   copy            1       0    0    1
 ##   create          0       0    1    1
 ##   criticise       0       0    2    2
 ##   cross           4       0    0    4
 ##   cry             2       0    0    2
+##   cut             0       0    0    0
 ##   cycle           2       0    0    2
 ##   dance           7       0    1    8
+##   daunt           0       0    0    0
 ##   decorate        1       0    0    1
 ##   delete          1       0    0    1
+##   demand          0       0    0    0
+##   depress         0       0    0    0
 ##   desert          1       0    0    1
+##   devastate       0       0    0    0
 ##   develop         2       0    0    2
 ##   die             5       0    0    5
 ##   die out         1       0    0    1
@@ -6273,16 +6320,25 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   drink           4       0    1    5
 ##   drive           4       0    1    5
 ##   drown           2       0    0    2
+##   drum            0       0    0    0
 ##   dust            1       0    0    1
+##   dying           0       0    0    0
 ##   eat            15       0    4   19
 ##   emerge          2       0    0    2
+##   employ          0       0    0    0
 ##   encourage       0       0    1    1
+##   end             0       0    0    0
 ##   enjoy          15       0    2   17
+##   everything      0       0    0    0
 ##   evolve          1       0    0    1
 ##   exaggerate      3       0    0    3
+##   examine         0       0    0    0
+##   exasperate      0       0    0    0
 ##   exclude         0       0    1    1
+##   exhaust         0       0    0    0
 ##   expect          3       0    0    3
 ##   experiment      1       0    0    1
+##   explain         0       0    0    0
 ##   explode         1       0    0    1
 ##   express         0       0    1    1
 ##   face            0       0    2    2
@@ -6294,14 +6350,17 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   film            1       1    1    3
 ##   find            2       0    0    2
 ##   flirt           0       0    1    1
+##   flow            0       0    0    0
 ##   fly             7       0    1    8
 ##   follow          4       0    1    5
 ##   fool around     1       0    0    1
 ##   forget          0       0    2    2
 ##   frown           1       0    0    1
+##   frustrate       0       0    0    0
 ##   fundraise       0       0    1    1
 ##   gain            1       0    0    1
 ##   garden          1       0    0    1
+##   Geocaching      0       0    0    0
 ##   get            30       1   13   44
 ##   get off         1       0    0    1
 ##   get on          2       0    2    4
@@ -6324,6 +6383,7 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   hang  out       0       0    3    3
 ##   happen         18       0    5   23
 ##   harass          0       0    1    1
+##   hardworking     0       0    0    0
 ##   have           53       0    5   58
 ##   have on         0       0    1    1
 ##   head            1       0    1    2
@@ -6338,24 +6398,31 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   hunt            0       0    1    1
 ##   hurt            0       0    5    5
 ##   impoverish      0       0    1    1
+##   include         0       0    0    0
 ##   inspire         0       0    2    2
+##   interest        0       0    0    0
 ##   interview       2       0    0    2
+##   invest          0       0    0    0
 ##   invite          1       0    0    1
 ##   jog             2       0    0    2
 ##   join            3       0    0    3
 ##   joke           11       0    0   11
+##   judge           0       0    0    0
 ##   juggle          2       0    0    2
 ##   jump            1       0    1    2
 ##   keep            2       0    0    2
 ##   kid            13       0    0   13
 ##   kill            0       0    1    1
 ##   kneel           1       0    0    1
+##   know            0       0    0    0
 ##   land            1       0    0    1
 ##   laugh           4       0    0    4
 ##   lead            1       0    0    1
+##   lean            0       0    0    0
 ##   learn           9       0    5   14
 ##   leave          15       0    0   15
 ##   let             1       0    2    3
+##   letterboxing    0       0    0    0
 ##   level           0       0    1    1
 ##   lie             9       0    3   12
 ##   lift            2       0    1    3
@@ -6373,23 +6440,32 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   march           1       0    0    1
 ##   mean            1       0    0    1
 ##   meet           13       0    0   13
+##   ming            0       0    0    0
 ##   miss            6       0    1    7
+##   miss out        0       0    0    0
 ##   mix             0       0    1    1
+##   motivate        0       0    0    0
 ##   move           13       0    2   15
+##   NA              0       0    0    0
 ##   nourish         0       0    1    1
 ##   offer           1       0    2    3
 ##   operate         0       0    1    1
 ##   organise        1       0    0    1
 ##   overchange      1       0    0    1
+##   overdo          0       0    0    0
 ##   overreact       1       0    0    1
 ##   pack            1       0    1    2
 ##   paint           1       0    1    2
+##   panic           0       0    0    0
 ##   participate     1       0    1    2
 ##   party           1       0    0    1
 ##   pass            5       0    0    5
+##   paste           0       0    0    0
 ##   pay             4       0    1    5
 ##   pedal           1       0    0    1
+##   pend            0       0    0    0
 ##   perform         1       1    1    3
+##   persuade        0       0    0    0
 ##   phone           2       0    0    2
 ##   pick up         4       0    0    4
 ##   pinch           0       1    1    2
@@ -6406,6 +6482,8 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   prepare         6       0    2    8
 ##   pretend         1       0    0    1
 ##   print           1       0    0    1
+##   promote         0       0    0    0
+##   protect         0       0    0    0
 ##   protest         0       0    1    1
 ##   pull            1       0    2    3
 ##   pump            1       0    0    1
@@ -6414,13 +6492,17 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   put             5       0    1    6
 ##   put off         0       0    1    1
 ##   put on          1       0    0    1
+##   raft            0       0    0    0
 ##   rain           12       0    0   12
+##   raise           0       0    0    0
 ##   react           0       0    1    1
 ##   read           16       0    2   18
 ##   realise         0       0    1    1
 ##   receive         0       0    2    2
 ##   record          1       0    0    1
 ##   recover         2       0    0    2
+##   recycle         0       0    0    0
+##   redefine        0       0    0    0
 ##   refer           1       0    0    1
 ##   refuse          1       0    0    1
 ##   rehearse        1       0    0    1
@@ -6430,8 +6512,10 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   repair          1       0    0    1
 ##   repeat          0       0    1    1
 ##   report          4       0    0    4
+##   research        0       0    0    0
 ##   return          2       0    0    2
 ##   revise          3       0    1    4
+##   reward          0       0    0    0
 ##   ride            1       0    0    1
 ##   ring            3       0    0    3
 ##   rob             1       0    0    1
@@ -6441,6 +6525,8 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   save            1       0    0    1
 ##   say            23       2    4   29
 ##   scan            1       0    0    1
+##   scowl           0       0    0    0
+##   scream          0       0    0    0
 ##   search          2       0    0    2
 ##   see             5       0    3    8
 ##   seek            0       0    1    1
@@ -6450,18 +6536,23 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   shake           1       0    0    1
 ##   share           1       0    0    1
 ##   shine           2       0    0    2
+##   shoot           0       0    0    0
 ##   shop            2       0    0    2
 ##   shout           2       0    0    2
 ##   show            4       0    0    4
 ##   shrug           0       0    1    1
 ##   sing            3       0    1    4
 ##   sit            21       0    1   22
+##   ski             0       0    0    0
 ##   slam            0       0    2    2
 ##   sleep          13       1    0   14
 ##   slow            1       0    0    1
 ##   smile          10       0    1   11
 ##   smoke           1       0    0    1
 ##   snow            5       0    0    5
+##   solve           0       0    0    0
+##   something       0       0    0    0
+##   sort            0       0    0    0
 ##   sound           1       0    0    1
 ##   speak           5       0    2    7
 ##   spend           3       0    0    3
@@ -6479,6 +6570,7 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   steal           0       1    1    2
 ##   stop            2       0    1    3
 ##   stress          1       0    0    1
+##   stretch         0       0    0    0
 ##   stroll          1       0    0    1
 ##   struggle        1       0    0    1
 ##   study          15       0    3   18
@@ -6486,21 +6578,30 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   suggest         1       0    0    1
 ##   support         1       0    0    1
 ##   surf            4       0    0    4
+##   surprise        0       0    0    0
+##   survive         0       0    0    0
 ##   swim            9       0    0    9
 ##   take           26       0    8   34
 ##   take back       1       0    0    1
 ##   take part       0       0    1    1
 ##   take up         0       0    1    1
 ##   talk           76       3    9   88
+##   tame            0       0    0    0
+##   tanding         0       0    0    0
+##   taste           0       0    0    0
+##   tattoo          0       0    0    0
 ##   teach           3       0    3    6
 ##   tear            1       0    0    1
 ##   tell           11       1    7   19
 ##   test            2       0    0    2
 ##   text            1       0    0    1
+##   thing           0       0    0    0
 ##   think          26       0    1   27
 ##   throw           2       0    0    2
 ##   tidy            1       0    0    1
+##   tingle          0       0    0    0
 ##   tip             0       0    1    1
+##   tire            0       0    0    0
 ##   top             1       0    0    1
 ##   train           1       0    4    5
 ##   travel          8       0    3   11
@@ -6508,6 +6609,8 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   try            41       0   14   55
 ##   turn            1       0    1    2
 ##   turn off        1       0    0    1
+##   tutting         0       0    0    0
+##   understand      0       0    0    0
 ##   update          1       0    1    2
 ##   upset           0       0    1    1
 ##   urge            0       0    1    1
@@ -6516,18 +6619,22 @@ TCrepeated &lt;- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated))
 ##   visit          10       0    0   10
 ##   volunteer       0       1    2    3
 ##   wait           49       0    1   50
+##   wake up         0       0    0    0
 ##   walk           27       0    0   27
 ##   want            1       0    1    2
 ##   wash            2       0    0    2
 ##   waste           2       1    0    3
 ##   watch          28       1    2   31
 ##   wear           70       0    1   71
+##   welcome         0       0    0    0
 ##   whisper         1       0    0    1
 ##   win             1       0    0    1
 ##   wipe            0       0    1    1
 ##   wish            1       0    0    1
 ##   wonder          7       0    0    7
+##   woo             0       0    0    0
 ##   work           31       1   18   50
+##   worry           0       0    0    0
 ##   write          16       0    2   18
 ##   Sum          2001      28  394 2423</code></pre>
 <pre class="r"><code>TCrepeated &lt;- TCrepeated[order(TCrepeated[,4], decreasing = T),]; head(TCrepeated, 11)</code></pre>
@@ -6734,15 +6841,15 @@ head(table_noncont_lemmas_BNC, 20)</code></pre>
 BNCPC &lt;- BNCprog[BNCprog$Continuous!=&quot;unclear&quot;,]
 prop.table(table(BNCPC$Lemma==&quot;tell&quot;, BNCPC$Continuous), 1)*100</code></pre>
 <pre><code>##        
-##               no      yes
-##   FALSE 21.70543 78.29457
-##   TRUE  51.85185 48.14815</code></pre>
+##               no  unclear      yes
+##   FALSE 21.70543  0.00000 78.29457
+##   TRUE  51.85185  0.00000 48.14815</code></pre>
 <pre class="r"><code>TCPC &lt;- TxBprog[TxBprog$Continuous!=&quot;unclear&quot;,]
 prop.table(table(TCPC$Lemma==&quot;tell&quot;, TCPC$Continuous), 1)*100</code></pre>
 <pre><code>##        
-##               no      yes
-##   FALSE 11.21768 88.78232
-##   TRUE  31.57895 68.42105</code></pre>
+##               no  unclear      yes
+##   FALSE 11.21768  0.00000 88.78232
+##   TRUE  31.57895  0.00000 68.42105</code></pre>
 </div>
 <div id="additional-functions" class="section level1">
 <h1>Additional functions</h1>
@@ -6752,26 +6859,26 @@ prop.table(table(TCPC$Lemma==&quot;tell&quot;, TCPC$Continuous), 1)*100</code></
 ##   Spoken BNC2014 sample             40      45             66
 ##   Textbook Conversation             37      98             47
 ##                        
-##                         other interesting function politeness or softening
-##   Spoken BNC2014 sample                          3                       0
-##   Textbook Conversation                          3                       1
+##                         other interesting function politeness/softening
+##   Spoken BNC2014 sample                          3                    8
+##   Textbook Conversation                          3                    4
 ##                        
-##                         politeness/softening
-##   Spoken BNC2014 sample                    8
-##   Textbook Conversation                    4</code></pre>
+##                         politeness or softening
+##   Spoken BNC2014 sample                       0
+##   Textbook Conversation                       1</code></pre>
 <pre class="r"><code>round((functions1/2423*100),2) # Percentage of concordances in each corpus</code></pre>
 <pre><code>##                        
 ##                         emphasis/shock framing gradual change
 ##   Spoken BNC2014 sample           1.65    1.86           2.72
 ##   Textbook Conversation           1.53    4.04           1.94
 ##                        
-##                         other interesting function politeness or softening
-##   Spoken BNC2014 sample                       0.12                    0.00
-##   Textbook Conversation                       0.12                    0.04
+##                         other interesting function politeness/softening
+##   Spoken BNC2014 sample                       0.12                 0.33
+##   Textbook Conversation                       0.12                 0.17
 ##                        
-##                         politeness/softening
-##   Spoken BNC2014 sample                 0.33
-##   Textbook Conversation                 0.17</code></pre>
+##                         politeness or softening
+##   Spoken BNC2014 sample                    0.00
+##   Textbook Conversation                    0.04</code></pre>
 <pre class="r"><code>framing &lt;- table(prog$Corpus, prog$Extra.function==&quot;framing&quot;); framing</code></pre>
 <pre><code>##                        
 ##                         FALSE TRUE
@@ -6848,6 +6955,113 @@ prop.table(table(TCPC$Lemma==&quot;tell&quot;, TCPC$Continuous), 1)*100</code></
 ## Phi-Coefficient   : 0.078 
 ## Contingency Coeff.: 0.078 
 ## Cramer&#39;s V        : 0.078</code></pre>
+</div>
+<div id="package-used-in-this-script" class="section level1">
+<h1>Package used in this script</h1>
+<pre class="r"><code>#packages.bib &lt;- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), &quot;knitr&quot;), &quot;packages.bib&quot;)
+
+sessionInfo()</code></pre>
+<pre><code>## R version 4.0.3 (2020-10-10)
+## Platform: x86_64-apple-darwin17.0 (64-bit)
+## Running under: macOS Big Sur 10.16
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+## 
+## attached base packages:
+## [1] grid      stats     graphics  grDevices utils     datasets  methods  
+## [8] base     
+## 
+## other attached packages:
+##  [1] gtsummary_1.5.0    vcd_1.4-8          tidyr_1.1.4        RColorBrewer_1.1-2
+##  [5] lsr_0.5            lattice_0.20-41    gridExtra_2.3      ggplot2_3.3.5     
+##  [9] here_1.0.1         dplyr_1.0.7       
+## 
+## loaded via a namespace (and not attached):
+##  [1] zoo_1.8-9           tidyselect_1.1.1    xfun_0.29          
+##  [4] bslib_0.3.1         purrr_0.3.4         colorspace_2.0-2   
+##  [7] vctrs_0.3.8         generics_0.1.1      htmltools_0.5.2    
+## [10] yaml_2.2.1          utf8_1.2.2          rlang_0.4.12       
+## [13] jquerylib_0.1.4     pillar_1.6.4        glue_1.6.0         
+## [16] withr_2.4.3         DBI_1.1.1           lifecycle_1.0.1    
+## [19] stringr_1.4.0       commonmark_1.7      munsell_0.5.0      
+## [22] gtable_0.3.0        evaluate_0.14       labeling_0.4.2     
+## [25] knitr_1.37          forcats_0.5.1       fastmap_1.1.0      
+## [28] lmtest_0.9-38       fansi_0.5.0         highr_0.9          
+## [31] broom_0.7.9         backports_1.4.1     checkmate_2.0.0    
+## [34] scales_1.1.1        jsonlite_1.7.2      farver_2.1.0       
+## [37] digest_0.6.29       stringi_1.7.6       rprojroot_2.0.2    
+## [40] cli_3.1.0           tools_4.0.3         magrittr_2.0.1     
+## [43] sass_0.4.0          tibble_3.1.6        crayon_1.4.2       
+## [46] pkgconfig_2.0.3     ellipsis_0.3.2      MASS_7.3-53.1      
+## [49] broom.helpers_1.4.0 assertthat_0.2.1    gt_0.3.1           
+## [52] rmarkdown_2.11      rstudioapi_0.13     R6_2.5.1           
+## [55] compiler_4.0.3</code></pre>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-R-gridExtra" class="csl-entry">
+Auguie, Baptiste. 2017. <em>gridExtra: Miscellaneous Functions for &quot;Grid&quot; Graphics</em>. <a href="https://CRAN.R-project.org/package=gridExtra">https://CRAN.R-project.org/package=gridExtra</a>.
+</div>
+<div id="ref-vcd2006" class="csl-entry">
+Meyer, David, Achim Zeileis, and Kurt Hornik. 2006. <span>“The Strucplot Framework: Visualizing Multi-Way Contingency Tables with Vcd.”</span> <em>Journal of Statistical Software</em> 17 (3): 1–48. <a href="https://www.jstatsoft.org/v17/i03/">https://www.jstatsoft.org/v17/i03/</a>.
+</div>
+<div id="ref-R-vcd" class="csl-entry">
+———. 2020. <em>Vcd: Visualizing Categorical Data</em>. <a href="https://CRAN.R-project.org/package=vcd">https://CRAN.R-project.org/package=vcd</a>.
+</div>
+<div id="ref-R-here" class="csl-entry">
+Müller, Kirill. 2020. <em>Here: A Simpler Way to Find Your Files</em>. <a href="https://CRAN.R-project.org/package=here">https://CRAN.R-project.org/package=here</a>.
+</div>
+<div id="ref-R-lsr" class="csl-entry">
+Navarro, Daniel. 2015. <em>Lsr: Companion to &quot;Learning Statistics with r&quot;</em>. <a href="http://health.adelaide.edu.au/psychology/ccs/teaching/lsr/">http://health.adelaide.edu.au/psychology/ccs/teaching/lsr/</a>.
+</div>
+<div id="ref-R-RColorBrewer" class="csl-entry">
+Neuwirth, Erich. 2014. <em>RColorBrewer: ColorBrewer Palettes</em>. <a href="https://CRAN.R-project.org/package=RColorBrewer">https://CRAN.R-project.org/package=RColorBrewer</a>.
+</div>
+<div id="ref-R-base" class="csl-entry">
+R Core Team. 2020. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-lattice2008" class="csl-entry">
+Sarkar, Deepayan. 2008. <em>Lattice: Multivariate Data Visualization with r</em>. New York: Springer. <a href="http://lmdvr.r-forge.r-project.org">http://lmdvr.r-forge.r-project.org</a>.
+</div>
+<div id="ref-R-lattice" class="csl-entry">
+———. 2020. <em>Lattice: Trellis Graphics for r</em>. <a href="http://lattice.r-forge.r-project.org/">http://lattice.r-forge.r-project.org/</a>.
+</div>
+<div id="ref-R-gtsummary" class="csl-entry">
+Sjoberg, Daniel D., Michael Curry, Joseph Larmarange, Jessica Lavery, Karissa Whiting, and Emily C. Zabor. 2021. <em>Gtsummary: Presentation-Ready Data Summary and Analytic Result Tables</em>. <a href="https://CRAN.R-project.org/package=gtsummary">https://CRAN.R-project.org/package=gtsummary</a>.
+</div>
+<div id="ref-gtsummary" class="csl-entry">
+Sjoberg, Daniel D., Karissa Whiting, Michael Curry, Jessica A. Lavery, and Joseph Larmarange. 2021. <span>“Reproducible Summary Tables with the Gtsummary Package.”</span> <em><span>The R Journal</span></em> 13: 570–80. <a href="https://doi.org/10.32614/RJ-2021-053">https://doi.org/10.32614/RJ-2021-053</a>.
+</div>
+<div id="ref-ggplot22016" class="csl-entry">
+Wickham, Hadley. 2016. <em>Ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. <a href="https://ggplot2.tidyverse.org">https://ggplot2.tidyverse.org</a>.
+</div>
+<div id="ref-R-tidyr" class="csl-entry">
+———. 2021. <em>Tidyr: Tidy Messy Data</em>. <a href="https://CRAN.R-project.org/package=tidyr">https://CRAN.R-project.org/package=tidyr</a>.
+</div>
+<div id="ref-R-ggplot2" class="csl-entry">
+Wickham, Hadley, Winston Chang, Lionel Henry, Thomas Lin Pedersen, Kohske Takahashi, Claus Wilke, Kara Woo, Hiroaki Yutani, and Dewey Dunnington. 2021. <em>Ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics</em>. <a href="https://CRAN.R-project.org/package=ggplot2">https://CRAN.R-project.org/package=ggplot2</a>.
+</div>
+<div id="ref-R-dplyr" class="csl-entry">
+Wickham, Hadley, Romain François, Lionel Henry, and Kirill Müller. 2021. <em>Dplyr: A Grammar of Data Manipulation</em>. <a href="https://CRAN.R-project.org/package=dplyr">https://CRAN.R-project.org/package=dplyr</a>.
+</div>
+<div id="ref-knitr2014" class="csl-entry">
+Xie, Yihui. 2014. <span>“Knitr: A Comprehensive Tool for Reproducible Research in <span>R</span>.”</span> In <em>Implementing Reproducible Computational Research</em>, edited by Victoria Stodden, Friedrich Leisch, and Roger D. Peng. Chapman; Hall/CRC. <a href="http://www.crcpress.com/product/isbn/9781466561595">http://www.crcpress.com/product/isbn/9781466561595</a>.
+</div>
+<div id="ref-knitr2015" class="csl-entry">
+———. 2015. <em>Dynamic Documents with <span>R</span> and Knitr</em>. 2nd ed. Boca Raton, Florida: Chapman; Hall/CRC. <a href="https://yihui.org/knitr/">https://yihui.org/knitr/</a>.
+</div>
+<div id="ref-R-knitr" class="csl-entry">
+———. 2021. <em>Knitr: A General-Purpose Package for Dynamic Report Generation in r</em>. <a href="https://yihui.org/knitr/">https://yihui.org/knitr/</a>.
+</div>
+<div id="ref-vcd2007" class="csl-entry">
+Zeileis, Achim, David Meyer, and Kurt Hornik. 2007. <span>“Residual-Based Shadings for Visualizing (Conditional) Independence.”</span> <em>Journal of Computational and Graphical Statistics</em> 16 (3): 507–25.
+</div>
+</div>
 </div>
 
 

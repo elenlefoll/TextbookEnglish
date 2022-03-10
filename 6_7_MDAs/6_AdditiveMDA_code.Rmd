@@ -11,10 +11,21 @@ output:
   editor_options: 
     markdown: 
       wrap: sentence
+bibliography: "packages.bib"
+nocite: '@*'
+      
 ---
 
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: 
+Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: https://elenlefoll.github.io/TextbookEnglish/
+
+Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
+
 *Built with R `r getRversion()`*  
-*Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
 
 ```{r setup, include=FALSE}
 options(scipen=999)
@@ -1984,3 +1995,15 @@ plot(v1)
 
 
 ```
+
+# Package used in this script
+```{r package-citations}
+
+#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
+
+sessionInfo()
+
+```
+

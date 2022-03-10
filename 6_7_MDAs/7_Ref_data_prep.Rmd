@@ -12,11 +12,25 @@ output:
     markdown: 
       wrap: sentence
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+bibliography: "packages.bib"
+nocite: '@*'
+>>>>>>> Stashed changes
 ---
+
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: <https://elenlefoll.github.io/TextbookEnglish/>
+
+Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
 
 # Set-up
 
+<<<<<<< Updated upstream
 *Built with R `r getRversion()`*  
 *Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
 =======
@@ -36,6 +50,9 @@ Please note that the plot dimensions in this notebook have been optimised for th
 
 *Built with R `r getRversion()`*
 >>>>>>> Stashed changes
+=======
+*Built with R `r getRversion()`*
+>>>>>>> Stashed changes
 
 ```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
 
@@ -46,6 +63,10 @@ knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, message=FALSE, paged.print=TRUE,
 
 library(caret) # For its confusion matrix function
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+library(DescTools) # For common stats functions
+>>>>>>> Stashed changes
 =======
 library(DescTools) # For common stats functions
 >>>>>>> Stashed changes
@@ -118,15 +139,21 @@ InfoTeen$Register <- "Info Teens"
 ```
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 ## Merging TEC and reference corpora counts
 
 Due to reasons of space, the results of the five-register dataset were not included in the thesis.
 =======
+=======
+>>>>>>> Stashed changes
 ## Merging TEC and reference corpora counts
 
 Due to reasons of space, the results of the five-register dataset were not included in the thesis.
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ```{r DataMerging-5Reg, eval=FALSE}
 
@@ -177,6 +204,10 @@ counts <- counts %>%
 
 This is the dataset that is presented in the second half of Chapter 7.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
@@ -230,6 +261,10 @@ counts <- counts %>%
 
 ### Plotting the distributions of all the features
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
@@ -275,6 +310,10 @@ ncounts %>%
 
 ### Feature removal due to low text frequency
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
@@ -420,7 +459,10 @@ zlogcounts %>%
 ```
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 ### Merging of data for MDA
@@ -459,7 +501,13 @@ colnames(data)
 
 ## Performing the PCA of Textbook English vs. Reference corpora
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ### Quick import
+=======
+
+### Quick import
+
+>>>>>>> Stashed changes
 =======
 
 ### Quick import
@@ -486,6 +534,10 @@ data <- data %>%
 
 ### Correlation matrix: only for data exploration, not used to exclude variables
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
@@ -538,6 +590,10 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ", tl.cex = 0.5)
 
 ### Visualisation of feature correlations
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
@@ -561,6 +617,10 @@ dev.off()
 
 ### MSA, communalities and scree plot
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
@@ -598,9 +658,21 @@ nrow(data)
 ```
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ```{r sessionInfo}
+=======
+# Package used in this script
+```{r package-citations}
+
+#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
+
+>>>>>>> Stashed changes
 sessionInfo()
+
 ```
+<<<<<<< Updated upstream
 =======
 # Package used in this script
 ```{r package-citations}
@@ -612,5 +684,8 @@ knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
 sessionInfo()
 
 ```
+
+>>>>>>> Stashed changes
+=======
 
 >>>>>>> Stashed changes

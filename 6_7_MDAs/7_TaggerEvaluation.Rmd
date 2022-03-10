@@ -12,12 +12,24 @@ output:
     #keep_md: true
     md_extensions: +bracketed_spans      
       
+bibliography: "packages.bib"
+nocite: '@*'
+      
 ---
+
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: 
+Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: https://elenlefoll.github.io/TextbookEnglish/
+
+Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
+
 
 ### Set-up
 
 *Built with R `r getRversion()`*  
-*Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
 
 # Tagger evaluation on TEC data
 
@@ -486,8 +498,15 @@ errors %>%
 
 ```
 
-```{r sessionInfo}
+# Package used in this script
+```{r package-citations}
+
+#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
+
 sessionInfo()
+
 ```
 
 

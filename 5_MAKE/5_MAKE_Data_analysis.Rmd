@@ -1,0 +1,1158 @@
+---
+title: "Making sense of MAKE in Textbook English"
+author: "Elen Le Foll"
+date: "20/04/2019"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+    #code_folding: hide # enables you to include R code but have it hidden by default. Users can then choose to show hidden R code chunks either individually or document wide.
+    #keep_md: true
+    md_extensions: +bracketed_spans    
+bibliography: "packages.bib"
+nocite: '@*'
+      
+---
+
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: 
+Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: https://elenlefoll.github.io/TextbookEnglish/
+
+Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
+
+### Set-up
+
+*Built with R `r getRversion()`*  
+
+```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, message=FALSE, paged.print=TRUE, fig.width = 10, warning=FALSE)
+
+library(here)
+library(ggsignif)
+library(ggrepel)
+library(paletteer)
+require(gtools)
+library(RColorBrewer)
+library(tidyverse)
+library(wordcloud)
+
+```
+
+
+# Frequency of MAKE
+
+## MAKE in the TEC
+
+```{r freq_MAKE_registers_data, echo=FALSE, message=FALSE, warning=FALSE}
+
+#### Frequencies of MAKE across all Textbook registers ###
+
+Freq_MAKE_TxB_registers <- read.csv(here("Make_TxB_registers_frequencies.csv"), sep = ",", stringsAsFactors = TRUE)
+
+Freq_MAKE_TxB_registers$xlabels <- c("Textbooks","Informative", "Instructional", "Narrative", "Other", "Personal", "Poetry", "Conversation", "Exercises")
+
+Freq_MAKE_TxB_registers <- Freq_MAKE_TxB_registers[-1, ] # Get rid of TxB_English row
+
+Freq_MAKE_TxB_registers
+
+mean_pmw <- round(mean(Freq_MAKE_TxB_registers$wpm_freq_MAKE), digits = 2)
+
+Freq_MAKE_TxB_registers$pttv <- round((Freq_MAKE_TxB_registers$raw_freq_MAKE / Freq_MAKE_TxB_registers$raw_freq_verb  * 10000), 2)
+
+
+```
+
+Across the entire Textbook English Corpus (TEC), <span style="font-variant:small-caps;">make</span> is the 13th most frequent verb lemma after [MAKE DO, HAVE, CAN GO, SAY, LOOK, USE, LOOK, THINK, WRITE]{.smallcaps} and [READ]{.smallcaps}. 
+
+Moreover, it is the 47th most frequent lemma across all parts-of-speech. Its relative frequency of occurrence across all textbook registers is `r mean_pmw` pmw. That said, its distribution across the different textbook registers is strikingly uneven (see Fig. \@ref(fig:registers)).
+
+```{r registers, echo=FALSE, fig.width = 8, fig.cap="Frequency of MAKE across all Textbook registers"}
+
+# With thanks for the shading method: https://stackoverflow.com/questions/14382697/barplot-different-colors-of-grey-for-bars-based-on-number-of-categories-in-a-c
+# The shading represents the raw frequencies in each register. 
+
+Freq_MAKE_TxB_registers <- Freq_MAKE_TxB_registers[order(Freq_MAKE_TxB_registers[,8], decreasing = TRUE),] # Order by decreasing relative frequency
+
+#svg(filename=here("MAKE_pttv_registers.svg"), 
+    #width=9, 
+    #height=6, 
+    #pointsize=11)
+barplot(Freq_MAKE_TxB_registers$pttv, names.arg = Freq_MAKE_TxB_registers$xlabels, col = gray.colors(length(unique(Freq_MAKE_TxB_registers$raw_freq_MAKE)))[as.factor(-Freq_MAKE_TxB_registers$raw_freq_MAKE)], main = "", cex.main = 1, ylab = "Rel. freq. of MAKE (per 10,000 verbs)", xlab="Textbook registers", font.lab = 2, cex.lab = 1, ylim = c(0,260))
+mean <- round(mean(Freq_MAKE_TxB_registers$pttv),2)
+sd <- round(sd(Freq_MAKE_TxB_registers$pttv), 2)
+abline(h = mean, lty = 2)
+text(x = 7.6, y = mean + 10, labels = paste("Mean = ", mean, " per 10,000 verbs ", "(SD = ", sd, ")", sep = ""))
+legend("top", legend=c("<100 occurrences", "100-1,000 occurrences", ">1,000 occurrences"), fill=c("#E6E6E6", "#8E8E8E", "#737373"), bty="o", title = "Raw freq. of MAKE in each register subcorpus", cex=0.9) 
+dev.off()
+
+```
+
+The following sections will home in on the two textbook registers with the lowest relative frequencies of [MAKE]{.smallcaps}, namely the narrative texts and spoken language within the textbooks. The representations of [MAKE]{.smallcaps} in these two textbook registers are compared to the Youth Fiction Corpus and the Spoken BNC 2014 [@LoveSpokenBNC20142017] respectively. 
+
+Fig. \@ref(fig:relfreqspokennar) reveals that the verb MAKE is more frequent fiction than in conversation. However, in both textbook registers, the relative frequencies of MAKE is lower than in the corresponding reference corpora. X2 tests (with Yates' continuity correction) applied on the observed and expected raw frequencies show that the high-frequency verb is featured significantly less frequently than in the  reference corpora (Conversation: X2 = 18.774, df = 1, p-value = <0.001; Fiction: X2 = 25.18, df = 1, p-value = <0.001).
+
+# MAKE in the TEC vs. Ref. corpora
+
+```{r relfreqspokennar, echo=FALSE, fig.width = 8, fig.cap="Relative Frequencies of the verb lemma MAKE in Textbook and Reference subcorpora"}
+
+### https://cran.r-project.org/web/packages/ggsignif/vignettes/intro.html ###
+### https://stackoverflow.com/questions/17084566/put-stars-on-ggplot-barplots-and-boxplots-to-indicate-the-level-of-significanc ###
+### http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/ ###
+
+
+cols<-RColorBrewer::brewer.pal(n=7,name="OrRd")
+
+freq <- read.csv(here("Make_TxB_Ref_Fiction_Spoken.csv"), header = TRUE, row.names = 1, sep = ",", stringsAsFactors = TRUE)
+
+#png(filename = here("TxB_Ref_Fiction_Spoken_signif.png"), width = 1800, height = 1400, res = 300)
+
+#svg(filename=here("MAKE_TxB_Ref_Fiction_Spoken_verbs_signif.svg"), 
+    #width=5, 
+    #height=4, 
+    #pointsize=9)
+ggplot(freq, aes(Register, MAKE_10000verbs)) +
+  geom_bar(aes(fill = Data), stat="identity", position="dodge", width=.5) +
+  theme(legend.title = element_blank()) +
+  geom_signif(y_position=c(90, 118), xmin=c(0.8, 1.8), xmax=c(1.2, 2.2),
+              annotation=c("***", "***"), tip_length=0)  +
+  scale_fill_manual(name = "Variety", labels = c("ENL Reference", "Textbook English"), values = cols[c(3,7)]) +
+  ylab("Relative frequency (per 10,000 verbs)") +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 130))  +
+  theme_bw()
+dev.off()
+
+## Significance testing ##
+
+#freq <- read.csv(here("Make_TxB_YF_SpokenBNC_frequencies.csv"), sep = ",", header = TRUE, row.names = 1)
+
+head(freq)
+
+freq_nar <- freq[1:2,c(3,8)] # Select only narrative/fiction observed/non-observed frequencies
+head(freq_nar)
+freq_nar <- t(freq_nar) # Transpose table
+
+chisq.test(freq_nar)
+vcd::assocstats(freq_nar)
+
+freq_spoken <- freq[3:4,c(3,8)] # Select only spoken/BNC14 observed/non-observed frequencies per verb
+freq_spoken <- freq[3:4,c(3,6)] # Select only spoken/BNC14 observed/non-observed frequencies per word
+freq_spoken
+freq_spoken <- t(freq_spoken) # Transpose table
+chisq.test(freq_spoken)
+vcd::assocstats(freq_spoken)
+
+fisher.test(freq_spoken)
+
+```
+
+# Semantics of MAKE
+
+High-frequency verbs such as MAKE are not only highly polysemous, they also enter into many different lexico-grammatical constructions. This section explores the quantitative differences in the proportional use of these different meanings and constructions in two major Textbook English registers as compared to similar registers in naturally-occurring ENL speech and writing.
+
+```{r semantics-stats}
+# Semantics of MAKE in Textbook English #
+
+semantics <- read.csv(here("Make_semantics.csv"), sep = ',', header = TRUE, stringsAsFactors = TRUE)
+
+semantics[9,5] = 8 # Correction to dataset (one concordance line was annotated as PV but wasn't in fact MAKE as a noun and has been deleted from the PV dataset)
+
+head(semantics)
+
+# Chi-squared tests #
+
+# The chisq.test() function wants just a matrix of counts.
+# So we need to select the columns that contain the relevant counts.
+cols = c("SpokenBNC2014_raw", "TextbookConversation_raw")
+semantics_test = chisq.test(semantics[,cols])
+print(semantics_test)
+# The test asks simply whether the distributions over categories are the same for the two corpora.
+# And a low enough p-value is reason to doubt this hypothesis (loosely speaking).
+
+# To test just one of the categories with the Chi-squared test we need to collapse the others.
+# For example if we want to test the delexical category we need a category 'other' for all the rest.
+# We can achieve this by binding the relevant row to the column sums of the other rows.
+# Then we can test this 2x2 matrix of counts.
+# Since we have a 2x2 matrix we can use Fisher's exact test instead.
+# We can do this for every category in a loop,
+# and store the resulting p-values from the tests,
+# along with a star symbol for the low p-values.
+
+results = data.frame(Category=semantics$Category, p=1)
+for(i in 1:nrow(results)){
+  category = semantics$Category[i]
+  row = semantics[semantics$Category==category,cols]
+  other_rows = semantics[semantics$Category!=category,cols]
+  collapsed = rbind(row, colSums(other_rows))
+  category_test = fisher.test(collapsed)
+  results$p[i] = category_test$p.value
+  results$OddsRatio[i] = category_test$estimate
+  results$conf.int.lower[i] = category_test$conf.int[1]
+  results$conf.int.upper[i] = category_test$conf.int[2]
+
+}
+
+results
+
+# The 'BH' or 'BY' methods are probably the most appropriate here if p-value correction is desired (controversial topic).
+results$p = p.adjust(results$p, method='none')
+results$Star <- stars.pval(results$p)
+
+# Check the outcome.
+results
+
+### Compute percentages for distributions of meanings ###
+semantics = semantics %>% 
+  mutate(RefYouthFiction = (RefYouthFiction_raw/(sum(RefYouthFiction_raw)))*100) %>% 
+  mutate(TextbookNarrative = (TextbookNarrative_raw/(sum(TextbookNarrative_raw)))*100) %>% 
+  mutate(SpokenBNC2014 = (SpokenBNC2014_raw/(sum(SpokenBNC2014_raw)))*100) %>% 
+  mutate(TextbookConversation = (TextbookConversation_raw/(sum(TextbookConversation_raw))*100))
+
+```
+
+## Semantics of MAKE in Textbook Conversation
+
+Figure \@ref(fig:semantics-spoken) visualises the different proportions of meanings of MAKE in Textbook Conversation and in a sample of the Spoken BNC 2014. Statistical differences between the proportions of each category was tested using Fisher's Exact Test for Count Data the resulting p=values are plotted on Figures \@ref(fig:semantics-spoken) and \@ref(fig:semantics-nar) using the following convention: 0 - 0.001 = \*\*\*, 0.001 - 0.01 = \*\*, 0.01 - 0.05 = \*, 0.05 - 0.1 = ˘. 
+
+```{r semantics-spoken, fig.cap="Distribution of MAKE meanings in Textbook Conversation and the Spoken BNC 2014"}
+
+## Start with TxB spoken vs. BNCspoken ###
+
+spoken_sem = semantics %>% 
+  select(Category, SpokenBNC2014, TextbookConversation)
+
+# Lollipop graph: https://www.r-graph-gallery.com/303-lollipop-plot-with-2-values/
+
+beige <- col2rgb("#FC8D59", alpha = TRUE)
+bordeau <- col2rgb("#990000", alpha = TRUE)
+
+#svg(filename=here("MAKE_semantics_Spoken.svg", width=12, height=6, pointsize=12)
+
+fig = ggplot(spoken_sem) +
+  geom_segment( aes(x=fct_rev(Category), xend=Category, y=SpokenBNC2014, yend=TextbookConversation), color="black") +
+  geom_point( aes(x=Category, y=SpokenBNC2014), color=rgb(252, 141, 89, max = 255, alpha = 220), size=4) +
+  geom_point( aes(x=Category, y=TextbookConversation), color=rgb(153,0,0, max = 255, alpha = 180), size=4 ) +
+  coord_flip() +
+  theme_light() +
+  theme(
+    panel.border = element_blank(),
+    axis.text=element_text(size=15, colour = "black"),
+    axis.title.x=element_text(size=15, face = "bold")
+  ) +
+  xlab("") +
+  ylab("% of occurrences of MAKE") +
+  theme(plot.margin=margin(20,10,10,10))
+
+# + labs(title = "Distribution of MAKE meanings in Textbook Conversation and the Spoken BNC 2014")
+  
+### Adding legend directly onto plot ###
+# https://stackoverflow.com/questions/40011005/adding-a-legend-to-a-dumbbell-chart-in-r #
+
+fig1 = fig + 
+  geom_text(data=data.frame(), aes(x="Ai: produce", y= 29, label="Textbook Conversation"),
+          color=rgb(153,0,0, max = 255, alpha = 255), hjust=1, size=5, fontface = "bold", nudge_y=11, nudge_x = 0.2) +
+  geom_text(data=data.frame(), aes(x=9, y= 26, label="Spoken BNC 2014 sample"),
+            color=rgb(252, 141, 89, max = 255, alpha = 255), hjust=0, size=5, fontface = "bold", nudge_y=-11, nudge_x = 0.2)
+
+# With the addition of an = assignment the plot above is now stored and can be added to.
+# We have some relevant data in our 'results' dataframe.
+# The Star column says what to display.
+# And the Category column says for what category.
+# But ggplot needs also to know how far along the y axis to put each star.
+# For this, we need a y column.
+# To place the stars half way along the segment, we need the mean of the two point values.
+# We can get this from the plot data frame created above
+# by calculating the row means for the two relevant columns.
+# This is slightly complicated by the fact that the column names no longer have '_raw' appended.
+columns = c("SpokenBNC2014", "TextbookConversation")
+results$y = rowMeans(spoken_sem[,columns])
+
+# Now we can add a text annotation layer to the plot.
+# We map the Start column to the text itself,
+# we map Category to the x axis as in the original plot,
+# and we map the halfway points calculated above to the y axis.
+# We specify that the data for this layer are coming from another data frame.
+# And we adjust the size of the text.
+fig2 = fig1 +
+  geom_text(aes(x=Category, y=y, label=Star), data=results, size=8)
+print(fig2)
+dev.off()
+
+#ggsave(here("semantics_spoken.png"), width = 24, height = 12, units = "cm", dpi = 300)
+
+```
+
+Causative uses of MAKE represent the most frequent semantic category in the BNC. The proportion of causative makes in Textbook Conversation, however, is significantly lower. The other two most frequent categories, the produce sense and delexical uses, are similarly distributed across the two conversation corpora. The significantly higher proportion of idioms featuring MAKE in Textbook Conversation is primarily due to the very high frequency of the idiom to make friends in Textbook Conversation (see Table \@ref(tab:idioms_spoken)).
+
+## Idioms
+
+```{r idioms_spoken, fig.cap="Idioms with MAKE in Textbook Conversation and a sample of the Spoken BNC 2014"}
+
+idioms_spoken <- read.csv(here("MAKE_idioms_freq_spoken.csv"), sep = ",", header = TRUE)
+
+stargazer::stargazer(idioms_spoken, type = "html", title = "Idioms with MAKE in Textbook Conversation and a sample of the Spoken BNC 2014")
+
+```
+
+
+| Idiomatic phrase           | Raw Freq. in Textbook Conversation | Raw Freq. in Spoken BNC2014 Sample |
+|----------------------------|------------------------------------|------------------------------------|
+| MAKE friends               | 25                                 | 5                                  |
+| MAKE the best/most of sth. | 4                                  | 2                                  |
+| MAKE faces                 | 4                                  | 4                                  |
+| MAKE fun of sth./sb.       | 3                                  | 1                                  |
+| Practice makes perfect     | 3                                  | 0                                  |
+| MAKE up .* mind            | 5                                  | 3                                  |
+
+
+Both Textbook Conversation and Textbook Fiction feature significantly fewer phrasal verbs with MAKE than their corresponding ENL reference corpora (cf. Fig. \@ref(fig:semantics-spoken) and \@ref(fig:semantics-nar)). This pedagogically relevant finding will be explored further in Section \*. Furthermore, Textbook Fiction also features considerably fewer delexical uses of MAKE. This finding will be elaborated on in Section \*. 
+
+## Semantics of MAKE in Textbook Fiction
+
+```{r semantics-nar, fig.cap="Distribution of MAKE meanings in Textbook Fiction and Reference Youth Fiction"}
+
+#### Textbook Narrative vs. Youth Fiction ###
+
+columns = c("RefYouthFiction_raw", "TextbookNarrative_raw")
+
+semantics_nar_test = chisq.test(semantics[,columns])
+print(semantics_nar_test)
+
+results = data.frame(Category=semantics$Category, p=1)
+for(i in 1:nrow(results)){
+  category = semantics$Category[i]
+  row = semantics[semantics$Category==category,columns]
+  other_rows = semantics[semantics$Category!=category,columns]
+  collapsed = rbind(row, colSums(other_rows))
+  category_test = fisher.test(collapsed)
+  results$p[i] = category_test$p.value
+  results$OddsRatio[i] = category_test$estimate
+  results$conf.int.lower[i] = category_test$conf.int[1]
+  results$conf.int.upper[i] = category_test$conf.int[2]
+  
+  }
+
+results
+
+results$p = p.adjust(results$p, method='none')
+
+#require(gtools)
+results$Star <- stars.pval(results$p)
+results = results %>%
+  mutate(Star = replace(Star, Star==".", "˘")) # Change dot to a higher symbol or: º˘
+
+# Check the outcome.
+results
+
+## Textbook narrative vs. Youth Fiction ###
+nar_sem = semantics %>% 
+  select(Category, RefYouthFiction, TextbookNarrative)
+
+#svg(filename=here("MAKE_semantics_Fiction.svg"), width=12, height=6, pointsize=12)
+
+fig = ggplot(nar_sem) +
+  geom_segment( aes(x=fct_rev(Category), xend=Category, y=RefYouthFiction, yend=TextbookNarrative), color="darkgrey") +
+  geom_point( aes(x=Category, y=RefYouthFiction), color=rgb(252, 141, 89, max = 255, alpha = 220), size=4 ) +
+  geom_point( aes(x=Category, y=TextbookNarrative), color=rgb(153,0,0, max = 255, alpha = 180), size=4 ) +
+  coord_flip() +
+  theme_light() +
+  theme(
+    panel.border = element_blank(),
+    axis.text=element_text(size=14, colour = "black"),
+    axis.title.x=element_text(size=14, face = "bold")
+  ) +
+  xlab("") +
+  ylab("% of occurrences of MAKE") +
+  theme(plot.margin=margin(10,10,10,10))
+# +  labs(title = "Distribution of MAKE meanings in Textbook Fiction and Reference Youth Fiction")
+
+fig1 = fig + 
+  geom_text(data=data.frame(), aes(x="Ai: produce", y= 26, label="Textbook Fiction"),
+            color=rgb(153,0,0, max = 255, alpha = 255), hjust=1, size=5,fontface = "bold", nudge_y=6, nudge_x = 0.2) +
+  geom_text(data=data.frame(), aes(x=9, y= 20, label="Youth Fiction Corpus sample"),
+            color=rgb(252, 141, 89, max = 255, alpha = 220), hjust=0, size=5, fontface = "bold", nudge_y=-10, nudge_x = 0.2)
+
+cols = c("RefYouthFiction", "TextbookNarrative")
+results$y = rowMeans(nar_sem[,cols])
+
+fig2 = fig1 +
+  geom_text(aes(x=Category, y=y, label=Star), data=results, size=8)
+print(fig2)
+dev.off()
+
+#ggsave(here("semantics_nar.png", width = 24, height = 12, units = "cm", dpi = 300)
+
+```
+
+Quantitatively, the semantic category "C: achieve" is proportionally more represented in Textbook Fiction than in the Youth Fiction Corpus sample. This is primarily due to the fact that this category is largely dominated by the phrase *to make it* which is featured 17 times in Textbook Fiction, as opposed to three times in the Youth Fiction sample. By contrast, a qualitative analysis of the corresponding concordance lines reveals that, in the Youth Fiction sample, the category includes a much broader range of phrases involving movement and/or a sense of achievement. These typical, yet syntactically relatively complex, phrases of narrative writing, usually rendered with one or more prepositions (*-*), are conspicuously absent from the Textbook Fiction. 
+
+(###) Then he **made his way down** the stairs and **into** the locker room. <Youth Fiction, file 183: Pratchett, Night Watch, 2002>
+
+(###) […] Jack came out of the barn and **made straight for** me. <Youth Fiction, file 191: Delaney, The Spook's Apprentice, 2004>.
+
+(###) She and the bird started to **make off towards** my ship. <Youth Fiction, file 140: Adams, Mostly Harmless, 1992>
+
+## MAKE in the sense (Ai) produce/create
+
+### MAKE in the sense (Ai) produce/create in Textbook Conversation
+
+```{r produce-spoken-lollipop, echo=FALSE}
+#### Proportions of semantic categories of MAKE in the produce sense ###
+### Lollipop graph: https://www.r-graph-gallery.com/303-lollipop-plot-with-2-values/
+
+produce_sem <- read.csv(file = here("Produce_semantics.csv"), sep = "\t", stringsAsFactors = TRUE) # This data set was produced in the MAKE_produce_wordcloud_lollipop.R script
+
+## Start with TxB spoken vs. BNCspoken ###
+
+# Reorder data by size of difference in frequency # 
+spoken_sem = produce_sem %>% rowwise() %>% mutate(dif = sqrt((BNCspokenPer - TxBspokenPer)^2)) %>% arrange(desc(dif)) %>% mutate(Semantics=factor(Semantics, Semantics))
+
+spoken_sem$Semantics <- factor(spoken_sem$Semantics, levels = spoken_sem$Semantics[order(spoken_sem$dif)])
+
+## Chi-squared tests ##
+
+cols = c("BNCspoken", "TxBspoken")
+semantics_test = chisq.test(spoken_sem[,cols])
+
+# Comparing the two distributions #
+print(semantics_test)
+
+# Comparing proportions for each semantic category #
+results = data.frame(Semantics=spoken_sem$Semantics, p=1)
+for(i in 1:nrow(results)){
+  category = spoken_sem$Semantics[i]
+  row = spoken_sem[spoken_sem$Semantics==category,cols]
+  other_rows = spoken_sem[spoken_sem$Semantics!=category,cols]
+  collapsed = rbind(row, colSums(other_rows))
+  category_test = fisher.test(collapsed)
+  results$p[i] = category_test$p.value
+  results$OddsRatio[i] = category_test$estimate
+  results$conf.int.lower[i] = category_test$conf.int[1]
+  results$conf.int.upper[i] = category_test$conf.int[2]
+}
+
+results
+
+results$p = p.adjust(results$p, method='none')
+results$Star <- stars.pval(results$p)
+results = results %>%
+  mutate(Star = replace(Star, Star==".", "˘")) # Change dot to a higher symbol such as º or ˘ 
+
+#svg(filename=here("MAKE_produce_Spoken.svg"), width=14, height=7, pointsize=12)
+
+fig = ggplot(spoken_sem) +
+  geom_segment(aes(x=Semantics, xend=Semantics, y=BNCspokenPer, yend=TxBspokenPer), color="black") +
+  geom_point(aes(x=Semantics, y=BNCspokenPer), color=rgb(153,0,0, max = 255, alpha = 255), size=5) +
+  geom_point(aes(x=Semantics, y=TxBspokenPer), color=rgb(252, 141, 89, max = 255, alpha = 220), size=5) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    panel.border = element_blank(),
+    axis.text=element_text(size=16, colour = "black"),
+    axis.title.x=element_text(size=16, face = "bold")
+  ) +
+  scale_x_discrete(limits=c(levels(spoken_sem$Semantics),"")) +
+  xlab("") +
+  ylab("% of MAKE collocations in the (Ai) produce sense") +  # Adds an empty factor to give space for legend as recommended in: https://stackoverflow.com/questions/16788180/r-ggplot-extend-the-range-of-a-category-x-axis
+  theme(plot.margin=margin(5,5,5,5))
+
+# +  labs(title = "Differences in semantic fields of collocates of MAKE in the produce sense (Ai).")
+
+fig1 = fig + 
+  geom_text(data=data.frame(), aes(x="Sports, Entertainment & Travel", y=28, label="Textbook Conversation"),
+            color=rgb(252, 141, 89, max = 255, alpha = 255), hjust=1, size=6, fontface = "bold", nudge_x = 0.7) +
+  geom_text(data=data.frame(), aes(x="Sports, Entertainment & Travel", y= 1, label="Spoken BNC 2014 sample"),
+            color=rgb(153,0,0, max = 255, alpha = 255), hjust=0, size=6, fontface = "bold", nudge_x = 0.7)
+
+## This is to help us place the stars in the middle of the bars ##
+cols = c("BNCspokenPer", "TxBspokenPer")
+results$y = rowMeans(spoken_sem[,cols])
+
+fig2 = fig1 +
+  geom_text(aes(x=Semantics, y=y, label=Star), data=results, size=9)
+print(fig2)
+
+dev.off()
+
+#ggsave(here("produce_USAS_Conversation.png"), width = 24, height = 12, units = "cm", dpi = 300)
+
+```
+
+```{r chatterplot-produce-spoken}
+#### Chatterplot: inspired by https://towardsdatascience.com/rip-wordclouds-long-live-chatterplots-e76a76896098
+
+produce <- read.csv(file = here("Produce.csv"), sep = "\t", stringsAsFactors = TRUE)
+summary(produce$USAS)
+str(produce)
+
+spoken_produce <- produce %>% filter(Subcorpus=="BNCspoken" | Subcorpus =="spoken")
+spoken_produce$Subcorpus <- droplevels(spoken_produce$Subcorpus)
+table_spoken_produce <- table(spoken_produce$Collocate_lemma, spoken_produce$Subcorpus)
+head(table_spoken_produce)
+
+comp <- round(prop.table(table(spoken_produce$Collocate_lemma, spoken_produce$Subcorpus), 2), 4)*100
+comp <- as.data.frame(unclass(comp))
+comp$Collocate_lemma <- row.names(comp)
+head(comp)
+comp <- inner_join(comp, spoken_produce[,6:7], by = "Collocate_lemma")
+comp <- distinct(comp)
+head(comp)
+
+suffrager <- c(palettes_d$suffrager$classic[1], palettes_d$suffrager$CarolMan[3:4], palettes_d$suffrager$london, palettes_d$suffrager$oxon[c(1,5)])
+
+levels(as.factor(comp$spoken))
+
+## With minimal threshold of just min 2 occurrences
+comp %>% filter(spoken > 0.57 | BNCspoken > 0.57) %>% 
+  ggplot(aes(spoken, BNCspoken, label = Collocate_lemma)) +
+  # ggrepel geom, make arrows transparent, color by rank, size by n
+  geom_point(aes(colour=USAS)) +
+  geom_text_repel(min.segment.length = 0.3, segment.alpha = 0.2, force = 0.4, 
+                  aes(colour=USAS), show_guide = F) +
+  scale_colour_manual(values = suffrager,
+        name = "Semantic field") +
+  
+  # set color gradient & customize legend
+  geom_abline(color = "gray40", lty = 2) +
+  
+  # set word size range & turn off legend
+  labs(y = "% of MAKE 'produce' collocations in Spoken BNC2014 sample", x = "% of 'produce' MAKEs in Textbook Conversation") +
+  scale_y_log10(breaks=c(1,2,3,4)) +
+  scale_x_log10(breaks=c(1,2,4,6,8,10,12)) +
+  
+  # minimal theme & customizations
+  theme_bw() +
+  theme(legend.position=c(0.86,0.35),
+        #legend.justification = c("right","top"),
+        panel.grid.major = element_line(colour = "whitesmoke"),
+        panel.grid.minor=element_blank(),
+        legend.background = element_rect(colour = 'darkgrey', fill = 'white', linetype='solid'))
+
+#ggsave(here("Produce_MAKEs_Spoken_chatterplot.svg"), dpi = 300, width =22, height = 15, units = "cm")
+
+## With higher threshold of min. 3 occurrences
+comp %>% filter(spoken > 1.04 | BNCspoken > 1.11) %>% 
+  ggplot(aes(spoken, BNCspoken, label = Collocate_lemma)) +
+  # ggrepel geom, make arrows transparent, color by rank, size by n
+  geom_point(aes(colour=USAS)) +
+  geom_text_repel(min.segment.length = 0.3, segment.alpha = 0.2, force = 0.4, 
+                  aes(colour=USAS), show_guide = F) +
+  scale_colour_manual(values = suffrager,
+        name = "Semantic field") +
+  # set color gradient & customize legend
+  geom_abline(color = "gray40", lty = 2) +
+  # set word size range & turn off legend
+  labs(y = "% of MAKE 'produce' collocations in Spoken BNC2014 sample", x = "% of 'produce' MAKEs in Textbook Conversation") +
+  scale_y_log10(breaks=c(1,2,3,4)) +
+  scale_x_log10(breaks=c(1,2,4,6,8,10,12)) +
+  
+  # minimal theme & customizations
+  theme_bw() +
+  theme(legend.position=c(0.86,0.30),
+        #legend.justification = c("right","top"),
+        panel.grid.major = element_line(colour = "whitesmoke"),
+        panel.grid.minor=element_blank(),
+        legend.background = element_rect(colour = 'darkgrey', fill = 'white', linetype='solid'))
+
+#ggsave(here("Produce_MAKEs_Spoken_chatterplot_min3.svg"), dpi = 300, width =23, height = 15, units = "cm")
+
+```
+
+```{r produce-wordcloud-prep}
+
+### Wordclouds for collocates ###
+produce <- read.csv(file = here("Produce.csv"), sep = "\t", stringsAsFactors = TRUE)
+summary(produce$USAS)
+
+### Now I would like one colour for each USAS category in the df "produce" ##
+### Copying this https://stackoverflow.com/questions/18902485/colored-categories-in-r-wordclouds
+
+# The problem is that the wordcloud() function first summarizes produce$colors,
+# so that each word only appears once, and is matched to a frequency.
+# The result is that the colors vector from the original data set is too long.
+
+# One way to solve this is to handle summarising the data frame first
+# With dplyr we can use group_by() to group the data frame by combinations of factor variables.
+# Collocate_lemma and USAS are the relevant ones.
+# We can then use summarize() to count the frequencies ourselves.
+# The n() function counts frequencies (where n stands for 'number' of entries).
+
+produce_freq <- produce %>%
+  group_by(Collocate_lemma, USAS) %>%
+  summarize(Frequency=n())
+
+# Now we can apply the colour scheme:
+colours1 <- RColorBrewer::brewer.pal(n=8, name="Set1")
+colours2 <- RColorBrewer::brewer.pal(n=10, name="RdGy")
+colours <- c(colours1, colours2[c(1,9,10)]) # We need a total of 12 colours for 12 categories
+
+```
+
+```{r produce-wordcloud-BNC, fig.height=8, fig.width=8, fig.cap="Main collocates of MAKE in the produce/create sense (Ai) in the Spoken BNC2014 sample"}
+
+### Now a wordcloud for each subcorpus ###
+
+produceBNC <- produce[produce$Subcorpus=="BNCspoken",]
+produceTxBspoken <- produce[produce$Subcorpus=="spoken",]
+
+produce_freq_BNC <- produceBNC %>%
+  group_by(Collocate_lemma, USAS) %>%
+  summarize(Frequency=n())
+
+produce_freq_TxBspoken <- produceTxBspoken %>%
+  group_by(Collocate_lemma, USAS) %>%
+  summarize(Frequency=n())
+
+anchor = 10
+
+#png(filename = here("produce_BNC_categories.png"), width = 1300, height = 1100, res = 300)
+
+#svg(filename=here("produce_BNC_collocates.svg"), 
+   #width=9, 
+    #height=6, 
+    #pointsize=11)
+par(mar = rep(0, 4))
+produce_freq_BNC$colors <- colours[match(produce_freq_BNC$USAS, levels(produce_freq_BNC$USAS))]
+wordcloud(produce_freq_BNC$Collocate_lemma,
+          produce_freq_BNC$Frequency,
+          min.freq=2,
+          rot.per=0,
+          colors=produce_freq_BNC$colors,
+          ordered.colors=TRUE,
+          random.order=FALSE,
+          scale = c(10*max(table(produce_freq_BNC$Collocate_lemma))/anchor, 0.5))
+dev.off()
+
+```
+
+```{r produce-wordcloud-TxBspoken, fig.height=8, fig.width=8, fig.cap="Main collocates of MAKE in the produce/create sense (Ai) in Textbook Conversation"}
+
+#png(filename = here("produce_TxBspoken_categories.png"), width = 1300, height = 1100, res = 300)
+#svg(filename=here("produce_TxBSpoken_collocates.svg"), 
+    #width=9, 
+    #height=6, 
+    #pointsize=11)
+par(mar = rep(0, 4))
+produce_freq_TxBspoken$colors <- colours[match(produce_freq_TxBspoken$USAS, levels(produce_freq_TxBspoken$USAS))]
+wordcloud(produce_freq_TxBspoken$Collocate_lemma,
+          produce_freq_TxBspoken$Frequency,
+          min.freq=2,
+          rot.per=0,
+          colors=produce_freq_TxBspoken$colors,
+          ordered.colors=TRUE,
+          random.order=FALSE,
+          scale = c(40*max(table(produce_freq_BNC$Collocate_lemma))/anchor, 0.5))
+dev.off()
+
+```
+
+### MAKE in the sense (Ai) produce/create in Textbook Fiction
+
+```{r produce-nar-lollipop, fig.cap="Differences in semantic fields of collocates of MAKE in the produce sense (Ai)."}
+
+produce_sem <- read.csv(file = here("Produce_semantics.csv"), sep = "\t", stringsAsFactors = TRUE) # This data set was produced in the MAKE_produce_wordcloud_lollipop.R script
+
+### Now onto a comparison of semantic categories between TxB narrative and Youth Fiction ###
+### 
+
+# Reorder data by size of difference in frequency # 
+nar_sem = produce_sem %>% 
+  rowwise() %>% mutate(dif = sqrt((Youth_FictionPer - TxBnarPer)^2)) %>% 
+  arrange(desc(dif)) %>% 
+  mutate(Semantics=factor(Semantics, Semantics))
+
+nar_sem$Semantics <- factor(nar_sem$Semantics, levels = nar_sem$Semantics[order(nar_sem$dif)])
+
+### Chi-squared tests ##
+
+cols = c("Youth_Fiction", "TxBnar")
+semantics_test = chisq.test(nar_sem[,cols])
+# Comparing the two distributions #
+print(semantics_test)
+# X-squared = 22.119, df = 10, p-value = 0.01451
+
+# Comparing proportions for each semantic category #
+results = data.frame(Semantics=nar_sem$Semantics, p=1)
+for(i in 1:nrow(results)){
+  category = nar_sem$Semantics[i]
+  row = nar_sem[nar_sem$Semantics==category,cols]
+  other_rows = nar_sem[nar_sem$Semantics!=category,cols]
+  collapsed = rbind(row, colSums(other_rows))
+  category_test = fisher.test(collapsed)
+  results$p[i] = category_test$p.value
+  results$OddsRatio[i] = category_test$estimate
+  results$conf.int.lower[i] = category_test$conf.int[1]
+  results$conf.int.upper[i] = category_test$conf.int[2]
+}
+
+results$p = p.adjust(results$p, method='none')
+
+## We can add the stars for low p-values using ifelse(). ##
+#criterion = 0.05
+#results$Star = ifelse(results$p < criterion, '**', '')
+## But this package makes it much quicker! ##
+results$Star <- stars.pval(results$p)
+results = results %>%
+  mutate(Star = replace(Star, Star==".", "˘")) # Change dot to a higher symbol such as º or ˘ 
+# Check the outcome.
+print(results)
+
+## Lollipop chart ##
+#svg(filename=here("MAKE_produce_Fiction.svg"), width=14, height=7, pointsize=12)
+
+fig = ggplot(nar_sem) +
+  geom_segment(aes(x=Semantics, xend=Semantics, y=Youth_FictionPer, yend=TxBnarPer), color="black") +
+  geom_point(aes(x=Semantics, y=Youth_FictionPer), color=rgb(153,0,0, max = 255, alpha = 255), size=5) +
+  geom_point(aes(x=Semantics, y=TxBnarPer), color=rgb(252, 141, 89, max = 255, alpha = 220), size=5) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    panel.border = element_blank(),
+    axis.text=element_text(size=16, colour = "black"),
+    axis.title.x=element_text(size=16, face = "bold")
+  ) +
+  scale_x_discrete(limits=c(levels(nar_sem$Semantics),"")) +
+  xlab("") +
+  ylab("% of MAKE collocations in the (Ai) produce sense") + # Adds an empty factor to give space for legend as recommended in: https://stackoverflow.com/questions/16788180/r-ggplot-extend-the-range-of-a-category-x-axis
+  theme(plot.margin=margin(10,10,10,10))
+
+# +  labs(title = "Differences in semantic fields of collocates of MAKE in the produce sense (Ai).")
+
+fig1 = fig + 
+  geom_text(data=data.frame(), aes(x="Buildings & House", y= 5, label="Textbook Fiction"),color=rgb(252, 141, 89, max = 255, alpha = 255), hjust=1, size=6, fontface = "bold", nudge_x = 0.7) +
+  geom_text(data=data.frame(), aes(x="Buildings & House", y= 14, label="Youth Fiction Sample"), color=rgb(153,0,0, max = 255, alpha = 255), hjust=0, size=6, fontface = "bold", nudge_x = 0.7)
+
+## This is to help us place the stars in the middle of the bars ##
+cols = c("Youth_FictionPer", "TxBnarPer")
+results$y = rowMeans(nar_sem[,cols])
+
+fig2 = fig1 +
+  geom_text(aes(x=Semantics, y=y, label=Star), data=results, size=9)
+print(fig2)
+dev.off()
+
+#ggsave(here("produce_USAS_Fiction.png"), width = 24, height = 12, units = "cm", dpi = 300)
+
+```
+
+```{r chatterplot-produce-fiction}
+produce <- read.csv(file = here("Produce.csv"), sep = "\t", stringsAsFactors = TRUE)
+fiction_produce <- produce %>% filter(Subcorpus=="Youth_Fiction" | Subcorpus =="TxBnar")
+fiction_produce$Subcorpus <- droplevels(fiction_produce$Subcorpus)
+table(fiction_produce$Collocate_lemma, fiction_produce$Subcorpus)
+
+comp <- round(prop.table(table(fiction_produce$Collocate_lemma, fiction_produce$Subcorpus), 2), 4)*100
+comp <- as.data.frame(unclass(comp))
+comp$Collocate_lemma <- row.names(comp)
+head(comp)
+comp <- inner_join(comp, fiction_produce[,6:7], by = "Collocate_lemma")
+comp <- distinct(comp)
+head(comp)
+
+suffrager <- c(palettes_d$suffrager$CarolMan[2:4], palettes_d$suffrager$classic[1:2], palettes_d$suffrager$london, palettes_d$suffrager$oxon[c(1,5)])
+
+levels(as.factor(comp$Youth_Fiction))
+
+## With minimal threshold of just min 2 occurrences
+comp %>% filter(TxBnar > 1.09 | Youth_Fiction > 1.17) %>% 
+  ggplot(aes(TxBnar, Youth_Fiction, label = Collocate_lemma)) +
+  # ggrepel geom, make arrows transparent, color by rank, size by n
+  geom_text_repel(segment.alpha = 0, 
+                  aes(colour=USAS)) +
+  scale_colour_manual(values = suffrager,
+        name = "Semantic field") +
+  
+  # set color gradient & customize legend
+  geom_abline(color = "gray40", lty = 2) +
+  
+  # set word size range & turn off legend
+  labs(y = "% of MAKE 'produce' collocations in Spoken BNC2014 sample", x = "% of MAKE 'produce' collocations in Textbook Conversation") +
+  scale_y_log10(breaks=c(1,1.5,2,2.5,3)) +
+  scale_x_log10(breaks=c(1,2,4,6,8)) +
+  
+  # minimal theme & customizations
+  theme_bw() +
+  theme(legend.position=c(0.86,0.35),
+        #legend.justification = c("right","top"),
+        panel.grid.major = element_line(colour = "whitesmoke"),
+        panel.grid.minor=element_blank(),
+        legend.background = element_rect(colour = 'darkgrey', fill = 'white', linetype='solid'))
+
+#ggsave(here("Produce_MAKEs_Fiction_chatterplot.svg"), dpi = 300, width =22, height = 15, units = "cm")
+```
+
+```{r produce-wordcloud-YF, fig.height=8, fig.width=8, fig.cap="Main collocates of MAKE in the produce/create sense (Ai) in the Youth Fiction sample"}
+
+### Now a wordcloud for each subcorpus ###
+
+produceTxBnar <- produce[produce$Subcorpus=="TxBnar",]
+produceYF <- produce[produce$Subcorpus=="Youth_Fiction",]
+
+produce_freq_YF <- produceYF %>%
+  group_by(Collocate_lemma, USAS) %>%
+  summarize(Frequency=n())
+
+produce_freq_TxBnar <- produceTxBnar %>%
+  group_by(Collocate_lemma, USAS) %>%
+  summarize(Frequency=n())
+
+anchor = 10
+
+#png(filename = here("produce_YF_categories.png"), width = 1300, height = 1100, res = 300)
+#svg(filename=here("produce_YF_collocates.svg"), 
+   # width=9, 
+    #height=6, 
+    #pointsize=11)
+produce_freq_YF$colors <- colours[match(produce_freq_YF$USAS, levels(produce_freq_YF$USAS))]
+wordcloud(produce_freq_YF$Collocate_lemma,
+          produce_freq_YF$Frequency,
+          min.freq=2,
+          rot.per=0,
+          colors=produce_freq_YF$colors,
+          ordered.colors=TRUE,
+          random.order=FALSE,
+          scale = c(10*max(table(produce_freq_YF$Collocate_lemma))/8, 0.5))
+dev.off()
+```
+
+```{r produce-wordcloud-TxBnar, fig.height=8, fig.width=8, fig.cap="Main collocates of MAKE in the produce/create sense (Ai) in Textbook Fiction"}
+
+#png(filename = here("produce_TxBnar_categories.png"), width = 1300, height = 1100, res = 300)
+#svg(filename=here("produce_TxBNar_collocates.svg"), 
+    #width=9, 
+    #height=6, 
+    #pointsize=11)
+produce_freq_TxBnar$colors <- colours[match(produce_freq_TxBnar$USAS, levels(produce_freq_TxBnar$USAS))]
+wordcloud(produce_freq_TxBnar$Collocate_lemma,
+          produce_freq_TxBnar$Frequency,
+          min.freq=2,
+          rot.per=0,
+          colors=produce_freq_TxBnar$colors,
+          ordered.colors=TRUE,
+          random.order=FALSE,
+          scale = c(20*max(table(produce_freq_TxBnar$Collocate_lemma))/anchor, 0.5))
+dev.off()
+
+```
+
+## MAKE as a delexical verb
+
+```{r delexical MAKE}
+### Wordclouds for collocates ###
+
+cols<-RColorBrewer::brewer.pal(n=9,name="OrRd")
+
+delexical <- read.csv(here("Delexical_MAKE2.csv"), sep = ",", stringsAsFactors = TRUE)
+str(delexical)
+table(delexical$Collocate_lemma, delexical$Register)
+
+# https://stackoverflow.com/questions/37275220/wordclouds-with-absolute-word-sizes # Trick to make the wordclouds comparable with constant font size # 
+
+anchor <- 20 # Should be maximum frequency in any of the wordclouds to be compared
+
+# Youth Fiction #
+delexicalYF <- delexical[delexical$Register == "Youth_Fiction",]
+
+#png(filename = here("Delexical_YF_minFreq2.png"), width = 1200, height = 1000, res = 300) # Too low a quality?
+#svg(filename=here("Delexical_YF_minFreq2.svg"), 
+    #width=4, 
+    #height=3, 
+    #pointsize=11)
+wordcloud::wordcloud(delexicalYF$Collocate_lemma, min.freq = 2, rot.per = 0, colors=cols[9], scale = c(8*max(table(delexicalYF$Collocate_lemma))/anchor, 0.5))
+dev.off()
+
+# Textbook narrative #
+delexicalTxBnar <- delexical[delexical$Register == "narrative",]
+#png(filename = here("Delexical_TxBnar_minFreq2.png"), width = 1300, height = 1100, res = 300)
+#svg(filename=here("Delexical_TxBnar_minFreq2.svg"), 
+    #width=5, 
+    #height=3, 
+    #pointsize=11)
+wordcloud(delexicalTxBnar$Collocate_lemma, min.freq = 2, rot.per = 0, colors=cols[6], scale = c(6*max(table(delexicalTxBnar$Collocate_lemma))/anchor, 0.5))
+dev.off()
+
+# BNC spoken #
+delexicalBNC <- delexical[delexical$Register == "BNC_Spoken",]
+#png(filename = here("Delexical_BNCs_minFreq2.png"), width = 2000, height = 1800, res = 300) # Too low a quality?
+#svg(filename=here("Delexical_BNCs_minFreq2.svg"), 
+   # width=6, 
+    #height=6, 
+    #pointsize=11)
+wordcloud(delexicalBNC$Collocate_lemma, min.freq = 2, rot.per = 0, colors=cols[9], scale = c(8*max(table(delexicalBNC$Collocate_lemma))/anchor, 0.5))
+dev.off() # To save plot
+
+# Textbook spoken #
+delexicalTxBspoken <- delexical[delexical$Register == "TxB_spoken",]
+#png(filename = here("Delexical_TxBspoken_minFreq2.png"), width = 2000, height = 1800, res = 300)
+#svg(filename=here("Delexical_TxBspoken_minFreq2.svg"), 
+    #width=5, 
+    #height=10, 
+    #pointsize=11)
+wordcloud(delexicalTxBspoken$Collocate_lemma, min.freq = 2, rot.per = 0, colors=cols[6], scale = c(4*max(table(delexicalTxBspoken$Collocate_lemma))/anchor, 0.5))
+dev.off() # To save plot
+
+##### For range of colours according to frequencies ##
+
+wordcloud(delexicalTxBnar$Collocate_lemma, min.freq = 2, rot.per = 0, random.order=FALSE, random.color = FALSE, colors= brewer.pal(4,"RdGy"))
+
+##### https://stackoverflow.com/questions/18902485/colored-categories-in-r-wordclouds
+
+colours <- c("red", "blue", "orange", "green")
+
+delexical$color <- colours[match(delexical$Register, levels(delexical$Register))]
+
+wordcloud(delexicalTxBnar$Collocate_lemma, min.freq = 2, rot.per = 0, random.order=FALSE, random.color = FALSE, colors=as.character(delexical$color))
+
+```
+
+### MAKE as a delexical verb in Textbook Conversation
+
+```{r chatterplot-delexical-spoken}
+#### Chatterplot: inspired by https://towardsdatascience.com/rip-wordclouds-long-live-chatterplots-e76a76896098
+# Used in MAKING tea and mistakes book chapter
+
+delexical <- read.csv(here("Delexical_MAKE2.csv"), sep = ",", stringsAsFactors = TRUE)
+spoken_delex <- delexical %>% filter(Register=="BNC_Spoken" | Register=="TxB_spoken")
+spoken_delex$Register <- droplevels(spoken_delex$Register)
+table(spoken_delex$Collocate_lemma, spoken_delex$Register)
+
+comp <- round(prop.table(table(spoken_delex$Collocate_lemma, spoken_delex$Register), 2), 4)*100
+comp <- as.data.frame(unclass(comp))
+comp$Collocate <- row.names(comp)
+head(comp)
+levels(as.factor(comp$TxB_spoken))
+
+comp %>% filter(TxB_spoken > 0.70 | BNC_Spoken > 0.70) %>% 
+  ggplot(aes(TxB_spoken, BNC_Spoken, label = Collocate)) +
+  # ggrepel geom, make arrows transparent
+  geom_point(color = "darkred") +
+  geom_text_repel(min.segment.length = 0.3, segment.alpha = 0.4, force = 0.4) +
+  geom_abline(color = "gray40", lty = 2) +
+  labs(y = "% of delexical MAKEs in Spoken BNC2014 sample", x = "% of delexical MAKEs in the TEC-Conv") +
+  scale_y_log10(breaks=c(1,2,4,6,8,10,12,14,16,18)) +
+  scale_x_log10(breaks=c(1,2,4,6,8,10,12,14,16)) +
+  # minimal theme & customizations
+  theme_bw() +
+  theme(panel.grid.major = element_line(colour = "whitesmoke"),
+        panel.grid.minor=element_blank())
+
+#ggsave(here("Delex_MAKE_spoken_chatterplot.svg"), dpi = 300, width =17, height = 18, units = "cm")
+
+#Good dimensions to save as SVG = 727 x 587
+dev.off()
+
+```
+
+### MAKE as a delexical verb in Textbook Fiction
+
+```{r chatterplot-delexical-fiction}
+#### Chatterplot: inspired by https://towardsdatascience.com/rip-wordclouds-long-live-chatterplots-e76a76896098
+# Used in MAKING tea and mistakes book chapter
+
+delexical <- read.csv(here("Delexical_MAKE2.csv"), sep = ",", stringsAsFactors = TRUE)
+
+fiction_delex <- delexical %>% filter(Register=="Youth_Fiction" | Register=="narrative")
+fiction_delex$Register <- droplevels(fiction_delex$Register)
+table(fiction_delex$Collocate_lemma, fiction_delex$Register)
+
+comp <- round(prop.table(table(fiction_delex$Collocate_lemma, fiction_delex$Register), 2), 4)*100
+comp <- as.data.frame(unclass(comp))
+comp$Collocate_lemma <- row.names(comp)
+head(comp)
+levels(as.factor(comp$narrative))
+levels(as.factor(comp$Youth_Fiction))
+
+comp %>% filter(narrative > 2.48 | Youth_Fiction > 1.90) %>% 
+  ggplot(aes(narrative, Youth_Fiction, label = Collocate_lemma)) +
+  # ggrepel geom, make arrows transparent
+  geom_point(color = "darkred") +
+  geom_text_repel(min.segment.length = 0.1, segment.alpha = 0.4, forrce = 0.6) +
+  geom_abline(color = "gray40", lty = 2) +
+  labs(y = "% of delexical MAKEs in Youth Fiction sample", x = "% of delexical MAKEs in Textbook Fiction") +
+  scale_y_log10(breaks = c(1,2,4,6,8,10,12), limits = c(0.9,12)) +
+  scale_x_log10(breaks = c(1,2,4,6,8,10,12,14,16)) +
+  # minimal theme & customizations
+  theme_bw() +
+  theme(panel.grid.major = element_line(colour = "whitesmoke"),
+        panel.grid.minor=element_blank())
+
+#ggsave(here("delex_MAKE_Fiction_chatterplot.svg"), dpi = 300, width =15, height = 15, units = "cm")
+
+```
+
+### Delexical collocations of speech/communication
+
+```{r delexical-speech}
+
+#### Percentage of collocates that are speech actions #####
+
+total_delexical <- delexical %>% 
+  group_by(Register) %>% 
+  summarise(total = n())
+
+speech <- delexical %>% 
+  group_by(Register) %>%
+  filter(speech==1) %>% 
+  summarise(speech = n())
+
+speech2 <- left_join(speech, total_delexical, by = "Register") %>% 
+  mutate(speech_per = speech / total * 100) %>% 
+  mutate(not_speech = total - speech) %>% 
+  add_column(Variety = c("Reference", "Textbook", "Textbook", "Reference")) %>% 
+  rename(Corpus = Register) %>% 
+  add_column(Register = c("Conversation", "Fiction", "Conversation", "Fiction"))
+
+speech2
+
+## Statistical testing ##
+
+speech3 <- as.data.frame(speech2); speech3
+
+speech_spoken <- speech3[c(1,3),c(2,5)] # Spoken register
+chisq.test(t(speech_spoken)) # p-value =  0.07751
+vcd::assocstats(t(speech_spoken)) # Cramer's V = 0.108
+
+speech_narrative <- speech3[c(2,4),c(2,5)] # Narrative register
+chisq.test(t(speech_narrative)) # p-value = 0.3493
+
+## Second attempt at better graph ##
+
+cols<-RColorBrewer::brewer.pal(n=7,name="OrRd")
+
+#svg(filename=here("delexical_speech.svg"),
+    #width=5, 
+    #height=4)
+ggplot(speech3, aes(Register, speech_per)) +
+  geom_bar(aes(fill = Variety), stat="identity", position="dodge", width=.5) +
+  theme(legend.title = element_blank()) +
+  ggsignif::geom_signif(y_position=23.5, xmin=c(0.8, 1.8), xmax=c(1.2, 2.2),
+              annotation=c("ns", "ns"), tip_length=0, textsize = 3)  +
+  scale_fill_manual(name = "Variety", labels = c("ENL Reference", "Textbook English"), values = cols[c(3,7)]) +
+  ylab("% of delexical MAKE") +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 25))  +
+  theme_bw()
+dev.off()
+
+## Quantative analysis ##
+speech <- delexical[delexical$speech==1,]; head(speech) # Select only speech collocates
+speech$Collocate_lemma <- factor(speech$Collocate_lemma) # Drop unused levels
+speech <- t(table(speech$Register, speech$Collocate_lemma)) # Compute raw frequency list
+str(speech); head(speech)
+speech2 <- as.data.frame.matrix(speech)
+
+speech2 %>% 
+  subset(narrative == 0 & TxB_spoken == 0) %>% 
+  select(c(BNC_Spoken, Youth_Fiction))
+
+```
+
+## Phrasal verbs
+
+```{r Phrasal verbs}
+
+PV <- read.csv(here("MAKE_PhrasalVerbs_Conc.csv"))
+
+t(table(PV$Corpus, PV$PV))
+
+summary(as.factor(PV$Corpus))
+
+table(PV$Corpus, PV$Level)
+
+```
+
+## Causative MAKE
+
+```{r Causative-MAKE}
+
+TxBSpokenCaus <- read.csv(here("Textbook_MAKE_Causative_Constructions.csv"), stringsAsFactors = TRUE)
+str(TxBSpokenCaus)
+TxBSpokenCaus$Register = "Textbook Conversation"
+
+BNC2014Caus <- read.csv(here("SpokenBNC2014_MAKE_Causative_Constructions.csv"), stringsAsFactors = TRUE)
+str(BNC2014Caus)
+BNC2014Caus <- BNC2014Caus %>% select(-c(Filename))
+BNC2014Caus$Register = "Spoken BNC2014"
+BNC2014Caus$Level = "Spoken BNC2014"
+BNC2014Caus$Series = "Spoken BNC2014"
+
+caus <- rbind(TxBSpokenCaus, BNC2014Caus) %>% select(-Semantic_prosody)
+caus$Register <- as.factor(caus$Register)
+str(caus)
+
+table(caus$Cause_Cx, caus$Register)
+round(prop.table(table(caus$Cause_Cx, caus$Register), 2), 4)*100
+
+vcd::assoc(caus$Cause_Cx ~ caus$Register, shade = TRUE, varnames = FALSE)
+
+```
+
+```{r chatterplot-causative-spoken}
+
+#Chatterplot: inspired by https://towardsdatascience.com/rip-wordclouds-long-live-chatterplots-e76a76896098
+
+comp <- round(prop.table(table(caus$Collocate, caus$Register), 2), 4)*100
+comp <- as.data.frame(unclass(comp))
+comp$Collocate <- row.names(comp)
+comp <- inner_join(comp, caus[,7:8], by = "Collocate")
+comp <- distinct(comp)
+str(comp)
+
+comp %>% 
+  filter(`Textbook Conversation` > 0.95 | `Spoken BNC2014` > 0.95) %>% 
+  ggplot(aes(`Textbook Conversation`, `Spoken BNC2014`, colour = Cause_Cx, label = Collocate)) +
+  # ggrepel geom, make arrows transparent, color by rank, size by n
+  geom_point(aes(colour=Cause_Cx)) +
+  geom_text_repel(min.segment.length = 0.5, segment.alpha = 0.4, force = 1, max.overlaps = 20, aes(colour=Cause_Cx), show.legend = F) +
+  scale_colour_manual(breaks = c("adjectiveCx", "nounCx", "verbalCxAA"), 
+                      values = palettes_d$suffrager$oxon[c(2,1,3)],
+        labels = c("[X MAKE Y AdjP]", "[X MAKE (Y) NP]", "[X MAKE Y Vinf]"),
+        name = "Construction type") +
+  
+  # set color gradient & customize legend
+  geom_abline(color = "gray40", lty = 2) +
+  
+  # set word size range & turn off legend
+  labs(y = "% of causative MAKEs in the Spoken BNC2014 sample", x = "% of causative MAKEs in Textbook Conversation") +
+  scale_y_log10(breaks = c(1,2,4,6,8,10)) +
+  scale_x_log10(breaks = c(1,2,4,6,8,10)) +
+  
+  # minimal theme & customizations
+  theme_bw() +
+  theme(legend.position=c(0.97,0.40),
+        legend.justification = c("right","top"),
+        panel.grid.major = element_line(colour = "whitesmoke"),
+        panel.grid.minor=element_blank(),
+        legend.background = element_rect(colour = 'darkgrey', fill = 'white', linetype='solid'))
+
+#ggsave(here("Causative_Spoken_chatterplot.svg"), dpi=300, width=20, height=20, units="cm")
+
+dev.off()
+
+```
+
+
+# Package used in this script
+```{r package-citations}
+
+#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
+
+sessionInfo()
+
+```
+
+
+
+
+
+
+
+
+
+

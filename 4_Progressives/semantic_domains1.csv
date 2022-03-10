@@ -1,0 +1,578 @@
+"lemma"	"semantic_domain_Biber"	"semantic_domain_Edwards"	"Edwards"	"agreement"
+"1"	"accompany"	"activity"	"activity"	"Edwards"	TRUE
+"2"	"accuse"	"communication"	"communication"	"Edwards"	TRUE
+"3"	"acknowledge"	"communication"	"communication"	"Edwards"	TRUE
+"4"	"acquire"	"activity"	"activity"	"Edwards"	TRUE
+"5"	"add"	"activity"	"activity"	"Edwards"	TRUE
+"6"	"address"	"communication"	"mental"	"Edwards"	FALSE
+"7"	"address"	"communication"	"communication"	"Edwards"	TRUE
+"8"	"admit"	"communication"	"communication"	"Edwards"	TRUE
+"9"	"advance"	"activity"	"activity"	"Edwards"	TRUE
+"10"	"advise"	"communication"	"communication"	"Edwards"	TRUE
+"11"	"affect"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"12"	"afford"	"mental"	"mental"	"Edwards"	TRUE
+"13"	"agree"	"mental"	"mental"	"Edwards"	TRUE
+"14"	"allow"	"facilitation_causation"	NA	NA	NA
+"15"	"announce"	"communication"	"communication"	"Edwards"	TRUE
+"16"	"answer"	"communication"	"communication"	"Edwards"	TRUE
+"17"	"appeal"	"communication"	"communication"	"Edwards"	TRUE
+"18"	"appear"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"19"	"apply"	"activity"	"activity"	"Edwards"	TRUE
+"20"	"appreciate"	"mental"	"mental"	"Edwards"	TRUE
+"21"	"approve"	"mental"	"mental"	"Edwards"	TRUE
+"22"	"argue"	"communication"	"communication"	"Edwards"	TRUE
+"23"	"arise"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"24"	"arrange"	"activity"	"activity"	"Edwards"	TRUE
+"25"	"ask"	"communication"	"communication"	"Edwards"	TRUE
+"26"	"assess"	"mental"	"mental"	"Edwards"	TRUE
+"27"	"assist"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"28"	"assume"	"mental"	"mental"	"Edwards"	TRUE
+"29"	"assure"	"communication"	"communication"	"Edwards"	TRUE
+"30"	"be"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"31"	"bear"	"mental"	"mental"	"Edwards"	TRUE
+"32"	"beat"	"activity"	"occurrence"	"Edwards"	FALSE
+"33"	"become"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"34"	"begin"	"aspectual"	"activity"	"Edwards"	FALSE
+"35"	"begin"	"aspectual"	"aspectual"	"Edwards"	TRUE
+"36"	"behave"	"activity"	"activity"	"Edwards"	TRUE
+"37"	"believe"	"mental"	"mental"	"Edwards"	TRUE
+"38"	"blame"	"mental"	"mental"	"Edwards"	TRUE
+"39"	"borrow"	"activity"	"activity"	"Edwards"	TRUE
+"40"	"bother"	"mental"	"mental"	"Edwards"	TRUE
+"41"	"bring"	"activity"	"facilitation_causation"	"Edwards"	FALSE
+"42"	"bring"	"activity"	"activity"	"Edwards"	TRUE
+"43"	"burn"	"activity"	"activity"	"Edwards"	TRUE
+"44"	"buy"	"activity"	"activity"	"Edwards"	TRUE
+"45"	"calculate"	"mental"	"mental"	"Edwards"	TRUE
+"46"	"call"	"communication"	"communication"	"Edwards"	TRUE
+"47"	"care"	"mental"	"mental"	"Edwards"	TRUE
+"48"	"carry"	"activity"	"activity"	"Edwards"	TRUE
+"49"	"carry out"	"activity"	"activity"	"Edwards"	TRUE
+"50"	"catch"	"activity"	"activity"	"Edwards"	TRUE
+"51"	"cause"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"52"	"cease"	"aspectual"	"aspectual"	"Edwards"	TRUE
+"53"	"celebrate"	"mental"	"activity"	"Edwards"	FALSE
+"54"	"celebrate"	"mental"	"mental"	"Edwards"	TRUE
+"55"	"challenge"	"communication"	"communication"	"Edwards"	TRUE
+"56"	"change"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"57"	"check"	"activity"	"activity"	"Edwards"	TRUE
+"58"	"choose"	"mental"	"mental"	"Edwards"	TRUE
+"59"	"claim"	"communication"	"communication"	"Edwards"	TRUE
+"60"	"clean"	"activity"	"activity"	"Edwards"	TRUE
+"61"	"climb"	"activity"	"activity"	"Edwards"	TRUE
+"62"	"combine"	"activity"	"activity"	"Edwards"	TRUE
+"63"	"come"	"activity"	"activity"	"Edwards"	TRUE
+"64"	"come"	"activity"	"occurrence"	"Edwards"	FALSE
+"65"	"come along"	"activity"	"occurrence"	"Edwards"	FALSE
+"66"	"come on"	"activity"	"occurrence"	"Edwards"	FALSE
+"67"	"come over"	"activity"	NA	NA	NA
+"68"	"compare"	"mental"	"mental"	"Edwards"	TRUE
+"69"	"complain"	"communication"	"communication"	"Edwards"	TRUE
+"70"	"complete"	"aspectual"	"aspectual"	"Edwards"	TRUE
+"71"	"concern"	"existence_relationship"	"mental"	"Edwards"	FALSE
+"72"	"concern"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"73"	"conclude"	"mental"	"mental"	"Edwards"	TRUE
+"74"	"confirm"	"mental"	"mental"	"Edwards"	TRUE
+"75"	"consider"	"mental"	"mental"	"Edwards"	TRUE
+"76"	"constitute"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"77"	"consult"	"communication"	"communication"	"Edwards"	TRUE
+"78"	"contain"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"79"	"continue"	"aspectual"	"aspectual"	"Edwards"	TRUE
+"80"	"control"	"activity"	"activity"	"Edwards"	TRUE
+"81"	"convince"	"communication"	"communication"	"Edwards"	TRUE
+"82"	"count"	"mental"	"mental"	"Edwards"	TRUE
+"83"	"cover"	"activity"	"activity"	"Edwards"	TRUE
+"84"	"dare"	"mental"	"mental"	"Edwards"	TRUE
+"85"	"decide"	"mental"	"mental"	"Edwards"	TRUE
+"86"	"declare"	"communication"	"communication"	"Edwards"	TRUE
+"87"	"defend"	"activity"	"activity"	"Edwards"	TRUE
+"88"	"define"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"89"	"deliver"	"activity"	"activity"	"Edwards"	TRUE
+"90"	"demand"	"communication"	"communication"	"Edwards"	TRUE
+"91"	"deny"	"communication"	"communication"	"Edwards"	TRUE
+"92"	"derive"	"existence_relationship"	NA	NA	NA
+"93"	"descibe"	"communication"	NA	NA	NA
+"94"	"deserve"	"existence_relationship"	"mental"	"Edwards"	FALSE
+"95"	"deserve"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"96"	"detect"	"mental"	"mental"	"Edwards"	TRUE
+"97"	"determine"	"mental"	"mental"	"Edwards"	TRUE
+"98"	"develop"	"occurrence"	"activity"	"Edwards"	FALSE
+"99"	"develop"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"100"	"develop"	"occurrence"	"mental"	"Edwards"	FALSE
+"101"	"die"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"102"	"dig"	"activity"	"activity"	"Edwards"	TRUE
+"103"	"disappear"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"104"	"discover"	"mental"	"mental"	"Edwards"	TRUE
+"105"	"discuss"	"communication"	"communication"	"Edwards"	TRUE
+"106"	"dismiss"	"mental"	"mental"	"Edwards"	TRUE
+"107"	"distinguish"	"mental"	"mental"	"Edwards"	TRUE
+"108"	"divide"	"activity"	"activity"	"Edwards"	TRUE
+"109"	"doubt"	"mental"	"mental"	"Edwards"	TRUE
+"110"	"earn"	"activity"	"activity"	"Edwards"	TRUE
+"111"	"eat"	"activity"	"activity"	"Edwards"	TRUE
+"112"	"emerge"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"113"	"emphasise"	"communication"	"communication"	"Edwards"	TRUE
+"114"	"emphasize"	"communication"	NA	NA	NA
+"115"	"enable"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"116"	"encounter"	"activity"	"activity"	"Edwards"	TRUE
+"117"	"encourage"	"communication"	"communication"	"Edwards"	TRUE
+"118"	"end"	"aspectual"	"aspectual"	"Edwards"	TRUE
+"119"	"engage"	"activity"	"activity"	"Edwards"	TRUE
+"120"	"enjoy"	"mental"	"mental"	"Edwards"	TRUE
+"121"	"ensure"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"122"	"examine"	"mental"	"mental"	"Edwards"	TRUE
+"123"	"excuse"	"communication"	"communication"	"Edwards"	TRUE
+"124"	"exercise"	"activity"	"activity"	"Edwards"	TRUE
+"125"	"exist"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"126"	"expand"	"activity"	"occurrence"	"Edwards"	FALSE
+"127"	"expect"	"mental"	"mental"	"Edwards"	TRUE
+"128"	"experience"	"mental"	"mental"	"Edwards"	TRUE
+"129"	"experience"	"mental"	"existence_relationship"	"Edwards"	FALSE
+"130"	"explain"	"communication"	"communication"	"Edwards"	TRUE
+"131"	"explore"	"activity"	"activity"	"Edwards"	TRUE
+"132"	"express"	"communication"	"communication"	"Edwards"	TRUE
+"133"	"extend"	"activity"	"activity"	"Edwards"	TRUE
+"134"	"extend"	"activity"	"activity"	"Edwards"	TRUE
+"135"	"face"	"mental"	"existence_relationship"	"Edwards"	FALSE
+"136"	"face"	"mental"	"mental"	"Edwards"	TRUE
+"137"	"fall"	"occurrence"	"activity"	"Edwards"	FALSE
+"138"	"fear"	"mental"	"mental"	"Edwards"	TRUE
+"139"	"feel"	"mental"	"mental"	"Edwards"	TRUE
+"140"	"find"	"mental"	"mental"	"Edwards"	TRUE
+"141"	"find"	"mental"	"activity"	"Edwards"	FALSE
+"142"	"finish"	"aspectual"	"aspectual"	"Edwards"	TRUE
+"143"	"fit"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"144"	"fix"	"activity"	"activity"	"Edwards"	TRUE
+"145"	"flow"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"146"	"follow"	"activity"	"mental"	"Edwards"	FALSE
+"147"	"follow"	"activity"	"activity"	"Edwards"	TRUE
+"148"	"force"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"149"	"forget"	"mental"	"mental"	"Edwards"	TRUE
+"150"	"forgive"	"mental"	"mental"	"Edwards"	TRUE
+"151"	"form"	"activity"	"activity"	"Edwards"	TRUE
+"152"	"get"	"activity"	"activity"	"Edwards"	TRUE
+"153"	"get"	"activity"	"facilitation_causation"	"Edwards"	FALSE
+"154"	"get back"	"activity"	NA	NA	NA
+"155"	"get in"	"activity"	"activity"	"Edwards"	TRUE
+"156"	"get off"	"activity"	"activity"	"Edwards"	TRUE
+"157"	"get out"	"activity"	"activity"	"Edwards"	TRUE
+"158"	"get up"	"activity"	NA	NA	NA
+"159"	"give"	"activity"	"mental"	"Edwards"	FALSE
+"160"	"give"	"activity"	"activity"	"Edwards"	TRUE
+"161"	"give up"	"activity"	"mental"	"Edwards"	FALSE
+"162"	"go"	"activity"	"activity"	"Edwards"	TRUE
+"163"	"go ahead"	"activity"	NA	NA	NA
+"164"	"go off"	"activity"	NA	NA	NA
+"165"	"grow"	"occurrence"	"activity"	"Edwards"	FALSE
+"166"	"grow"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"167"	"guarantee"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"168"	"guess"	"mental"	"mental"	"Edwards"	TRUE
+"169"	"hang"	"activity"	"activity"	"Edwards"	TRUE
+"170"	"hang on"	"activity"	NA	NA	NA
+"171"	"happen"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"172"	"hate"	"mental"	"mental"	"Edwards"	TRUE
+"173"	"hear"	"mental"	"mental"	"Edwards"	TRUE
+"174"	"help"	"facilitation_causation"	"activity"	"Edwards"	FALSE
+"175"	"help"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"176"	"hold"	"activity"	"activity"	"Edwards"	TRUE
+"177"	"hold"	"activity"	"existence_relationship"	"Edwards"	FALSE
+"178"	"hope"	"mental"	"mental"	"Edwards"	TRUE
+"179"	"identify"	"mental"	"mental"	"Edwards"	TRUE
+"180"	"ignore"	"mental"	"mental"	"Edwards"	TRUE
+"181"	"illustrate"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"182"	"imagine"	"mental"	"mental"	"Edwards"	TRUE
+"183"	"imply"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"184"	"impress"	"mental"	"mental"	"Edwards"	TRUE
+"185"	"include"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"186"	"increase"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"187"	"indicate"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"188"	"influence"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"189"	"inform"	"communication"	"communication"	"Edwards"	TRUE
+"190"	"insist"	"communication"	"communication"	"Edwards"	TRUE
+"191"	"intend"	"mental"	"mental"	"Edwards"	TRUE
+"192"	"interpret"	"mental"	"mental"	"Edwards"	TRUE
+"193"	"invite"	"communication"	"communication"	"Edwards"	TRUE
+"194"	"involve"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"195"	"join"	"activity"	"activity"	"Edwards"	TRUE
+"196"	"judge"	"mental"	"mental"	"Edwards"	TRUE
+"197"	"justify"	"mental"	"mental"	"Edwards"	TRUE
+"198"	"keep"	"aspectual"	"activity"	"Edwards"	FALSE
+"199"	"keep"	"aspectual"	"aspectual"	"Edwards"	TRUE
+"200"	"know"	"mental"	"mental"	"Edwards"	TRUE
+"201"	"lack"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"202"	"last"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"203"	"last"	"occurrence"	"existence_relationship"	"Edwards"	FALSE
+"204"	"learn"	"mental"	"mental"	"Edwards"	TRUE
+"205"	"leave"	"activity"	"activity"	"Edwards"	TRUE
+"206"	"let"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"207"	"lie"	"activity"	"activity"	"Edwards"	TRUE
+"208"	"lie"	"activity"	"communication"	"Edwards"	FALSE
+"209"	"lie"	"activity"	"existence_relationship"	"Edwards"	FALSE
+"210"	"like"	"mental"	"mental"	"Edwards"	TRUE
+"211"	"listen"	"mental"	"mental"	"Edwards"	TRUE
+"212"	"live"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"213"	"look"	"activity"	NA	NA	NA
+"214"	"look after"	"activity"	NA	NA	NA
+"215"	"look forward"	"mental"	"mental"	"Edwards"	TRUE
+"216"	"look up"	"activity"	"activity"	"Edwards"	TRUE
+"217"	"lose"	"activity"	"activity"	"Edwards"	TRUE
+"218"	"love"	"mental"	"mental"	"Edwards"	TRUE
+"219"	"make"	"activity"	"activity"	"Edwards"	TRUE
+"220"	"make up"	"activity"	NA	NA	NA
+"221"	"matter"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"222"	"mean"	"mental"	"mental"	"Edwards"	TRUE
+"223"	"mean"	"mental"	"existence_relationship"	"Edwards"	FALSE
+"224"	"meet"	"activity"	"activity"	"Edwards"	TRUE
+"225"	"mention"	"communication"	"communication"	"Edwards"	TRUE
+"226"	"mind"	"mental"	"mental"	"Edwards"	TRUE
+"227"	"miss"	"mental"	"mental"	"Edwards"	TRUE
+"228"	"move"	"activity"	"activity"	"Edwards"	TRUE
+"229"	"need"	"mental"	"mental"	"Edwards"	TRUE
+"230"	"notice"	"mental"	"mental"	"Edwards"	TRUE
+"231"	"observe"	"mental"	"mental"	"Edwards"	TRUE
+"232"	"obtain"	"activity"	"activity"	"Edwards"	TRUE
+"233"	"obtain"	"activity"	"activity"	"Edwards"	TRUE
+"234"	"occur"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"235"	"offer"	"communication"	"communication"	"Edwards"	TRUE
+"236"	"open"	"activity"	"activity"	"Edwards"	TRUE
+"237"	"owe"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"238"	"own"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"239"	"pass"	"activity"	"activity"	"Edwards"	TRUE
+"240"	"pay"	"activity"	"activity"	"Edwards"	TRUE
+"241"	"perceive"	"mental"	"mental"	"Edwards"	TRUE
+"242"	"permit"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"243"	"persuade"	"communication"	"communication"	"Edwards"	TRUE
+"244"	"phone"	"communication"	"communication"	"Edwards"	TRUE
+"245"	"pick"	"activity"	"activity"	"Edwards"	TRUE
+"246"	"pick up"	"activity"	NA	NA	NA
+"247"	"plan"	"mental"	"activity"	"Edwards"	FALSE
+"248"	"plan"	"mental"	"mental"	"Edwards"	TRUE
+"249"	"play"	"activity"	"activity"	"Edwards"	TRUE
+"250"	"possess"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"251"	"pray"	"communication"	"communication"	"Edwards"	TRUE
+"252"	"pray"	"communication"	"mental"	"Edwards"	FALSE
+"253"	"predict"	"mental"	"mental"	"Edwards"	TRUE
+"254"	"prefer"	"mental"	"mental"	"Edwards"	TRUE
+"255"	"pretend"	"mental"	"mental"	"Edwards"	TRUE
+"256"	"prevent"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"257"	"produce"	"activity"	"activity"	"Edwards"	TRUE
+"258"	"promise"	"communication"	"communication"	"Edwards"	TRUE
+"259"	"propose"	"communication"	"communication"	"Edwards"	TRUE
+"260"	"prove"	"mental"	"mental"	"Edwards"	TRUE
+"261"	"provide"	"activity"	"activity"	"Edwards"	TRUE
+"262"	"pull"	"activity"	"activity"	"Edwards"	TRUE
+"263"	"put"	"activity"	"activity"	"Edwards"	TRUE
+"264"	"put off"	"mental"	NA	NA	NA
+"265"	"put on"	"activity"	NA	NA	NA
+"266"	"question"	"communication"	"mental"	"Edwards"	FALSE
+"267"	"question"	"communication"	"communication"	"Edwards"	TRUE
+"268"	"quote"	"communication"	"communication"	"Edwards"	TRUE
+"269"	"reach"	"activity"	"activity"	"Edwards"	TRUE
+"270"	"read"	"mental"	"mental"	"Edwards"	TRUE
+"271"	"realize"	"mental"	NA	NA	NA
+"272"	"recall"	"mental"	"mental"	"Edwards"	TRUE
+"273"	"receive"	"activity"	"activity"	"Edwards"	TRUE
+"274"	"reckon"	"mental"	"mental"	"Edwards"	TRUE
+"275"	"recognise"	"mental"	"mental"	"Edwards"	TRUE
+"276"	"recognize"	"mental"	NA	NA	NA
+"277"	"recommend"	"communication"	"communication"	"Edwards"	TRUE
+"278"	"reduce"	"activity"	"activity"	"Edwards"	TRUE
+"279"	"reflect"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"280"	"regard"	"mental"	"mental"	"Edwards"	TRUE
+"281"	"relate"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"282"	"remain"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"283"	"remark"	"communication"	"communication"	"Edwards"	TRUE
+"284"	"remember"	"mental"	"mental"	"Edwards"	TRUE
+"285"	"remind"	"mental"	"communication"	"Edwards"	FALSE
+"286"	"remind"	"mental"	"mental"	"Edwards"	TRUE
+"287"	"remind"	"mental"	"mental"	"Edwards"	TRUE
+"288"	"repeat"	"activity"	"activity"	"Edwards"	TRUE
+"289"	"reply"	"communication"	"communication"	"Edwards"	TRUE
+"290"	"represent"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"291"	"require"	"facilitation_causation"	"existence_relationship"	"Edwards"	FALSE
+"292"	"require"	"facilitation_causation"	"facilitation_causation"	"Edwards"	TRUE
+"293"	"respond"	"communication"	"communication"	"Edwards"	TRUE
+"294"	"reveal"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"295"	"rise"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"296"	"run"	"activity"	"activity"	"Edwards"	TRUE
+"297"	"run"	"activity"	"existence_relationship"	"Edwards"	FALSE
+"298"	"satisfy"	"mental"	"mental"	"Edwards"	TRUE
+"299"	"save"	"activity"	"activity"	"Edwards"	TRUE
+"300"	"say"	"communication"	"communication"	"Edwards"	TRUE
+"301"	"see"	"mental"	"mental"	"Edwards"	TRUE
+"302"	"seem"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"303"	"sell"	"activity"	"activity"	"Edwards"	TRUE
+"304"	"send"	"activity"	"activity"	"Edwards"	TRUE
+"305"	"set up"	"activity"	NA	NA	NA
+"306"	"shake"	"activity"	"occurrence"	"Edwards"	FALSE
+"307"	"shake"	"activity"	"activity"	"Edwards"	TRUE
+"308"	"share"	"activity"	"activity"	"Edwards"	TRUE
+"309"	"shine"	"occurrence"	"existence_relationship"	"Edwards"	FALSE
+"310"	"shout"	"communication"	"communication"	"Edwards"	TRUE
+"311"	"show"	"activity"	"activity"	"Edwards"	TRUE
+"312"	"show"	"activity"	"existence_relationship"	"Edwards"	FALSE
+"313"	"show"	"activity"	"activity"	"Edwards"	TRUE
+"314"	"shut up"	"activity"	NA	NA	NA
+"315"	"sign"	"communication"	"communication"	"Edwards"	TRUE
+"316"	"sing"	"communication"	"communication"	"Edwards"	TRUE
+"317"	"sink"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"318"	"sit"	"activity"	NA	NA	NA
+"319"	"sit down"	"activity"	NA	NA	NA
+"320"	"sit up"	"activity"	NA	NA	NA
+"321"	"slip"	"occurrence"	"occurrence"	"Edwards"	TRUE
+"322"	"smile"	"activity"	"activity"	"Edwards"	TRUE
+"323"	"smile"	"activity"	"activity"	"Edwards"	TRUE
+"324"	"solve"	"mental"	"mental"	"Edwards"	TRUE
+"325"	"sound"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"326"	"speak"	"communication"	"communication"	"Edwards"	TRUE
+"327"	"specify"	"communication"	"communication"	"Edwards"	TRUE
+"328"	"spend"	"activity"	"activity"	"Edwards"	TRUE
+"329"	"stand"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"330"	"stand up"	"activity"	"activity"	"Edwards"	TRUE
+"331"	"stare"	"activity"	"activity"	"Edwards"	TRUE
+"332"	"stare"	"activity"	"mental"	"Edwards"	FALSE
+"333"	"start"	"aspectual"	"aspectual"	"Edwards"	TRUE
+"334"	"state"	"communication"	"communication"	"Edwards"	TRUE
+"335"	"stay"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"336"	"stay"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"337"	"stop"	"aspectual"	"aspectual"	"Edwards"	TRUE
+"338"	"study"	"mental"	"activity"	"Edwards"	FALSE
+"339"	"study"	"mental"	"mental"	"Edwards"	TRUE
+"340"	"suffer"	"mental"	"mental"	"Edwards"	TRUE
+"341"	"suggest "	"communication"	NA	NA	NA
+"342"	"suit"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"343"	"suppose"	"mental"	"mental"	"Edwards"	TRUE
+"344"	"suspect"	"mental"	"mental"	"Edwards"	TRUE
+"345"	"swear"	"communication"	"communication"	"Edwards"	TRUE
+"346"	"take"	"activity"	"activity"	"Edwards"	TRUE
+"347"	"take off"	"activity"	"activity"	"Edwards"	TRUE
+"348"	"take on"	"activity"	"activity"	"Edwards"	TRUE
+"349"	"take over"	"activity"	"activity"	"Edwards"	TRUE
+"350"	"take up"	"activity"	"occurrence"	"Edwards"	FALSE
+"351"	"talk"	"communication"	"communication"	"Edwards"	TRUE
+"352"	"teach"	"communication"	"communication"	"Edwards"	TRUE
+"353"	"tell"	"communication"	"communication"	"Edwards"	TRUE
+"354"	"tend"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"355"	"thank"	"communication"	"communication"	"Edwards"	TRUE
+"356"	"think"	"mental"	"mental"	"Edwards"	TRUE
+"357"	"threaten"	"communication"	"communication"	"Edwards"	TRUE
+"358"	"throw"	"activity"	"activity"	"Edwards"	TRUE
+"359"	"trust"	"mental"	"mental"	"Edwards"	TRUE
+"360"	"try"	"activity"	NA	NA	NA
+"361"	"turn"	"activity"	"activity"	"Edwards"	TRUE
+"362"	"turn"	"activity"	"occurrence"	"Edwards"	FALSE
+"363"	"turn"	"activity"	"facilitation_causation"	"Edwards"	FALSE
+"364"	"understand"	"mental"	"mental"	"Edwards"	TRUE
+"365"	"urge"	"communication"	"communication"	"Edwards"	TRUE
+"366"	"use"	"activity"	"activity"	"Edwards"	TRUE
+"367"	"vary"	"existence_relationship"	"existence_relationship"	"Edwards"	TRUE
+"368"	"visit"	"activity"	"activity"	"Edwards"	TRUE
+"369"	"wait"	"activity"	"activity"	"Edwards"	TRUE
+"370"	"walk"	"activity"	"activity"	"Edwards"	TRUE
+"371"	"want"	"mental"	"mental"	"Edwards"	TRUE
+"372"	"warn"	"communication"	"communication"	"Edwards"	TRUE
+"373"	"watch"	"activity"	"mental"	"Edwards"	FALSE
+"374"	"wear"	"activity"	"activity"	"Edwards"	TRUE
+"375"	"welcome"	"communication"	"communication"	"Edwards"	TRUE
+"376"	"whisper"	"communication"	"communication"	"Edwards"	TRUE
+"377"	"win"	"activity"	"activity"	"Edwards"	TRUE
+"378"	"wish"	"mental"	"mental"	"Edwards"	TRUE
+"379"	"wonder"	"mental"	"mental"	"Edwards"	TRUE
+"380"	"work"	"activity"	"existence_relationship"	"Edwards"	FALSE
+"381"	"work"	"activity"	"activity"	"Edwards"	TRUE
+"382"	"worry"	"mental"	"mental"	"Edwards"	TRUE
+"383"	"write"	"communication"	"communication"	"Edwards"	TRUE
+"384"	"accept"	NA	"activity"	"Edwards"	NA
+"385"	"accept"	NA	"mental"	"Edwards"	NA
+"386"	"adjust"	NA	"mental"	"Edwards"	NA
+"387"	"advocate"	NA	"communication"	"Edwards"	NA
+"388"	"aim"	NA	"mental"	"Edwards"	NA
+"389"	"arrest"	NA	"activity"	"Edwards"	NA
+"390"	"arrest"	NA	"activity"	"Edwards"	NA
+"391"	"arrive"	NA	"activity"	"Edwards"	NA
+"392"	"attain"	NA	"activity"	"Edwards"	NA
+"393"	"attend"	NA	"activity"	"Edwards"	NA
+"394"	"average"	NA	"existence_relationship"	"Edwards"	NA
+"395"	"be derived"	NA	"existence_relationship"	"Edwards"	NA
+"396"	"be located"	NA	"existence_relationship"	"Edwards"	NA
+"397"	"bluff"	NA	"mental"	"Edwards"	NA
+"398"	"blush"	NA	"occurrence"	"Edwards"	NA
+"399"	"boom"	NA	"occurrence"	"Edwards"	NA
+"400"	"born"	NA	"occurrence"	"Edwards"	NA
+"401"	"breathe"	NA	"occurrence"	"Edwards"	NA
+"402"	"breathe"	NA	"occurrence"	"Edwards"	NA
+"403"	"bug"	NA	"mental"	"Edwards"	NA
+"404"	"build up"	NA	"occurrence"	"Edwards"	NA
+"405"	"chase"	NA	"activity"	"Edwards"	NA
+"406"	"chat"	NA	"communication"	"Edwards"	NA
+"407"	"come to an end"	NA	"aspectual"	"Edwards"	NA
+"408"	"communicate"	NA	"communication"	"Edwards"	NA
+"409"	"compel"	NA	"facilitation_causation"	"Edwards"	NA
+"410"	"compete"	NA	"activity"	"Edwards"	NA
+"411"	"conceive"	NA	"mental"	"Edwards"	NA
+"412"	"condemn"	NA	"mental"	"Edwards"	NA
+"413"	"contemplate"	NA	"mental"	"Edwards"	NA
+"414"	"converse"	NA	"communication"	"Edwards"	NA
+"415"	"cook"	NA	"activity"	"Edwards"	NA
+"416"	"cope"	NA	"mental"	"Edwards"	NA
+"417"	"cost"	NA	"existence_relationship"	"Edwards"	NA
+"418"	"create"	NA	"activity"	"Edwards"	NA
+"419"	"cry"	NA	"activity"	"Edwards"	NA
+"420"	"dance"	NA	"activity"	"Edwards"	NA
+"421"	"deal"	NA	"mental"	"Edwards"	NA
+"422"	"decrease"	NA	"occurrence"	"Edwards"	NA
+"423"	"describe"	NA	"communication"	"Edwards"	NA
+"424"	"desire"	NA	"mental"	"Edwards"	NA
+"425"	"die "	NA	"mental"	"Edwards"	NA
+"426"	"disclose"	NA	"communication"	"Edwards"	NA
+"427"	"do"	NA	"activity"	"Edwards"	NA
+"428"	"draw"	NA	"activity"	"Edwards"	NA
+"429"	"dread"	NA	"mental"	"Edwards"	NA
+"430"	"drink"	NA	"activity"	"Edwards"	NA
+"431"	"drive"	NA	"activity"	"Edwards"	NA
+"432"	"dwindle"	NA	"mental"	"Edwards"	NA
+"433"	"dwindle"	NA	"occurrence"	"Edwards"	NA
+"434"	"elect"	NA	"activity"	"Edwards"	NA
+"435"	"employ"	NA	"activity"	"Edwards"	NA
+"436"	"estimate"	NA	"mental"	"Edwards"	NA
+"437"	"evaluate"	NA	"mental"	"Edwards"	NA
+"438"	"evolve"	NA	"occurrence"	"Edwards"	NA
+"439"	"exclaim"	NA	"communication"	"Edwards"	NA
+"440"	"exert"	NA	"activity"	"Edwards"	NA
+"441"	"exhibit"	NA	"existence_relationship"	"Edwards"	NA
+"442"	"expand "	NA	"activity"	"Edwards"	NA
+"443"	"fade"	NA	"occurrence"	"Edwards"	NA
+"444"	"fake"	NA	"mental"	"Edwards"	NA
+"445"	"fall "	NA	"occurrence"	"Edwards"	NA
+"446"	"fall asleep"	NA	"occurrence"	"Edwards"	NA
+"447"	"fall in love"	NA	"mental"	"Edwards"	NA
+"448"	"flounder"	NA	"existence_relationship"	"Edwards"	NA
+"449"	"flourish"	NA	"occurrence"	"Edwards"	NA
+"450"	"fly"	NA	"activity"	"Edwards"	NA
+"451"	"fold"	NA	"activity"	"Edwards"	NA
+"452"	"fold"	NA	"activity"	"Edwards"	NA
+"453"	"frighten"	NA	"mental"	"Edwards"	NA
+"454"	"function"	NA	"existence_relationship"	"Edwards"	NA
+"455"	"gain"	NA	"occurrence"	"Edwards"	NA
+"456"	"gaze"	NA	"mental"	"Edwards"	NA
+"457"	"get in touch w someone"	NA	"communication"	"Edwards"	NA
+"458"	"get used"	NA	"mental"	"Edwards"	NA
+"459"	"give cause for"	NA	"facilitation_causation"	"Edwards"	NA
+"460"	"go crazy"	NA	"mental"	"Edwards"	NA
+"461"	"go on"	NA	"occurrence"	"Edwards"	NA
+"462"	"go on"	NA	"aspectual"	"Edwards"	NA
+"463"	"go through"	NA	"mental"	"Edwards"	NA
+"464"	"grumble"	NA	"communication"	"Edwards"	NA
+"465"	"hang out with"	NA	"activity"	"Edwards"	NA
+"466"	"have"	NA	"activity"	"Edwards"	NA
+"467"	"have"	NA	"existence_relationship"	"Edwards"	NA
+"468"	"have "	NA	"facilitation_causation"	"Edwards"	NA
+"469"	"have to"	NA	"existence_relationship"	"Edwards"	NA
+"470"	"hesitate"	NA	"mental"	"Edwards"	NA
+"471"	"hide"	NA	"mental"	"Edwards"	NA
+"472"	"illuminate"	NA	"occurrence"	"Edwards"	NA
+"473"	"incite"	NA	"facilitation_causation"	"Edwards"	NA
+"474"	"induce"	NA	"facilitation_causation"	"Edwards"	NA
+"475"	"inspire"	NA	"facilitation_causation"	"Edwards"	NA
+"476"	"inspire "	NA	"mental"	"Edwards"	NA
+"477"	"instigate"	NA	"facilitation_causation"	"Edwards"	NA
+"478"	"investigate"	NA	"mental"	"Edwards"	NA
+"479"	"joke"	NA	"communication"	"Edwards"	NA
+"480"	"keep from"	NA	"facilitation_causation"	"Edwards"	NA
+"481"	"kid"	NA	"communication"	"Edwards"	NA
+"482"	"kiss"	NA	"activity"	"Edwards"	NA
+"483"	"label"	NA	"communication"	"Edwards"	NA
+"484"	"lag"	NA	"existence_relationship"	"Edwards"	NA
+"485"	"laugh"	NA	"activity"	"Edwards"	NA
+"486"	"lead"	NA	"activity"	"Edwards"	NA
+"487"	"lead"	NA	"facilitation_causation"	"Edwards"	NA
+"488"	"leak"	NA	"occurrence"	"Edwards"	NA
+"489"	"link"	NA	"existence_relationship"	"Edwards"	NA
+"490"	"long for"	NA	"mental"	"Edwards"	NA
+"491"	"look (fig.)"	NA	"existence_relationship"	"Edwards"	NA
+"492"	"look at"	NA	"mental"	"Edwards"	NA
+"493"	"look for"	NA	"activity"	"Edwards"	NA
+"494"	"loom"	NA	"existence_relationship"	"Edwards"	NA
+"495"	"loom"	NA	"occurrence"	"Edwards"	NA
+"496"	"lose interest"	NA	"mental"	"Edwards"	NA
+"497"	"lust"	NA	"mental"	"Edwards"	NA
+"498"	"make "	NA	"facilitation_causation"	"Edwards"	NA
+"499"	"manage "	NA	"mental"	"Edwards"	NA
+"500"	"manipulate"	NA	"mental"	"Edwards"	NA
+"501"	"march"	NA	"activity"	"Edwards"	NA
+"502"	"measure"	NA	"existence_relationship"	"Edwards"	NA
+"503"	"miss (e.g. we are missing one figure)"	NA	"existence_relationship"	"Edwards"	NA
+"504"	"moan"	NA	"communication"	"Edwards"	NA
+"505"	"name"	NA	"communication"	"Edwards"	NA
+"506"	"near"	NA	"occurrence"	"Edwards"	NA
+"507"	"note"	NA	"communication"	"Edwards"	NA
+"508"	"object"	NA	"communication"	"Edwards"	NA
+"509"	"oblige"	NA	"facilitation_causation"	"Edwards"	NA
+"510"	"operate"	NA	"existence_relationship"	"Edwards"	NA
+"511"	"opt"	NA	"mental"	"Edwards"	NA
+"512"	"placate"	NA	"communication"	"Edwards"	NA
+"513"	"play out"	NA	"occurrence"	"Edwards"	NA
+"514"	"plead"	NA	"communication"	"Edwards"	NA
+"515"	"ponder"	NA	"mental"	"Edwards"	NA
+"516"	"pop up"	NA	"occurrence"	"Edwards"	NA
+"517"	"pose"	NA	"activity"	"Edwards"	NA
+"518"	"pose"	NA	"existence_relationship"	"Edwards"	NA
+"519"	"practise"	NA	"activity"	"Edwards"	NA
+"520"	"prepare"	NA	"activity"	"Edwards"	NA
+"521"	"presume"	NA	"mental"	"Edwards"	NA
+"522"	"progress"	NA	"occurrence"	"Edwards"	NA
+"523"	"prompt"	NA	"facilitation_causation"	"Edwards"	NA
+"524"	"provoke"	NA	"facilitation_causation"	"Edwards"	NA
+"525"	"publish"	NA	"communication"	"Edwards"	NA
+"526"	"rain"	NA	"occurrence"	"Edwards"	NA
+"527"	"raise"	NA	"communication"	"Edwards"	NA
+"528"	"react"	NA	"activity"	"Edwards"	NA
+"529"	"realise"	NA	"mental"	"Edwards"	NA
+"530"	"recollect"	NA	"mental"	"Edwards"	NA
+"531"	"recover"	NA	"mental"	"Edwards"	NA
+"532"	"refer"	NA	"communication"	"Edwards"	NA
+"533"	"refuse"	NA	"communication"	"Edwards"	NA
+"534"	"register"	NA	"mental"	"Edwards"	NA
+"535"	"regress"	NA	"occurrence"	"Edwards"	NA
+"536"	"regret"	NA	"mental"	"Edwards"	NA
+"537"	"render"	NA	"facilitation_causation"	"Edwards"	NA
+"538"	"report"	NA	"communication"	"Edwards"	NA
+"539"	"resonate"	NA	"occurrence"	"Edwards"	NA
+"540"	"revise"	NA	"activity"	"Edwards"	NA
+"541"	"run out/short"	NA	"occurrence"	"Edwards"	NA
+"542"	"scream"	NA	"communication"	"Edwards"	NA
+"543"	"see "	NA	"activity"	"Edwards"	NA
+"544"	"sense"	NA	"mental"	"Edwards"	NA
+"545"	"serve"	NA	"activity"	"Edwards"	NA
+"546"	"shop"	NA	"activity"	"Edwards"	NA
+"547"	"shrink"	NA	"occurrence"	"Edwards"	NA
+"548"	"shut"	NA	"activity"	"Edwards"	NA
+"549"	"slip away"	NA	"occurrence"	"Edwards"	NA
+"550"	"smash"	NA	"activity"	"Edwards"	NA
+"551"	"snow"	NA	"occurrence"	"Edwards"	NA
+"552"	"starve"	NA	"activity"	"Edwards"	NA
+"553"	"stimulate"	NA	"facilitation_causation"	"Edwards"	NA
+"554"	"stir up"	NA	"facilitation_causation"	"Edwards"	NA
+"555"	"struggle"	NA	"mental"	"Edwards"	NA
+"556"	"suggest"	NA	"communication"	"Edwards"	NA
+"557"	"supply"	NA	"activity"	"Edwards"	NA
+"558"	"surface"	NA	"occurrence"	"Edwards"	NA
+"559"	"swallow"	NA	"activity"	"Edwards"	NA
+"560"	"sweat"	NA	"activity"	"Edwards"	NA
+"561"	"swivel"	NA	"activity"	"Edwards"	NA
+"562"	"take place"	NA	"occurrence"	"Edwards"	NA
+"563"	"taste"	NA	"mental"	"Edwards"	NA
+"564"	"teem"	NA	"existence_relationship"	"Edwards"	NA
+"565"	"tempt"	NA	"mental"	"Edwards"	NA
+"566"	"thrive"	NA	"occurrence"	"Edwards"	NA
+"567"	"travel"	NA	"activity"	"Edwards"	NA
+"568"	"tremble"	NA	"occurrence"	"Edwards"	NA
+"569"	"turn into"	NA	"activity"	"Edwards"	NA
+"570"	"undergo"	NA	"activity"	"Edwards"	NA
+"571"	"wash"	NA	"activity"	"Edwards"	NA
+"572"	"widen"	NA	"occurrence"	"Edwards"	NA
+"573"	"wind up"	NA	"aspectual"	"Edwards"	NA
+"574"	"wither"	NA	"occurrence"	"Edwards"	NA
+"575"	"witness"	NA	"mental"	"Edwards"	NA
+"576"	"write off"	NA	"mental"	"Edwards"	NA
+"577"	"yearn"	NA	"mental"	"Edwards"	NA

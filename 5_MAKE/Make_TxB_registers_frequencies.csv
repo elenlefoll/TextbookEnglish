@@ -1,0 +1,10 @@
+Subcorpus,raw_freq_MAKE,wpm_freq_MAKE,total_tokens,raw_freq_not_MAKE,raw_freq_verbs
+TxB_English_annotated,6119,2281.86,2681588,2675469,412360
+TxB_informative,713,2353.79,302916,302203,44160
+TxB_instructional,2310,3901.63,592061,589751,89342
+TxB_narrative,395,1555.8,253888,253493,42302
+TxB_other,29,2014.73,14394,14365,2068
+TxB_personal,115,1713.91,67098,66983,11175
+TxB_poetry,82,3130.49,26194,26112,4512
+TxB_spoken,699,1368.03,510954,510255,80106
+TxB_words_phrases_sentences,1776,1942.93,914083,912307,138695
