@@ -93,7 +93,7 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 ### Appendix 6.3
 <a href="6_AdditiveMDA_code.html" target="_blank" rel="noopener noreferrer">R notebook for the analyses of the additive MDAs based on Biber's (1988) model of General Spoken and Written English (in HTML format)</a>
 
-## Chapter 7. Towards a new multi-dimensional understanding of Textbook English
+## Chapter 7: Towards a new multi-dimensional understanding of Textbook English
 
 ### Appendix 7.1
 <a href="https://github.com/elenlefoll/MultiFeatureTaggerEnglish" target="_blank" rel="noopener noreferrer">Link to the GitHub repository of the Multi-Feature Tagger of English (MFTE)</a>
@@ -123,6 +123,6 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 Links to the corpora and corpus tools mentioned in the pedagogical implications section:
 - <a href="https://www.english-corpora.org/coca/" target="_blank" rel="noopener noreferrer">Corpus of Contemporary American English (COCA) and text analysis tool</a>
 - <a href="https://www.english-corpora.org/movies/" target="_blank" rel="noopener noreferrer">The Movies Corpus</a>
-<a href="https://www.english-corpora.org/TV/" target="_blank" rel="noopener noreferrer">The TV Corpus</a>
-<a href="https://yohasebe.com/tcse/" target="_blank" rel="noopener noreferrer">TCSE: TED talk corpus and search engine</a>
-<a href="https://cqpweb.lancs.ac.uk/" target="_blank" rel="noopener noreferrer">CQPweb (for the Spoken BNC2014 among many other corpora)</a>
+- <a href="https://www.english-corpora.org/TV/" target="_blank" rel="noopener noreferrer">The TV Corpus</a>
+- <a href="https://yohasebe.com/tcse/" target="_blank" rel="noopener noreferrer">TCSE: TED talk corpus and search engine</a>
+- <a href="https://cqpweb.lancs.ac.uk/" target="_blank" rel="noopener noreferrer">CQPweb (for the Spoken BNC2014 among many other corpora)</a>
