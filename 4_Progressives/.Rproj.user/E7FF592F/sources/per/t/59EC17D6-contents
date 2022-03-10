@@ -1,0 +1,751 @@
+---
+title: "Progressives Morphosyntactic Analysis of Textbook Conversation"
+author: "Elen Le Foll"
+date: "09/05/2019"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+bibliography: "packages.bib"
+nocite: '@*'
+
+---
+
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: 
+Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: https://elenlefoll.github.io/TextbookEnglish/
+
+Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
+
+## Set-up
+
+*Built with R `r getRversion()`*  
+
+```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(here)
+library(ggplot2)
+library(gridExtra)
+library(lattice)
+library(lsr)
+library(RColorBrewer)
+library(tidyr)
+library(vcd)
+
+```
+
+## Data Preparation
+
+```{r preparation_BNC}
+annotation_file <- read.csv(here("BNCspoken_prog_conc_anno.csv"), sep = "\t", header = TRUE, na.strings="", stringsAsFactors = TRUE)
+glimpse(annotation_file)
+
+# Select only annotated concordance lines
+annotated <- annotation_file[71:3380,] # So far, I've only annotated to line 4006. This current selection ensures that we have the same number of progressives as in the Textbook Conversation subcorpus (namely 2423 progressives)
+
+# Extract only progressives
+BNCprog <- annotated[annotated$Tense != "NOT progressive" & annotated$Tense != "GOING TO" & annotated$Tense != "catenative", ]
+
+BNCprog$Tense <- droplevels(BNCprog)$Tense # Drop unused levels
+BNCprog$Time.reference <- droplevels(BNCprog)$Time.reference # Drop unused levels
+BNCprog$Tense <- factor(BNCprog$Tense, levels = c("past", "perfect", "present", "modal")) # Re-order levels
+BNCprog$Time.reference <- factor(BNCprog$Time.reference, levels = c("past", "past/present", "present", "future", "general", "hypothetical", "unclear"))
+
+# Number of progressives extracted
+nrow(BNCprog)
+glimpse(BNCprog)
+
+
+```
+
+```{r preparation_TxB}
+# Before saving annotation file as .csv, make sure to have deleted all trailing inverted commas as they serve as string deliminators. This can easily be done with a regex search and replace in calc $" --> nothing.
+annotation_file_TxB <- read.csv(here("TxB_spoken_prog_conc_anno.csv"), sep = "\t", header = TRUE, na.strings="", stringsAsFactors = TRUE)
+glimpse(annotation_file_TxB)
+
+# Select only annotated concordance lines
+annotated_TxB <- annotation_file_TxB
+
+# Extract only progressives
+TxBprog <- annotated_TxB[annotated_TxB$Tense != "NOT progressive" & annotated_TxB$Tense != "GOING TO" & annotated_TxB$Tense != "catenative" , ]
+
+TxBprog$Tense <- droplevels(TxBprog)$Tense # Drop unused levels
+TxBprog$Time.reference <- droplevels(TxBprog)$Time.reference # Drop unused levels
+
+TxBprog$Tense <- factor(TxBprog$Tense, levels = c("past", "perfect", "present", "modal")) # Re-order levels
+TxBprog$Time.reference <- factor(TxBprog$Time.reference, levels = c("past", "past/present", "present", "future", "general", "hypothetical", "unclear"))
+
+# Number of progressives extracted
+nrow(TxBprog)
+# Ratio of false positives in progressive query
+1 - nrow(TxBprog)/nrow(annotation_file_TxB)
+
+```
+
+```{r preparation_combine}
+
+prog <- bind_rows("Spoken BNC2014 sample" = BNCprog, "Textbook Conversation" = TxBprog, .id = "Corpus")
+glimpse(prog)
+prog <- prog %>% dplyr::rename(Contraction = X., Question = X..1, Negation = NOT) # Rename variables
+glimpse(prog)
+
+# Replace NA with meaningful levels
+summary(as.factor(prog$Negation))
+prog$Negation <- tidyr::replace_na(as.character(prog$Negation), "positive") # positive
+summary(as.factor(prog$Contraction))
+prog$Contraction <- tidyr::replace_na(as.character(prog$Contraction), "full") # full
+summary(as.factor(prog$Question))
+prog$Question <- tidyr::replace_na(as.character(prog$Question), "statement") # statement
+
+summary(as.factor(prog$Level))
+prog$Level <- tidyr::replace_na(as.character(prog$Level), "Spoken BNC2014 sample")
+prog$Textbook <- tidyr::replace_na(as.character(prog$Textbook), "Spoken BNC2014 sample")
+
+
+# Make the following variables into factors
+factor_cols <- c("Corpus", "Negation", "Contraction", "Question", "Repeated", "Lemma", "Voice", "Level")
+prog[factor_cols] <- lapply(prog[factor_cols], as.factor)
+
+# Drop unused levels
+prog$Corpus <- droplevels(prog)$Corpus
+
+levels(prog$Negation)[levels(prog$Negation)=="n"] <- "negated"
+levels(prog$Contraction)[levels(prog$Contraction)=="c"] <- "contract."
+levels(prog$Tense)[levels(prog$Tense)=="modal/infinitive"] <- "modal/inf."
+
+summary(prog$Corpus) # Number of annotated progressive concordances in each subcorpus
+
+#saveRDS(prog, file = here("prog.rds")) 
+#saveRDS(prog, file = here("prog_collanalysis.rds"))
+
+```
+
+```{r quick prog data access}
+
+prog <- readRDS(file = here("prog.rds"))
+
+```
+
+# Proportion of progressives
+
+```{r prop_prog}
+
+# Textbook conversation #
+TS_words <- 420130 # Much better than tokens due to lack of punctuation in Spoken BNC
+TS_verbs <- 80106 # These are all verb forms (e.g. have been drinking = 3 verb forms). Calculated using SE query
+TS_verb_phrases <- 64292 # As calculated with Extract_verb_lemmas_spacy
+TS_prog <- nrow(TxBprog) #2423 # After manual annotation, thus excluding GOING TO + inf.
+TS_ProgVerbPhrase_ratio <- TS_prog/(TS_verb_phrases - TS_prog - (nrow(filter(annotated_TxB, Tense=="GOING TO"))))*10000; TS_ProgVerbPhrase_ratio # 395.4756 per 10,000 finite verb phrases
+
+# Spoken BNC
+BNC_words <- 10581951
+BNC_verbs <- 2487515
+BNC_progCQL <- 126395
+# Ratio of genuine progressives in progressive query for BNC
+BNCratio_prog_CQL <- nrow(BNCprog)/nrow(annotated) # (using full BNC dataset as for coll.analysis)
+BNCtotal_prog <- BNCratio_prog_CQL*BNC_progCQL # Approximate total number of progressives across BNC
+BNC_verb_phrases <- 1751040
+BNC_ProgVerbPhrase_ratio <- BNCtotal_prog/(BNC_verb_phrases - BNCtotal_prog - (nrow(filter(annotation_file, Tense=="GOING TO"))))*10000; BNC_ProgVerbPhrase_ratio # 566.0897 per 10,000 finite verb phrases (using full BNC dataset as for coll.analysis)
+
+# Comparing relative frequencies #
+
+TS <- as.vector(c(TS_words, TS_verbs, TS_verb_phrases, TS_prog))
+BNC <- as.vector(c(BNC_words, BNC_verbs, BNC_verb_phrases, BNCtotal_prog))
+BNC_sample <- round(BNC*(TS_words/BNC_words),0) # This has to be based on the total number of words because there are no sentence delimiters in the Spokem BNC 2014.
+prog_ratio <- rbind(TS, BNC_sample)
+rownames(prog_ratio) <- c("Textbook Conversation", "Spoken BNC2014 sample")
+colnames(prog_ratio) <- c("Words", "Verb forms", "Finite verb phrases", "Progressives")
+prog_ratio <- as.data.frame(prog_ratio); prog_ratio
+prog_ratio$Non_prog <- prog_ratio$`Finite verb phrases` - prog_ratio$Progressives
+prog_ratio$FProgRatio <- round(c(TS_ProgVerbPhrase_ratio, BNC_ProgVerbPhrase_ratio), 2)
+colnames(prog_ratio) <- c("Words", "Verb forms", "Finite verb phrases", "Progressives", "Non-progressives", "F-coefficients of progressives")
+prog_ratio
+#clipr::write_clip(prog_ratio) # Copy into manuscript
+#saveRDS(prog_ratio, file = here("prog_ratio_spoken.rds")
+
+# Significance testing and approximation of effect sizes #
+# http://rcompanion.org/handbook/H_03.html 
+
+prog_ratio1 <- prog_ratio[,5:4]; prog_ratio1 # This is based on the word-based sample size of the Spoken BNC2014
+chisq.test(prog_ratio1) # Highly significant
+vcd::assocstats(t(prog_ratio1)) # Small effect size
+fisher.test(prog_ratio1) # Is this helpful?
+
+verb_ratio <- prog_ratio[,1:2]; verb_ratio
+chisq.test(verb_ratio) # Highly significant
+vcd::assocstats(t(verb_ratio)) # Very small effect size
+
+# https://www.tutorialgateway.org/mosaic-plot-in-r/
+
+#tiff(here("mosaic_prog_prop2.tiff"), height = 20, width = 30, units="cm", compression = "lzw", res = 300)
+
+mosaicplot(prog_ratio1, shade = TRUE, main = "Progressives in Textbook Conversation and the Spoken BNC 2014", cex.axis = 1.5) # Unlike vcd::mosaic, Base R mosaicplot works with dataframes
+#dev.off() 
+
+```
+
+# Tense, aspect and modality
+
+```{r tense-forms}
+
+# Table summaries
+library(gtsummary)
+# Great slides on using this package: http://www.emilyzabor.com/cleveland-r-gtsummary
+# Also for adding custom functions: http://www.danieldsjoberg.com/gtsummary/reference/tests.html
+
+prog %>% 
+  select(Corpus, Tense) %>% 
+  tbl_summary(by = Corpus) %>% 
+  #add_p() %>% 
+  modify_header(label = "**Form**") #%>% 
+  #as_flex_table() %>%
+  #flextable::save_as_docx(path = here("SpokenTensesTable.docx")
+
+prog %>% 
+  select(Tense, Level) %>% 
+  tbl_summary(by = Level) %>% 
+  #add_p() %>% 
+  modify_header(label = "**Form**") #%>% 
+  #as_flex_table() %>%
+  #flextable::save_as_docx(path = here("SpokenTensesTable_byLevel.docx")
+
+# Graphs with absolute values.
+par(mfrow=c(1,2))
+plot(BNCprog$Tense, main = "Progressives in the Spoken BNC2014 sample", ylab = "Number of occurrences", ylim = c(0,2000))
+plot(TxBprog$Tense, main = "Progressives in the Spoken BNC2014 sample", ylab = "Number of occurrences", ylim = c(0,2000))
+par(mfrow=c(1,1))
+
+#png(filename = here("prog_tenses.png", width = 1800, height = 1400, res = 300)
+
+# Distributions across corpora
+round(prop.table(table(prog$Tense[prog$Corpus=="Textbook Conversation"])), 4)*100
+round(prop.table(table(prog$Tense[prog$Corpus=="Spoken BNC2014 sample"])), 4)*100
+
+# Mosaic plot of tense distribution across corpora
+# Select the colours that will be used
+library(RColorBrewer)
+# All palette available from RColorBrewer
+display.brewer.all(colorblindFriendly = T)
+# We will select the first 4 colors in the Set1 palette
+cols<-brewer.pal(n=4,name="OrRd")
+
+#tiff(here("mosaic_tenseforms.tiff"), height = 30, width = 35, units="cm", compression = "lzw", res = 300)
+par(cex = 2, cex.main = 0.85, font = 2)
+
+#svg(here("mosaic_tenseforms.svg"), height = 10, width = 12, pointsize = 12)
+par(cex = 2, cex.main = 0.85, font = 2)
+
+plot(prog$Tense ~ prog$Corpus, col = cols, xlab = "", ylab = "Progressive forms", main = "Distribution of progressive forms in Textbook Conversation and the Spoken BNC2014")
+#dev.off()
+
+# Differentiated look at textbook levels #
+#tiff(here("mosaic_tenseforms_levels.tiff"), height = 32, width = 40, units="cm", compression = "lzw", res = 300)
+par(cex = 2)
+plot(prog$Tense ~ relevel(prog$Level, "Spoken BNC2014 sample"), col = cols, xlab = "                                                   Textbook Levels", ylab = "")
+#coord2 <- locator(4)
+coord2 <- readRDS(file = here("coord2.rds"))
+text(coord2, c("past", "perfect", "present", "modal"), font = 1)
+#dev.off()
+
+tenses <- table(prog$Tense, prog$Corpus)
+tenses
+tensesp <- t((prop.table(tenses, margin = 2)*100)) # Work out percentages and transpose table
+tensesp <-round(tensesp, 2)
+
+barplot(tensesp, beside = TRUE, ylab = "% of occurrences", xlab = "Forms of the progressive", ylim = c(0,100), col = c("darkblue", "darkred"))
+legend("topright", fill = c("darkblue", "darkred"), c("BNC Spoken 2014", "Textbook Conversation"))
+# Legend: "Forms of the progressives in the Spoken BNC 2014 and Textbook Conversation"
+
+vcd::assocstats(tenses) # Measuring the effect size. Cramer's V is what we're interested in (Levshina p. 217)
+
+#http://groups.chass.utoronto.ca/pol242/Labs/LM-3A/LM-3A_content.htm
+
+chisq.test(tenses)
+lsr::associationTest( ~ Tense + Corpus, data = prog) # Easier to interpret results
+
+# Association plot of tense distribution in corpora
+#tiff(here("tenseforms_assoc.tiff"), height = 12, width = 17, units="cm", compression = "lzw", res = 300)
+vcd::assoc(tenses, shade = TRUE, varnames = FALSE) # This works
+#dev.off()
+
+chisq.test(tenses)$stdres
+
+# Association plot of tense distributions across levels
+
+levels(prog$Level) <- c("A", "B", "C", "D", "E", "Spoken BNC2014")
+tenselevel <- table(prog$Tense, prog$Level) 
+
+#tiff(here("tenseforms_levels_assoc.tiff"), height = 13, width = 20, units="cm", compression = "lzw", res = 300)
+vcd::assoc(tenselevel, shade = TRUE, varnames = FALSE) # This works
+#dev.off()
+
+lsr::associationTest( ~ Tense + Level, data = prog) # Easier to interpret results
+
+```
+
+# Time reference
+
+```{r time-ref}
+# Distributions across corpora
+round(prop.table(table(prog$Time.reference[prog$Corpus=="Textbook Conversation"])), 4)*100
+round(prop.table(table(prog$Time.reference[prog$Corpus=="Spoken BNC2014 sample"])), 4)*100
+
+timeref <- table(prog$Corpus, prog$Time.reference); timeref # Raw figures
+timerefprop <- round(t((prop.table(timeref, margin = 2)*100)),2); timerefprop # As %
+
+chisq.test(timeref)
+vcd::assocstats(timeref) # Cramer's V = 0.263
+
+# "Fairer" distribution, excluding "unclear's"
+prog1 <- prog[prog$Time.reference!="unclear",]
+prog1$Time.reference <- droplevels(prog1$Time.reference)
+lsr::associationTest( ~ Corpus + Time.reference, data = prog1) # Cramer's V = 0.091
+
+timeref <- table(prog1$Corpus, prog1$Time.reference); timeref # Raw figures
+
+# Significance test for only textbook levels C-E against Textbook Conversation
+
+prog2 <- prog[prog$Level!="A" & prog$Level!="B",]
+prog2$Level <- droplevels(prog2)$Level # Drop levels A and B
+prog2 <- prog2[prog2$Time.reference!="unclear",] # Get rid of unclear's
+prog2$Time.reference <- droplevels(prog2)$Time.reference # Drop unclear level
+timeref2 <- table(prog2$Corpus, prog2$Time.reference); timeref2 # Raw figures
+
+chisq.test(timeref2) # p < 0.001
+vcd::assocstats(timeref2) # Cramer's V = 0.153
+
+#tiff(here("time-ref_assoc_levelsC-E.tiff"), height = 18, width = 36, units="cm", compression = "lzw", res = 300)
+vcd::assoc(timeref2, shade = T, varnames = F, shading_max(), gp_labels=(grid::gpar(fontsize=14))) # Association plot only for textbook levels C-E, no unclear's
+#dev.off()
+
+# Association plot of time ref distribution in corpora
+
+#tiff(here("time-ref_assoc.tiff"), height = 18, width = 36, units="cm", compression = "lzw", res = 300)
+vcd::assoc(timeref, shade = TRUE, varnames = FALSE, gp_labels=(grid::gpar(fontsize=18)))
+#dev.off()
+
+# Barplot with number of occurrences per corpus
+timeref <- table(prog$Corpus, prog$Time.reference); timeref # Raw figures
+timeref <- as.data.frame(timeref)
+names(timeref)[1] <- "Corpus"
+names(timeref)[2] <- "Timeref"
+names(timeref)[3] <- "Freq"
+timeref
+
+# Version 2 in a more publishable style
+#tiff(here("timeref_barplot.tiff"), height = 15, width = 25, units="cm", compression = "lzw", res = 300)
+
+cols<-RColorBrewer::brewer.pal(n=7,name="OrRd")
+
+ggplot(timeref, aes(Timeref, Freq)) +
+  geom_bar(aes(fill = Corpus), stat="identity", position="dodge", width=.5) +
+  theme_bw(base_size = 18) +
+  scale_fill_manual(values = cols[c(3,7)]) +
+  ylab("Number of progressives") +
+  xlab("Time reference") +
+  scale_y_continuous(breaks = c(0, 250, 500, 750, 1000, 1250)) +
+  theme(plot.title = element_text(hjust = 0.5), axis.text.x = element_text(face = "plain", color = "grey20", size = 15), axis.text.y = element_text(face = "plain", color = "grey20", size = 15), legend.title=element_blank(), legend.position=c(.8, .8), legend.background = element_rect(colour="grey", linetype="solid"))
+  #ggtitle("")
+
+dev.off()
+
+# Mosaic plot of time reference distribution across corpora
+
+# We will select the first 4 colors in the Set1 palette
+cols<-brewer.pal(n=7,name="OrRd")
+
+#tiff(here("mosaic_timeref.tiff"), height = 40, width = 40, units="cm", compression = "lzw", res = 300)
+par(cex = 2, cex.main = 0.85, font = 2)
+
+#svg(here("mosaic_timeref.svg"), height = 10, width = 12, pointsize = 12)
+par(cex = 2, cex.main = 0.85, font = 2)
+
+plot(prog$Time.reference ~ prog$Corpus, col = cols, xlab = "", ylab = "Time reference of progressives", main = "Time reference of progressives in Textbook Conversation and the Spoken BNC2014 sample") # Good but bar plot is more informative
+#dev.off()
+
+# Differentiated look at textbook levels #
+#tiff(here("mosaic_timeref_levels.tiff"), height = 30, width = 25, units="cm", compression = "lzw", res = 300)
+par(cex = 1.5)
+plot(prog$Time.reference ~ prog$Level, col = cols, xlab= "", ylab = "Time reference of the progressives")
+mtext("                              Textbook levels", side = 1, adj = 0, line = 2.2, cex = 1.5) # To write text in the margin of plots
+#dev.off()
+
+# Differentiated look at textbook levels 2 #
+prog1 <- prog[prog$Time.reference!="unclear",] # Get rid of unclear's
+prog1$Time.reference <- droplevels(prog1)$Time.reference # Drop unclear level
+cols<-brewer.pal(n=6,name="OrRd") # Pick just 6 colours now
+
+#tiff(here("mosaic_timeref_levels.tiff"), height = 32, width = 30, units="cm", compression = "lzw", res = 300)
+par(cex = 1.5)
+plot(prog1$Time.reference ~ relevel(prog1$Level, "Spoken BNC2014"), col = cols, xlab = "                                                                    Textbook Levels", ylab = "", main = "Time reference of the progressive")
+#coord <- locator(6)
+coord <- readRDS(file = here("coord.rds"))
+text(coord, c("past", "past/present", "present", "future", "general", "hypothetical"), font = 1)
+#dev.off() # !! Crop graph to the left in Word afterwards
+
+```
+
+# Relationship between tense and time reference
+
+```{r tense-time-ref}
+# Plot relationship between tense and time reference
+
+## Mosaic plot for comparison between two corpora ##
+
+BNCprog$Tense <- relevel(BNCprog$Tense, "modal") # Makes it easier to read the mosaic plot if this tense form is first because it covers all time reference
+TxBprog$Tense <- relevel(TxBprog$Tense, "modal")
+
+par(mfrow=c(1,2))
+plot(BNCprog$Time.reference ~ BNCprog$Tense)
+plot(TxBprog$Time.reference ~ TxBprog$Tense) 
+par(mfrow=c(1,1))
+
+prog1 <- prog[prog$Time.reference != "unclear", ]
+prog1$Time.reference <- droplevels(prog1)$Time.reference # Drop unused level "unclear"
+prog1$Form <- prog1$Tense
+
+cols<-brewer.pal(n=4,name="OrRd")
+#tiff(here("mosaic_tenses_timeref.tiff"), height = 15, width = 28, units="cm", compression = "lzw", res = 300)
+vcd::mosaic(Form ~ Corpus + Time.reference, prog1, gp = grid::gpar(fill = cols), rot_labels = c(0, 45, 0, 90), cex=2.5, zero_size = 0, labeling_args = list(rep = TRUE), xlab = "Time reference") # Best so far
+dev.off()
+
+vcd::assoc(Time.reference ~ Corpus + Tense, prog1, shade = TRUE) # Super hard to interpret!
+
+```
+
+```{r table-summaries-all-forms}
+
+prog %>% 
+  select(Corpus, Tense, Contraction, Question, Voice) %>% 
+  tbl_summary(by = Corpus) %>% 
+  add_p() %>% 
+  modify_header(label = "**Form**") #%>% 
+  # as_flex_table() %>%
+  # flextable::save_as_docx(path = here("SpokenTensesTable.docx"))
+  
+prog %>% 
+  select(Textbook, Contraction) %>% 
+  tbl_summary(by = Textbook) %>% 
+  modify_header(label = "**Form**") %>% 
+  modify_footnote(update = everything() ~ NA)
+
+prog %>% 
+  select(Textbook, Negation) %>% 
+  tbl_summary(by = Textbook) %>% 
+  modify_header(label = "**Form**") %>% 
+  modify_footnote(update = everything() ~ NA)
+
+prog %>% 
+  select(Corpus, Negation) %>% 
+  tbl_summary(by = Corpus) %>% 
+  modify_header(label = "**Form**")
+
+prog %>% 
+  select(Corpus, Question) %>% 
+  tbl_summary(by = Corpus) %>% 
+  modify_header(label = "**Form**")
+
+prog %>% 
+  select(Corpus, Voice) %>% 
+  tbl_summary(by = Corpus) %>% 
+  modify_header(label = "**Form**")
+
+prog %>% 
+  select(Corpus, Time.reference) %>% 
+  tbl_summary(by = Corpus) %>% 
+  modify_header(label = "**Time reference**") 
+
+prog %>% 
+  select(Corpus, Repeated) %>% 
+  tbl_summary(by = Corpus) %>% 
+  modify_header(label = "**Function**") 
+
+prog1 <- prog
+prog1$Extra.function <- factor(prog1$Extra.function, exclude = NULL)
+levels(prog1$Extra.function)[is.na(levels(prog1$Extra.function))] <- "none"
+prog1 %>% 
+  select(Corpus, Extra.function) %>% 
+  tbl_summary(by = Corpus, missing = "ifany") %>% 
+  modify_header(label = "**Function**") 
+
+prog %>% 
+  select(Corpus, Continuous) %>% 
+  tbl_summary(by = Corpus) %>% 
+  modify_header(label = "**Function**") 
+
+```
+
+# Questions
+
+H0: The frequencies of the levels of the dependent variable QUESTION do not vary as a function of the levels of the independent variable CORPUS; X2 = 0
+
+H1: The frequencies of the levels of the dependent variable QUESTION vary as a function of the levels of the independent variable CORPUS; X2 \> 0
+
+A chi-square test assumes independent observations which we don't really have here (lots from same textbook, possibly several from individual speaker in the BNC).
+
+```{r questions}
+
+round(prop.table(table(prog$Corpus, prog$Question), margin = 1), 4)*100
+
+questions <- table(prog$Corpus, prog$Question)
+questions <- questions[,1:2] # Get rid of 5 unclear's in the BNC data
+test.questions <- chisq.test(questions); test.questions # Significant correlation at p < 0.001
+
+assocplot(t(questions))
+vcd::assoc(questions, shade = TRUE, col_vars = c("question", "statement"))
+vcd::assocstats(questions) # Odd ratio of 32.571. Phi-coefficient is only 0.092 = very weak effect!
+
+prog1 <- prog[prog$Question!="unclear",]
+prog1$Question <- droplevels(prog1$Question)
+lsr::associationTest( ~ Question + Corpus, data = prog1) # Cramer's V = 0.091
+
+```
+
+# Negation
+
+H0: The frequencies of the levels of the dependent variable NEGATION do not vary as a function of the levels of the independent variable CORPUS; X2 = 0
+
+H1: The frequencies of the levels of the dependent variable NEGATION vary as a function of the levels of the independent variable CORPUS; X2 \> 0
+
+A chi-square test assumes independent observations which we don't really have here (lots from same textbook, possibly several from indidivudal speaker in the BNC).
+
+```{r negation}
+
+round(prop.table(table(prog$Corpus, prog$Negation), margin = 1), 4)*100
+
+prog$Negation <- relevel(prog$Negation, "positive")
+
+#tiff(here("prog_negation.tiff"), height = 17, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+plot(prog$Negation ~ prog$Corpus, ylab = "", xlab = "", main = "", col = cols[3:4])
+dev.off()
+
+# No interesting correlation to be seen
+#tiff(here("prog_negation_question.tiff", height = 13, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+vcd::mosaic(Negation ~ Corpus + Question, prog, gp = grid::gpar(fill = cols[4:3]), rot_labels = c(0, 90, 0, 90), cex=2.5, zero_size = 0, labeling_args = list(rep = TRUE)) # Best so far
+#dev.off()
+
+negation <- table(prog$Corpus, prog$Negation)
+
+test.negation <- chisq.test(negation); test.negation # Significant correlation at p < 0.05
+
+assocplot(t(negation))
+vcd::assocstats(negation) # Phi-coefficient is only 0.03 = very weak!
+
+lsr::associationTest( ~ Negation + Corpus, data = prog) # Cramer's V = 0.03
+
+```
+
+# Contraction
+
+```{r contraction}
+
+round(prop.table(table(prog$Corpus, prog$Contraction), margin = 1), 4)*100
+round(prop.table(table(prog$Textbook, prog$Contraction), 1),4)*100
+table(prog$Textbook, prog$Contraction)
+
+cols<-RColorBrewer::brewer.pal(n=4,name="OrRd")
+
+#tiff(here("prog_contractions.tiff"), height = 25, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+plot(prog$Contraction ~ prog$Corpus, ylab = "", xlab = "", main = "", col = cols[4:3])
+
+plot(prog$Contraction ~ prog$Corpus, ylab = "", xlab = "", main = "", col = cols[4:3])
+
+#dev.off()
+
+#tiff(here("prog_contractions_tenses.tiff"), height = 13, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+vcd::mosaic(Contraction ~ Corpus + Tense, prog, gp = grid::gpar(fill = cols[4:3]), rot_labels = c(0, 90, 0, 90), cex=2.5, zero_size = 0, labeling_args = list(rep = TRUE)) # Best so far
+#dev.off()
+
+round(prop.table(table(prog$Contraction, prog$Textbook), 2),4)*100
+
+#tiff(here("prog_contractions_series.tiff"), height = 13, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.4, cex.main = 0.85)
+vcd::mosaic(Contraction ~ Textbook, prog, gp = grid::gpar(fill = cols[4:3]), rot_labels = c(0, 90, 0, 90), cex=2.5, zero_size = 0, labeling_args = list(rep = TRUE)) # Best so far
+#dev.off()
+
+contractions <- table(prog$Corpus, prog$Contraction)
+test.contractions <- chisq.test(contractions)
+test.contractions # Significant correlation
+
+assocplot(t(contractions))
+vcd::assocstats(contractions) # Phi-coefficient is only 0.066 = very weak!
+
+```
+
+# Voice
+
+```{r voice}
+
+round(prop.table(table(prog$Corpus, prog$Voice), margin = 1), 4)*100
+
+voice <- table(prog$Corpus, prog$Voice); voice
+voice1 <- voice[,c(1:2)]; voice1 # Get rid of unclear as otherwise chi-squared approximation may be incorrect 
+chisq.test(voice1) # p-value = 0.1863 = Not a significant correlation
+vcd::assocstats(voice) # Phi-coefficient is only 0.026 = no effect!
+
+prog[prog$Voice=="P",c(1,6,11)] # For qualitative analysis
+table(prog[prog$Voice=="P",c(1,11)])
+
+prog1 <- prog[prog$Voice!="unclear",]
+prog1$Voice <- droplevels(prog1$Voice)
+lsr::associationTest( ~ Voice + Corpus, data = prog1) # Cramer's V = 0.02
+
+```
+
+# Repeatedness
+
+```{r repeatedness}
+
+repeatedness <- table(prog$Corpus, prog$Repeated); repeatedness
+round(prop.table(repeatedness, 1),4)*100
+chisq.test(repeatedness) # Significant correlation at p<0.001
+vcd::assocstats(repeatedness)
+
+#tiff(here("Prog_Repeatedness.tiff"), height = 18, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.5, cex.main = 1)
+par(cex = 1, cex.lab = 1.5, cex.axis = 1, cex.main = 1)
+
+plot(repeatedness, shade = TRUE, main = "Progressive function: Repeatedness")
+#dev.off()
+
+repeatedness1 <- repeatedness[,c(1,3)] # Get rid of unclear's - if so desired... (I'm not sure this is a good idea because they make up some 9% of BNC data)
+chisq.test(repeatedness1)
+vcd::assocstats(repeatedness1) # Phi-coefficient is only 0.082 = very weak!
+
+## Which lemmas occur most frequently in either corpora with the function repeatedness? 
+repeated_lemmas <- prog[prog$Repeated=="yes", c(1,8)] 
+repeated_lemmas_TxB <- prog[prog$Repeated=="yes" & prog$Corpus=="Textbook Conversation", 8] 
+table_repeated_lemmas_TxB <- sort(table(repeated_lemmas_TxB), decreasing = T)
+head(table_repeated_lemmas_TxB, 10)
+
+repeated_lemmas_BNC <- prog[prog$Repeated=="yes" & prog$Corpus=="Spoken BNC2014 sample", 8] 
+table_repeated_lemmas_BNC <- sort(table(repeated_lemmas_BNC), decreasing = T)
+head(table_repeated_lemmas_BNC, 10)
+
+## Which lemmas occur proportionally most frequently with function repeatedness?
+BNCrepeated <- BNCprog[, c(7, 15)]
+BNCrepeated <- table(Case = BNCrepeated$Lemma, BNCrepeated$Repeated)
+BNCrepeated <- addmargins(BNCrepeated) # adds rows total to table!
+BNCrepeated <- BNCrepeated[order(BNCrepeated[,4], decreasing = T),]; head(BNCrepeated, 11)
+BNCrepeated <- BNCrepeated[1:30,]
+BNCrepeatedp <- round(prop.table(BNCrepeated, 1), 4)*200; BNCrepeatedp
+BNCrepeatedp <- BNCrepeatedp[order(BNCrepeatedp[,3], decreasing = T),]
+BNCrepeatedp <- BNCrepeatedp[1:12,1:3]; BNCrepeatedp
+
+fig_BNC_repeated = ggplot(as.data.frame(BNCrepeatedp), aes(x=Var2, y=Freq)) +
+  geom_col() +
+  facet_wrap(~Case) +
+  labs(x='Repeatedness function', y='Proportion of use') +
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+print(fig_BNC_repeated) # Takes a few seconds
+
+TCrepeated <- TxBprog[, c(7, 15)]
+TCrepeated <- addmargins(table(Case = TCrepeated$Lemma, TCrepeated$Repeated)); TCrepeated
+TCrepeated <- TCrepeated[order(TCrepeated[,4], decreasing = T),]; head(TCrepeated, 11)
+TCrepeated <- TCrepeated[1:30,]
+TCrepeatedp <- round(prop.table(TCrepeated, 1), 4)*200; TCrepeatedp
+TCrepeatedp <- TCrepeatedp[order(TCrepeatedp[,3], decreasing = T),]
+TCrepeatedp <- TCrepeatedp[1:9,1:3]; TCrepeatedp
+
+fig_TC_repeated = ggplot(as.data.frame(TCrepeatedp), aes(x=Var2, y=Freq)) +
+  geom_col() +
+  facet_wrap(~Case) +
+  labs(x='Repeatedness function', y='Proportion of use') +
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+print(fig_TC_repeated) # Takes a few seconds
+
+##
+
+rep <- prog[, c(1, 8, 16)]; head(rep)
+rep <- table(Case = rep$Lemma, rep$Repeated)
+BNCrepeated <- addmargins(BNCrepeated) # adds rows total to table!
+BNCrepeated <- BNCrepeated[order(BNCrepeated[,4], decreasing = T),]; head(BNCrepeated, 11)
+BNCrepeated <- BNCrepeated[1:30,]
+BNCrepeatedp <- round(prop.table(BNCrepeated, 1), 4)*200; BNCrepeatedp
+BNCrepeatedp <- BNCrepeatedp[order(BNCrepeatedp[,3], decreasing = T),]
+BNCrepeatedp <- BNCrepeatedp[1:12,1:3]; BNCrepeatedp
+
+```
+
+# Continuousness
+
+```{r continousness}
+
+continuous <- table(prog$Corpus, prog$Continuous); continuous
+prop.table(continuous, 1)*100
+
+#tiff(here("Prog_Continuous.tiff"), height = 18, width = 20, units="cm", compression = "lzw", res = 300)
+par(cex = 1.6, cex.main = 0.6, cex.lab = 1, cex.axis = 1.5, cex.sub = 0.5)
+plot(continuous, shade = TRUE, main = "Progressive function: Continuousness")
+dev.off()
+
+continuous1 <- continuous[,c(1,3)] # Get rid of unclear's
+chisq.test(continuous1) # Significant correlation at p<0.001
+vcd::assocstats(continuous1) # Cramer's V is 0.147
+
+## Which lemmas occur most frequently in either corpora with the function non-continuousness? ##
+noncont_lemmas <- prog[prog$Continuous=="no", c(1,8)] 
+noncont_lemmas_TxB <- prog[prog$Continuous=="no" & prog$Corpus=="Textbook Conversation", 8] 
+table_noncont_lemmas_TxB <- sort(table(noncont_lemmas_TxB), decreasing = T)
+head(table_noncont_lemmas_TxB, 20)
+
+noncont_lemmas_BNC <- prog[prog$Continuous=="no" & prog$Corpus=="Spoken BNC2014 sample", 8] 
+table_noncont_lemmas_BNC <- sort(table(noncont_lemmas_BNC), decreasing = T)
+head(table_noncont_lemmas_BNC, 20)
+
+## Percentage of specific lemmas used with continuousness function
+
+BNCPC <- BNCprog[BNCprog$Continuous!="unclear",]
+prop.table(table(BNCPC$Lemma=="tell", BNCPC$Continuous), 1)*100
+
+TCPC <- TxBprog[TxBprog$Continuous!="unclear",]
+prop.table(table(TCPC$Lemma=="tell", TCPC$Continuous), 1)*100
+
+```
+
+# Additional functions
+
+```{r framing}
+
+functions1 <- table(prog$Corpus, prog$Extra.function); functions1
+round((functions1/2423*100),2) # Percentage of concordances in each corpus
+
+framing <- table(prog$Corpus, prog$Extra.function=="framing"); framing
+chisq.test(framing) # Significant at p>0.001
+vcd::assocstats(framing) # phi-coefficient = 0.242
+
+emphasis <- table(prog$Corpus, prog$Extra.function=="emphasis/shock"); emphasis
+chisq.test(emphasis) # Not significant
+vcd::assocstats(emphasis)
+
+change <- table(prog$Corpus,prog$Extra.function=="gradual change"); change
+chisq.test(change) # Significant at p < 0.005
+vcd::assocstats(change) # Phi-Coefficient = 0.171
+
+politeness <- table(prog$Corpus, prog$Extra.function=="politeness/softening"); politeness
+chisq.test(politeness) # 
+vcd::assocstats(politeness) # 
+
+```
+
+# Package used in this script
+```{r package-citations}
+
+#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
+
+sessionInfo()
+
+```

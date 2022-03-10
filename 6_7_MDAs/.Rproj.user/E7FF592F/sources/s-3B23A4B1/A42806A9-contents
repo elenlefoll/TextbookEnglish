@@ -1,0 +1,810 @@
+---
+title: "New full MD models of Textbook English"
+author: "Elen Le Foll"
+date: "09/11/2021"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+  editor_options: 
+    markdown: 
+      wrap: sentence
+bibliography: "packages.bib"
+nocite: '@*'
+      
+---
+
+This script is part of the Online Appendix to my PhD thesis.
+
+Please cite as: 
+Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
+
+For more information, see: https://elenlefoll.github.io/TextbookEnglish/
+
+Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
+
+
+# Set-up
+
+*Built with R `r getRversion()`*  
+
+```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, paged.print=TRUE, fig.width = 10, warning=FALSE)
+
+library(car) # For data wrangling
+library(caret) # For its confusion matrix function
+#library(clipr) # For quick exports to other programme
+library(cowplot)
+library(DescTools) # For 95% CI
+library(dplyr)
+library(emmeans)
+#library(FactoMineR) # For Shiny app
+library(factoextra) # For circular graphs of variables
+library(forcats) # For the fct_relevel function
+library(here) # For dynamic file paths
+library(ggplot2) 
+library(ggthemes) # For theme of factoextra plots
+library(lme4) # For linear regression modelling
+library(patchwork) # To create figures with more than one plot
+#library(pca3d) # For 3-D plots (not rendered in html knit)
+library(PCAtools) # For nice biplots of PCA results
+library(purrr) # For data wrangling
+library(psych) # For various useful stats function
+library(sjPlot) # For model plots and tables
+library(suffrager) # For pretty feminist colour palettes :)
+library(visreg) # For plots of interaction effects
+
+source(here("R_rainclouds.R")) # For geom_flat_violin rainplots
+
+```
+
+
+## PCA and 3-D plots
+
+Import full data (see 7_Ref_data_prep.Rmd for data preparation steps)
+
+```{r import-data}
+
+data <- readRDS(here("FullMDA", "dataforPCA.rds")) 
+
+data %>% 
+  filter(Series=="NGL") %>% 
+  group_by(Series, Level) %>% 
+  summarise(wordcount = sum(Words))
+
+```
+
+This chunk can be used to perform the MDA on various subsets of the data.
+
+```{r import-subset-data-for-PCA, eval=FALSE}
+
+# Full dataset
+data <- readRDS(here("FullMDA", "dataforPCA.rds")) 
+
+# Subset of the data that excludes levels A and B textbooks
+data <- readRDS(here("FullMDA", "dataforPCA.rds")) %>%
+  filter(Level !="A" & Level != "B") %>%
+  droplevels()
+summary(data$Level)
+
+# Subset of the data to only include one Country subcorpus of the TEC
+data <- readRDS(here("FullMDA", "dataforPCA.rds")) %>%
+  #filter(Country != "France" & Country != "Germany") %>% # Spain only
+  #filter(Country != "France" & Country != "Spain") %>% # Germany only
+  filter(Country != "Spain" & Country != "Germany") %>% # France only
+  droplevels()
+summary(data$Country)
+
+# Perform PCA on random subset of the data to test the stability of the solution. Re-running this line will generate a new subset of 2/3 of the texts randomly sampled.
+set.seed(13) # Seed used for the biplot printed in Chapter 8
+data <- readRDS(here("FullMDA", "dataforPCA.rds")) %>%
+  slice_sample(n = 4980*0.6, replace = FALSE)
+nrow(data)
+data$Filename[1:4]
+
+```
+
+This chunk is used to create the 3-D plots. These cannot be rendered in the html knit.
+
+```{r PCA-3D-plots, eval=FALSE}
+
+colnames(data)
+pca <- prcomp(data[,9:ncol(data)], scale.=FALSE) # All quantitative variables
+register <- factor(data[,"Register"]) 
+corpus <- factor(data[,"Corpus"])
+subcorpus <- factor(data[,"Subcorpus"])
+
+summary(register)
+summary(corpus)
+summary(subcorpus)
+summary(pca)
+
+# 3-D plot
+
+colours <- suf_palette(name = "london", n = 6, type = "continuous") 
+colours2 <- suf_palette(name = "classic", n = 5, type = "continuous") 
+colours <- c(colours, colours2[c(2:4)]) # Nine colours range
+col6 <- colours[c(6,5,4,7,9,2)] # Good order for PCA
+scales::show_col(col6)
+
+col6 <- c("#F9B921", "#A18A33", "#722672", "#BD241E", "#267226", "#15274D")
+names(col6) <- c("Textbook Conversation", "Textbook Fiction", "Textbook Informative", "Spoken BNC2014 Ref.", "Youth Fiction Ref.", "Info Teens Ref.")
+shapes6 <- c(rep("cube", 3),rep("sphere", 3))
+names(shapes6) <- c("Textbook Conversation", "Textbook Fiction", "Textbook Informative", "Spoken BNC2014 Ref.", "Youth Fiction Ref.", "Info Teens Ref.")
+
+pca3d(pca, group = subcorpus, 
+      components = 1:3,
+      #components = 4:6,
+      show.plane=FALSE,
+      col = col6,
+      shape = shapes6,
+      radius = 0.7,
+      legend = "right")
+
+## Looking at all three Textbook English registers in one colour
+
+col4 <- colours[c(1,3,7,9)]
+col4 <- c("#EA7E1E", "#15274D", "#BD241E", "#267226")
+
+names(col4) <- c("Textbook.English", "Informative.Teens", "Spoken.BNC2014", "Youth.Fiction")
+shapes4 <- c("cube", rep("sphere", 3))
+names(shapes4) <- c("Textbook.English", "Informative.Teens", "Spoken.BNC2014", "Youth.Fiction")
+
+pca3d(pca, group = corpus, 
+      show.plane=FALSE,
+      components = 1:3,
+      col = col4,
+      shape = shapes4,
+      radius = 0.7,
+      legend = "right")
+
+```
+
+## PCA biplots
+
+```{r PCAtools-pairsplot, fig.height=30, fig.width=25, warning=FALSE}
+
+data2 <- data %>% 
+  mutate(Source = recode_factor(Corpus, Textbook.English = "Textbook English (TEC)", Informative.Teens = "Reference corpora", Spoken.BNC2014 = "Reference corpora", Youth.Fiction = "Reference corpora")) %>% 
+  mutate(Corpus = fct_relevel(Subcorpus, "Info Teens Ref.", after = 9)) %>%
+  relocate(Source, .after = "Corpus") %>% 
+  droplevels(.)
+
+colnames(data2)
+data2meta <- data2[,1:9]
+rownames(data2meta) <- data2meta$Filename
+data2meta <- data2meta %>% select(-Filename)
+head(data2meta)
+
+rownames(data2) <- data2$Filename
+data2num <- as.data.frame(base::t(data2[,10:ncol(data2)]))
+data2num[1:5,1:5] # Check data frame format is correct
+
+p <- PCAtools::pca(data2num, 
+         metadata = data2meta,
+         scale = FALSE)
+
+p$variance[1:6]
+sum(p$variance[1:4])
+
+# For five TEC registers
+# colkey = c(`Spoken BNC2014 Ref.`="#BD241E", `Info Teens Ref.`="#15274D", `Youth Fiction Ref.`="#267226", `Textbook Fiction`="#A18A33", `Textbook Conversation`="#F9B921", `Textbook Informative` = "#722672", `Textbook Instructional` = "grey", `Textbook Personal` = "black")
+
+# For three TEC registers
+summary(data2$Corpus)
+colkey = c(`Spoken BNC2014 Ref.`="#BD241E", `Info Teens Ref.`="#15274D", `Youth Fiction Ref.`="#267226", `Textbook Fiction`="#A18A33", `Textbook Conversation`="#F9B921", `Textbook Informative` = "#722672")
+
+#summary(data2$Source)
+#shapekey = c(`Textbook English (TEC)`=6, `Reference corpora`=1)
+
+summary(data2$Level)
+shapekey = c(A=1, B=2, C=6, D=0, E=5, `Ref.`=4)
+
+## Very slow, open in zoomed out window!
+# Add legend manually? Yes (take it from the biplot code below), let's not waste too much time, here. Or use Evert's mvar.pairs plot (though that annoyingly requires manual axis annotation so not really better!)
+
+#png(here("plots", "PCA_3Ref_pairsplot.png"), width = 25, height= 40, units = "cm", res = 300)
+PCAtools::pairsplot(p,
+                 triangle = FALSE,
+                 components = 1:4,
+                 ncol = 2,
+                 nrow = 3,
+                 pointSize = 1,
+                 shape = "Level",
+                 shapekey = shapekey,
+                 lab = NULL, # Otherwise will try to label each data point!
+                 colby = "Corpus",
+                 legendPosition = "none",
+                 margingaps = unit(c(0.2, 0.2, 0.8, 0.2), "cm"),
+                 colkey = colkey)
+dev.off()
+
+```
+
+
+```{r PCAtools-biplots-register, fig.height=8}
+# Biplots to examine components more carefully
+
+# These settings (with legendPosition = "top") were used to generate the legend for the scatterplot matrix above:
+#png(here("plots", "PCA_3Ref_Biplot_PC1_PC2test.png"), width = 40, height= 25, units = "cm", res = 300) 
+PCAtools::biplot(p,
+                 x = "PC1",
+                 y = "PC2",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 colby = "Corpus",
+                 pointSize = 1.3,
+                 colkey = colkey,
+                 shape = "Level",
+                 shapekey = shapekey,
+                 xlim = c(min(p$rotated[, "PC1"]), max(p$rotated[, "PC1"])),
+                 ylim = c(min(p$rotated[, "PC2"]), max(p$rotated[, "PC2"])),
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 axisLabSize = 18,
+                 legendPosition = 'right',
+                 legendTitleSize = 18,
+                 legendLabSize = 14, 
+                 legendIconSize = 5) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+
+# These settings were used to save this biplot:
+#ggsave(here("Plots", "PCA_Ref3TxB_BiplotPC1_PC2.svg"), width = 12, height = 8)
+
+# Biplots to examine components more carefully
+PCAtools::biplot(p,
+                 x = "PC3",
+                 y = "PC4",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 colby = "Corpus",
+                 pointSize = 1.2,
+                 colkey = colkey,
+                 shape = "Level",
+                 shapekey = shapekey,
+                 xlim = c(min(p$rotated[, "PC3"]), max(p$rotated[, "PC3"])),
+                 ylim = c(min(p$rotated[, "PC4"]), max(p$rotated[, "PC4"])),
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 axisLabSize = 18,
+                 legendPosition = 'right',
+                 legendTitleSize = 18,
+                 legendLabSize = 14, 
+                 legendIconSize = 5) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+
+#ggsave(here("Plots", "PCA_Ref3TxB_BiplotPC3_PC4.svg"), width = 12, height = 8)
+
+# Biplots to examine components more carefully
+PCAtools::biplot(p,
+                 x = "PC5",
+                 y = "PC6",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 colby = "Corpus",
+                 pointSize = 1.2,
+                 colkey = colkey,
+                 shape = "Level",
+                 shapekey = shapekey,
+                 xlim = c(min(p$rotated[, "PC5"]), max(p$rotated[, "PC5"])),
+                 ylim = c(min(p$rotated[, "PC6"]), max(p$rotated[, "PC6"])),
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 axisLabSize = 18,
+                 legendPosition = 'right',
+                 legendTitleSize = 18,
+                 legendLabSize = 14, 
+                 legendIconSize = 5) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+
+#ggsave(here("Plots", "PCA_Ref3TxB_BiplotPC5_PC6.svg"), width = 12, height = 8)
+
+```
+
+
+```{r PCAtools-biplots-levels, fig.height=8}
+
+# Biplot with ellipses for Level rather than Register
+colkey = c(A="#F9B921", B="#A18A33", C="#BD241E", D="#722672", E="#15274D", `Ref. data`= "darkgrey")
+shapekey = c(`Spoken BNC2014 Ref.`=16, `Info Teens Ref.`=17, `Youth Fiction Ref.`=15, `Textbook Fiction`=0, `Textbook Conversation`=1, `Textbook Informative`=2)
+
+PCAtools::biplot(p,
+                 x = "PC3",
+                 y = "PC4",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 colby = "Level",
+                 pointSize = 1.3,
+                 colkey = colkey,
+                 shape = "Corpus",
+                 shapekey = shapekey,
+                 xlim = c(min(p$rotated[, "PC3"]), max(p$rotated[, "PC3"])),
+                 ylim = c(min(p$rotated[, "PC4"]), max(p$rotated[, "PC4"])),
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 axisLabSize = 18,
+                 legendPosition = 'right',
+                 legendTitleSize = 18,
+                 legendLabSize = 14, 
+                 legendIconSize = 5) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+
+#ggsave(here("Plots", "PCA_Ref3TxB_BiplotPC3_PC4_levels.svg"), width = 12, height = 8)
+
+# Biplots to examine components more carefully
+PCAtools::biplot(p,
+                 x = "PC5",
+                 y = "PC6",
+                 lab = NULL, # Otherwise will try to label each data point!
+                 colby = "Level",
+                 pointSize = 1.3,
+                 colkey = colkey,
+                 shape = "Corpus",
+                 shapekey = shapekey,
+                 xlim = c(min(p$rotated[, "PC5"]), max(p$rotated[, "PC5"])),
+                 ylim = c(min(p$rotated[, "PC6"]), max(p$rotated[, "PC6"])),
+                 showLoadings = FALSE,
+                 ellipse = TRUE,
+                 axisLabSize = 18,
+                 legendPosition = 'right',
+                 legendTitleSize = 18,
+                 legendLabSize = 14, 
+                 legendIconSize = 5) +
+  theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
+
+#ggsave(here("Plots", "PCA_Ref3TxB_BiplotPC5_PC6_levels.svg"), width = 12, height = 8)
+```
+
+## Feature contributions (loadings) on each component
+```{r loadings-table}
+
+#data <- readRDS(here("FullMDA", "dataforPCA.rds")) 
+colnames(data)
+pca <- prcomp(data[,9:ncol(data)], scale.=FALSE) # All quantitative variables
+
+# The rotated data that represents the observations / samples is stored in rotated, while the variable loadings are stored in loadings
+loadings <- as.data.frame(pca$rotation[,1:4])
+
+
+# Function that applies a cut-off point for "relevant" loadings (not used in thesis)
+smallToZero <- function(x) {if_else(x < 0.05 & x > -0.05, 0, x)}
+loadings %>% 
+  filter_all(any_vars(. > abs(0.05))) %>% 
+  mutate_all(smallToZero) %>% 
+  round(3)
+
+# Tabular overiew of loadings with no threshold
+loadings %>% 
+  round(2)
+
+#write_last_clip()
+```
+
+## Graphs of variables
+```{r graphs-of-variables, fig.height=16, fig.width=16}
+
+factoextra::fviz_pca_var(pca,
+             axes = c(1,2),
+             select.var = list(contrib = 30),
+             col.var = "contrib", # Colour by contributions to the PC
+             gradient.cols = c("#F9B921", "#DB241E", "#722672"),
+             title = "",
+             repel = TRUE, # Try to avoid too much text overlapping
+             ggtheme = ggthemes::theme_few())
+#ggsave(here("Plots", "fviz_pca_var_PC1_PC2_Ref3Reg.svg"), width = 11, height = 9)
+
+factoextra::fviz_pca_var(pca,
+             axes = c(3,2),
+             select.var = list(contrib = 30),
+             col.var = "contrib", # Colour by contributions to the PC
+             gradient.cols = c("#F9B921", "#DB241E", "#722672"),
+             title = "",
+             repel = TRUE, # Try to avoid too much text overlapping
+             ggtheme = ggthemes::theme_few())
+#ggsave(here("Plots", "fviz_pca_var_PC3_PC2_Ref3Reg.svg"), width = 9, height = 8)
+
+factoextra::fviz_pca_var(pca,
+             axes = c(3,4),
+             select.var = list(contrib = 30),
+             col.var = "contrib", # Colour by contributions to the PC
+             gradient.cols = c("#F9B921", "#DB241E", "#722672"),
+             title = "",
+             repel = TRUE, # Try to avoid too much text overlapping
+             ggtheme = ggthemes::theme_few())
+#ggsave(here("Plots", "fviz_pca_var_PC3_PC4_Ref3Reg.svg"), width = 9, height = 8)
+
+factoextra::fviz_pca_var(pca,
+             axes = c(5,6),
+             select.var = list(contrib = 25),
+             col.var = "contrib", # Colour by contributions to the PC
+             gradient.cols = c("#F9B921", "#DB241E", "#722672"),
+             title = "",
+             repel = TRUE, # Try to avoid too much text overlapping
+             ggtheme = ggthemes::theme_few())
+#ggsave(here("Plots", "fviz_pca_var_PC5_PC6_Ref3Reg.svg"), width = 9, height = 8)
+
+```
+
+## Exploring feature contributions
+```{r feature-contributions, fig.height=30, fig.width=20}
+
+library(gridExtra)
+
+ncounts <- readRDS(here("FullMDA", "counts3Reg.rds"))
+
+ncounts %>%
+  group_by(Register, Level) %>% 
+  summarise(median(Words), mad(Words))
+
+ncounts %>% 
+  filter(Register=="Informative") %>% 
+  #filter(Level %in% c("C", "D", "E")) %>% 
+  select(Level, VBD, PEAS) %>% 
+  group_by(Level) %>% 
+  summarise_if(is.numeric, median) %>% 
+  mutate_if(is.numeric, round, 2)
+
+cols = c("#F9B921", "#A18A33", "#BD241E", "#722672", "#15274D", "darkgrey")
+
+boxfeature <- ncounts %>% 
+  filter(Register=="Informative") %>% 
+  #filter(Level %in% c("C", "D", "E")) %>% 
+  select(Level, FPP1S, SPP2, CONT, EXIST, AWL, XX0, PASS, VBN) %>% 
+  ggplot(aes(x = Level, y = CONT, colour = Level, fill = Level)) +
+  geom_jitter(size=0.7, alpha=.7) +
+  geom_boxplot(outlier.shape = NA, fatten = 2, fill = "white", alpha = 0.3) +
+  scale_colour_manual(values = cols) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  xlab("")
+
+SPP2 <- boxfeature + aes(y = SPP2) + ylim(c(0,80))# These y-axis limits remove individual outliers that overextend the scales and make the real differences invisible
+EXIST <- boxfeature + aes(y = EXIST) + ylim(c(0,25)) 
+FFP1 <- boxfeature + aes(y = FPP1S) + ylim(c(0,60))  #
+AWL <- boxfeature + aes(y = AWL)
+XX0 <- boxfeature + aes(y = XX0) + ylim(c(0,25))
+PASS <- boxfeature + aes(y = PASS)
+VBN <- boxfeature + aes(y = VBN) + ylim(c(0,40))
+
+boxplots <- grid.arrange( PASS, VBN, AWL, EXIST, FFP1, SPP2, boxfeature, XX0, ncol=2, nrow=4)
+
+#ggsave(here("Plots", "BoxplotsInformativeFeatures.svg"), plot = boxplots, dpi = 300, width = 9, height = 11)
+
+```
+
+## Descriptive PCA results
+```{r PCA-results}
+## PCA
+#data <- readRDS(here("FullMDA", "dataforPCA.rds")) 
+#colnames(data)
+pca <- prcomp(data[,9:ncol(data)], scale.=FALSE) # All quantitative variables
+
+## Access to the PCA results
+#colnames(data)
+res.ind <- cbind(data[,1:8], as.data.frame(pca$x)[,1:4])
+head(res.ind)
+
+## Examine individual text values
+res.ind %>% 
+  filter(PC1 < 0.5 & PC1 > -1.5 & PC2 < 1.5 & PC2 > -1.5 & PC3 > 0.5) %>% 
+  filter(Subcorpus == "Textbook Informative") %>% 
+  select(Filename, Level)
+
+res.ind %>% 
+  filter(PC4 < -1.5) %>% 
+  filter(Register == "Conversation") %>% 
+  select(Filename, Level)
+
+## Summary statistics
+res.ind %>% 
+  group_by(Register, Corpus) %>% 
+  summarise_if(is.numeric, c(mean = mean, sd = sd)) %>% 
+  as.data.frame()  
+
+res.ind %>% 
+  group_by(Subcorpus, Level) %>% 
+  summarise_if(is.numeric, c(mean = mean, sd = sd)) %>% 
+  as.data.frame()
+
+library(gtsummary)
+res.ind <- res.ind %>% 
+  mutate(Subsubcorpus = paste(Corpus, Register, Level, sep = "_")) %>% 
+  mutate(Subsubcorpus = as.factor(Subsubcorpus))
+  
+res.ind %>% 
+  select(PC1, PC2, PC3, PC4, Subsubcorpus) %>% 
+  tbl_summary(by = Subsubcorpus,
+              digits = list(all_continuous() ~ c(2, 2)),
+              statistic = all_continuous() ~  "{mean} ({sd})")
+  
+res.ind %>% 
+  select(Register, Level, PC4) %>% 
+  group_by(Register, Level) %>% 
+  summarise_if(is.numeric, c(Median = median, MAD = mad))
+
+# Search for example texts to illustrate results
+res.ind %>% 
+  filter(PC3 > 2.5 & PC2 < -2) %>% 
+  #filter(Register=="Conversation") %>% 
+  #filter(Level == "B") %>% 
+  #filter(PC1 > 4.7) %>% 
+  select(Filename, PC1, PC2, PC3) %>% 
+  mutate(across(where(is.numeric), round, 2))
+
+```
+
+## Raincloud plots
+```{r rainplots}
+
+res.ind$Subcorpus <- fct_relevel(res.ind$Subcorpus, "Spoken BNC2014 Ref.", "Textbook Conversation", "Youth Fiction Ref.", "Textbook Fiction", "Info Teens Ref.", "Textbook Informative")
+
+colours <- suf_palette(name = "london", n = 6, type = "continuous") 
+colours2 <- suf_palette(name = "classic", n = 5, type = "continuous") 
+colours <- c(colours, colours2[c(2:4)]) # Nine colours range
+palette <- colours[c(1,5,6,2,3,8,7,4,9)] # Good order for PCA
+
+colours <- palette[c(1,8,9,2,7,3)]
+
+ggplot(res.ind, aes(x=Subcorpus,y=PC1, fill = Subcorpus, colour = Subcorpus))+ # Or leave out "colour = Register" to keep the dots in black
+  geom_flat_violin(position = position_nudge(x = .25, y = 0),adjust = 2, trim = FALSE)+
+  geom_point(position = position_jitter(width = .15), size = .25)+
+# note that here we need to set the x-variable to a numeric variable and bump it to get the boxplots to line up with the rainclouds. 
+  geom_boxplot(aes(x = as.numeric(Subcorpus)+0.25, y = PC1), outlier.shape = NA, alpha = 0.3, width = .15, colour = "BLACK") +
+  ylab('PC1')+ 
+  theme_cowplot()+
+  theme(axis.title.x=element_blank())+
+  guides(fill = "none", colour = "none") +
+  scale_colour_manual(values = colours)+
+  scale_fill_manual(values = colours) +
+  annotate(geom = "text", x = 1.5, y = -7, label = "Conversation", size = 5) +
+  annotate(geom = "segment", x = 0.7, xend = 2.5, y = -6.5, yend = -6.5) +
+  annotate(geom = "text", x = 3.5, y = -7, label = "Fiction", size = 5) +
+  annotate(geom = "segment", x = 2.7, xend = 4.5, y = -6.5, yend = -6.5) +
+  annotate(geom = "text", x = 5.7, y = -7, label = "Informative", size = 5) +
+  annotate(geom = "segment", x = 4.7, xend = 6.5, y = -6.5, yend = -6.5) +
+  scale_x_discrete(labels=rep(c("Reference", "Textbook"), 3))+
+  scale_y_continuous(sec.axis = dup_axis(name=NULL), breaks = seq(from = -6, to = 5, by = 1))
+
+#ggsave(here("Plots", "PC11_3RegComparison.svg"), width = 13, height = 8)
+#ggsave(here("Plots", "PC1_3RegComparison.png"), width = 20, height = 15, units = "cm", dpi = 300)
+
+```
+
+## Mixed-effects models predicting PC scores
+
+### Adding the 'source' variable for the random effects
+```{r source-variable}
+
+library(stringr)
+
+# Add Source variable for random effect variable in mixed effect models
+res.ind <- res.ind %>% 
+  mutate(Source = case_when(
+  Corpus=="Youth.Fiction" ~ paste("Book", str_extract(Filename, "[0-9]{1,3}"), sep = ""),
+  Corpus=="Spoken.BNC2014" ~ "Spoken.BNC2014",
+  Corpus=="Textbook.English" ~ as.character(Series),
+  Corpus=="Informative.Teens" ~ str_extract(Filename, "BBC|Science_Tech"),
+  TRUE ~ "NA")) %>% 
+  mutate(Source = case_when(
+  Corpus=="Informative.Teens" & is.na(Source) ~ str_remove(Filename, "_.*"),
+  TRUE ~ as.character(Source))) %>% 
+  mutate(Source = as.factor(Source)) %>% 
+  mutate(Corpus = case_when(
+    Corpus=="Textbook.English" ~ "Textbook",
+    Corpus=="Informative.Teens" ~ "Reference",
+    Corpus=="Spoken.BNC2014" ~ "Reference",
+    Corpus=="Youth.Fiction" ~ "Reference"
+  )) %>% 
+  mutate(Corpus = as.factor(Corpus))
+
+summary(res.ind$Source)
+
+# Change the reference level to a theoretically more meaningful level and one that is better populated (see, e.g., https://stats.stackexchange.com/questions/430770/in-a-multilevel-linear-regression-how-does-the-reference-level-affect-other-lev)
+summary(res.ind$Corpus)
+summary(res.ind$Subcorpus)
+summary(res.ind$Level)
+
+res.ind$Level <- relevel(res.ind$Level, "Ref.")
+res.ind$Subcorpus <- factor(res.ind$Subcorpus, levels = c("Spoken BNC2014 Ref.", "Textbook Conversation", "Youth Fiction Ref.", "Textbook Fiction", "Info Teens Ref.", "Textbook Informative"))
+res.ind$Corpus <- relevel(res.ind$Corpus, "Reference")
+```
+
+## PC1
+```{r testing-PCA-results-PC1}
+# Mixed-effects models
+# PC1
+
+# no random effects
+summary(lm(PC1 ~ Level:Register, data = res.ind))
+
+# with random effects (slopes + intercepts)
+md_source <- lmer(PC1 ~ 1 + (Register|Source), res.ind, REML = FALSE) 
+md_corpus <- update(md_source, .~. + Level)
+md_register <- update(md_corpus, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Level:Register)
+
+anova(md_source, md_corpus, md_register, md_both, md_interaction)
+
+tab_model(md_interaction, wrap.labels = 200)
+
+# Random effects
+ranef <- as.data.frame(ranef(md_interaction))
+
+ranef %>% 
+  filter(grp == "TeenVogue")
+
+```
+
+### Testing assumptions
+
+This chunk was used to check the assumptions of all the other models below.
+```{r lmer-diagnostics}
+
+# cf. https://stackoverflow.com/questions/63751541/plot-does-not-show-all-diagnostic-plots-for-lme-lmer
+
+# check distribution of residuals
+plot(md_interaction)
+
+# scale-location plot
+plot(md_interaction,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+# Q-Q plot
+lattice::qqmath(md_interaction)
+
+```
+
+## PC2 to PC6
+```{r testing-PCA-results-PC2-PC6}
+# PC2
+# Note that the model with random intercepts and slopes failed to converge for PC2 which is why only slopes are modelled here
+md_source <- lmer(PC2 ~ 1 + (1|Source), res.ind, REML = FALSE) 
+md_corpus <- update(md_source, .~. + Level)
+md_register <- update(md_corpus, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Level:Register)
+
+anova(md_source, md_corpus, md_register, md_both, md_interaction)
+
+tab_model(md_interaction, wrap.labels = 200)
+
+# PC3
+#md_source <- lmer(PC3 ~ 1 + (Register|Source), res.ind, REML = FALSE) # Fails to converge
+md_source <- lmer(PC3 ~ 1 + (1|Source), res.ind, REML = FALSE)
+md_corpus <- update(md_source, .~. + Level)
+md_register <- update(md_corpus, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Level:Register)
+
+anova(md_source, md_corpus, md_register, md_both, md_interaction)
+
+tab_model(md_interaction, wrap.labels = 200)
+
+# PC4
+#md_source <- lmer(PC4 ~ 1 + (Register|Source), res.ind, REML = FALSE) # Singular fit
+md_source <- lmer(PC4 ~ 1 + (1|Source), res.ind, REML = FALSE)
+md_corpus <- update(md_source, .~. + Level)
+md_register <- update(md_corpus, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Level:Register)
+
+anova(md_source, md_corpus, md_register, md_both, md_interaction)
+
+tab_model(md_interaction, wrap.labels = 200)
+
+```
+
+## PC5 and PC6 were not included in the PhD thesis in the end.
+
+```{r eval=FALSE}
+
+# PC5
+#md_source <- lmer(PC5 ~ 1 + (Register|Source), res.ind, REML = FALSE) # Fails to converge
+md_source <- lmer(PC5 ~ 1 + (1|Source), res.ind, REML = FALSE) 
+md_corpus <- update(md_source, .~. + Level)
+md_register <- update(md_corpus, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Level:Register)
+
+anova(md_source, md_corpus, md_register, md_both, md_interaction)
+
+tab_model(md_interaction, wrap.labels = 200)
+
+# PC6
+#md_source <- lmer(PC6 ~ 1 + (Register|Source), res.ind, REML = FALSE) # Fails to converge
+md_source <- lmer(PC6 ~ 1 + (1|Source), res.ind, REML = FALSE) 
+md_corpus <- update(md_source, .~. + Level)
+md_register <- update(md_corpus, . ~ . + Register)
+md_both <- update(md_corpus, .~. + Register)
+md_interaction <- update(md_both, . ~ . + Level:Register)
+
+anova(md_source, md_corpus, md_register, md_both, md_interaction)
+
+tab_model(md_interaction, wrap.labels = 200)
+
+```
+
+This chunk was used to generate plots for all of the models computed in the chunk above.
+
+```{r PCA-results-lmer-plots, fig.height=15}
+# Tweak plot aesthetics with: https://cran.r-project.org/web/packages/sjPlot/vignettes/custplot.html
+# Colour customisation trick from: https://stackoverflow.com/questions/55598920/different-line-colors-in-forest-plot-output-from-sjplot-r-package
+
+plot_model(md_interaction, 
+           #type = "re", # Option to visualise random effects 
+           show.intercept = TRUE,
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = palette[c(1:3,7:9)],
+           group.terms = c(1,5,5,5,5,5,6,4,2,2,2,2,2,3,3,3,3,3), 
+           title="Fixed effects",
+           wrap.labels = 40,
+           axis.title = "PC6 estimated coefficients") +
+  theme_sjplot2() 
+
+#ggsave(here("Plots", "TxBRef3Reg_PCA6_lmer_fixed.svg"), height = 6, width = 7)
+
+#svg(here("Plots", "TxBReg3Reg_predicted_PC6_scores_interactions.svg"), height = 8, width = 9)
+visreg(md_interaction, xvar = "Level", by="Register", 
+       #type = "contrast",
+       type = "conditional",
+       line=list(col="darkred"), 
+       points=list(cex=0.3),
+       xlab = "Ref. corpora and textbook level (A to E)", ylab = "PC6",
+       layout=c(3,1)
+)
+#dev.off()
+
+# Random effects
+ranef <- as.data.frame(ranef(md_interaction))
+
+ranef %>% 
+  filter(grp %in% c("TeenVogue", "BBC", "Dogo", "Ducksters", "Encyclopedia", "Factmonster", "History", "Quatr", "Revision", "Science", "Science_Tech", "Teen", "TweenTribute", "WhyFiles", "World")) %>% 
+  ggplot(aes(x = grp, y = condval)) +
+  geom_point() +
+  coord_flip()
+  
+ranef %>% 
+  filter(grp %in% levels(data$Series)) %>% 
+  ggplot(aes(x = grp, y = condval)) +
+  geom_point() +
+  coord_flip()
+
+# Modeling subcorpora
+md_subcorpus <- lmer(PC1 ~ Subcorpus + (1|Source), res.ind, REML = FALSE)
+tab_model(md_subcorpus)
+
+plot_model(md_subcorpus, 
+           #type = "re", # Option to visualise random effects 
+           show.intercept = TRUE,
+           show.values=TRUE, 
+           show.p=TRUE,
+           value.offset = .4,
+           value.size = 3.5,
+           colors = palette[c(1:3,7:9)],
+           group.terms = c(1,5,2,6,4,3), 
+           wrap.labels = 40,
+           axis.title = "PC6 estimated coefficients",
+           title="Fixed effects") +
+  theme_sjplot2()
+
+subcorpus_results <- emmeans(md_subcorpus, "Subcorpus")
+summary(subcorpus_results)
+#write_last_clip()
+
+```
+
+
+# Package used in this script
+```{r package-citations}
+
+#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
+
+knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
+
+sessionInfo()
+
+```

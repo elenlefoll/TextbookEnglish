@@ -1,0 +1,30 @@
+{
+    "id": "9114006B",
+    "path": "~/Documents/PhD/GitHubRepo/6_7_MDAs/7_Ref_data_prep.Rmd",
+    "project_path": "7_Ref_data_prep.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1646837271422.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "14,0",
+        "scrollLine": "0",
+        "rmdVisualMode": "false",
+        "docOutlineVisible": "1",
+        "rmdVisualWrapConfigured": "true",
+        "rmdVisualModeLocation": "873:0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1646902052,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1646902052,
+    "read_only": false,
+    "read_only_alternatives": []
+}
