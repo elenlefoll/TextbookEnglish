@@ -6,7 +6,7 @@ Le Foll, Elen. 2022. _Textbook English: A Corpus-Based Analysis of the Language 
 
 This is the Online Appendix. It includes the full code for all the analyses, tables and figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
 
-The thesis was submitted on 7 March 2022 but has not yet been defended. It will be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a> after the defense in May 2022.
+The thesis was submitted in May 2022 but has not yet been defended. It will be made available <a href="https://elenlefoll.eu/#contact" target="_blank" rel="noopener noreferrer">upon request</a> after the defense on 8 July 2022.
 
 ## Chapter 1: Introduction
 
@@ -38,7 +38,6 @@ A detailed tabular overview of the composition of the Textbook English Corpus (T
 Note that, for copyright reasons, the corpus itself cannot be published.
 
 ### Appendix 3.3
-
 The original corpus files of the Spoken BNC2014 can be downloaded for free for research purposes from: <a href="http://corpora.lancs.ac.uk/bnc2014/signup.php" target="_blank" rel="noopener noreferrer">http://corpora.lancs.ac.uk/bnc2014/signup.php</a>
 
 <a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/3_Data/BNCspoken_nomark-up_JackJill.R" target="_blank" rel="noopener noreferrer">R script used to pre-process the untagged XML version of the Spoken BNC2014</a>
