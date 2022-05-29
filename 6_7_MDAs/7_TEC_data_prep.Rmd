@@ -34,6 +34,8 @@ Please note that the plot dimensions in this notebook have been optimised for th
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(cache = TRUE)
 
+#renv::restore() # Restore the project's dependencies from the lockfile to ensure that same package versions are used as in the original thesis.
+
 library(caret) # For its confusion matrix function
 library(dplyr)
 library(here) # For dynamic file paths

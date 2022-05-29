@@ -31,6 +31,8 @@ Please note that the plot dimensions in this notebook have been optimised for th
 ```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+#renv::restore() # Restore the project's dependencies from the lockfile to ensure that same package versions are used as in the original thesis.
+
 library(dplyr)
 library(here)
 library(ggplot2)

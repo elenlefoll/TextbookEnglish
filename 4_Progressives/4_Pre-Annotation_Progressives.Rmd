@@ -17,7 +17,11 @@ Please note that this script cannot be run because the corpus data cannot be mad
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-# Built in R 3.5.3 #
+# Originally written and run in R 3.5.3 #
+
+library(stringr)
+library(textstem)
+
 ```
 
 ## Aim
@@ -65,8 +69,6 @@ BNCprog$negation
 
 ## Lemma ##
 
-library(stringr)
-
 str_extract_all(BNCprog$Concordance2[14], "[:alpha:]*ing")
 
 BNCprog$ing <- ""
@@ -77,7 +79,6 @@ for (i in 1:nrow(BNCprog)){
 
 BNCprog$lemma <- ""
 
-library(textstem)
 BNCprog$lemma = lemmatize_words(BNCprog$ing)
 
 head(BNCprog)
@@ -159,8 +160,6 @@ TxB_prog$negation
 
 ## Lemma ##
 
-library(stringr)
-
 TxB_prog$ing <- ""
 
 for (i in 1:nrow(TxB_prog)){
@@ -169,7 +168,6 @@ for (i in 1:nrow(TxB_prog)){
 
 TxB_prog$lemma <- ""
 
-library(textstem)
 TxB_prog$lemma = lemmatize_words(TxB_prog$ing)
 
 head(TxB_prog)
@@ -239,7 +237,6 @@ YFprog$negation
 
 ## Lemma ##
 
-library(stringr)
 str_extract_all(YFprog$Concordance2[14], "[:alpha:]*ing")
 
 YFprog$ing <- ""
@@ -249,7 +246,6 @@ for (i in 1:nrow(YFprog)){
 
 YFprog$lemma <- ""
 
-library(textstem)
 YFprog$lemma = lemmatize_words(YFprog$ing)
 
 head(YFprog)

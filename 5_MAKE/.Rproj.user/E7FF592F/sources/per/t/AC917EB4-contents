@@ -33,6 +33,8 @@ Please note that the plot dimensions in this notebook have been optimised for th
 
 knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, message=FALSE, paged.print=TRUE, fig.width = 10, warning=FALSE)
 
+#renv::restore() # Restore the project's dependencies from the lockfile to ensure that same package versions are used as in the original thesis.
+
 library(here)
 library(ggsignif)
 library(ggrepel)

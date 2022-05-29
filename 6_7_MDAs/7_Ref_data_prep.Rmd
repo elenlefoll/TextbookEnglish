@@ -11,48 +11,13 @@ output:
   editor_options: 
     markdown: 
       wrap: sentence
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
-=======
-bibliography: "packages.bib"
-nocite: '@*'
->>>>>>> Stashed changes
 ---
-
-This script is part of the Online Appendix to my PhD thesis.
-
-Please cite as: Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
-
-For more information, see: <https://elenlefoll.github.io/TextbookEnglish/>
-
-Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
 
 # Set-up
 
-<<<<<<< Updated upstream
 *Built with R `r getRversion()`*  
 *Last saved on `r format(Sys.Date(), "%d %B %Y")` at `r format(Sys.time(), "%H:%M")`*
-=======
-bibliography: "packages.bib"
-nocite: '@*'
----
-
-This script is part of the Online Appendix to my PhD thesis.
-
-Please cite as: Le Foll, Elen. 2022. Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain. PhD thesis. Osnabrück University.
-
-For more information, see: <https://elenlefoll.github.io/TextbookEnglish/>
-
-Please note that the plot dimensions in this notebook have been optimised for the print version of the thesis.
-
-# Set-up
-
-*Built with R `r getRversion()`*
->>>>>>> Stashed changes
-=======
-*Built with R `r getRversion()`*
->>>>>>> Stashed changes
 
 ```{r setup, include=TRUE, results = "hide", warning = FALSE, message = FALSE}
 
@@ -61,15 +26,9 @@ knitr::opts_chunk$set(cache = TRUE)
 
 knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, message=FALSE, paged.print=TRUE, fig.width = 10, warning=FALSE)
 
+#renv::restore() # Restore the project's dependencies from the lockfile to ensure that same package versions are used as in the original thesis.
+
 library(caret) # For its confusion matrix function
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-library(DescTools) # For common stats functions
->>>>>>> Stashed changes
-=======
-library(DescTools) # For common stats functions
->>>>>>> Stashed changes
 library(dplyr)
 library(forcats)
 library(here) # For dynamic file paths
@@ -138,23 +97,10 @@ InfoTeen$Register <- "Info Teens"
 
 ```
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
 ## Merging TEC and reference corpora counts
 
 Due to reasons of space, the results of the five-register dataset were not included in the thesis.
-=======
-=======
->>>>>>> Stashed changes
-## Merging TEC and reference corpora counts
-
-Due to reasons of space, the results of the five-register dataset were not included in the thesis.
-
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ```{r DataMerging-5Reg, eval=FALSE}
 
 TxBcounts <- readRDS(here("FullMDA", "TxBcounts.rds"))
@@ -203,14 +149,6 @@ counts <- counts %>%
 ```
 
 This is the dataset that is presented in the second half of Chapter 7.
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
 ```{r DataMerging-3Reg.only}
 
 TxBcounts <- readRDS(here("FullMDA", "TxBcounts.rds"))
@@ -260,14 +198,6 @@ counts <- counts %>%
 ## Data preparation
 
 ### Plotting the distributions of all the features
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
 ```{r distribution-viz, fig.height=40, warning=FALSE}
 
 ncounts <- readRDS(here("FullMDA", "counts3Reg.rds"))
@@ -309,14 +239,6 @@ ncounts %>%
 ```
 
 ### Feature removal due to low text frequency
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
 ```{r feature-removal-low-frequency}
 
 # For MDA with five TEC registers
@@ -458,13 +380,7 @@ zlogcounts %>%
 
 ```
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ### Merging of data for MDA
 
 ```{r import-final-ncounts-data}
@@ -500,19 +416,7 @@ colnames(data)
 ```
 
 ## Performing the PCA of Textbook English vs. Reference corpora
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 ### Quick import
-=======
-
-### Quick import
-
->>>>>>> Stashed changes
-=======
-
-### Quick import
-
->>>>>>> Stashed changes
 ```{r prepare-data}
 
 # With five TEC registers
@@ -533,14 +437,6 @@ data <- data %>%
 ## Testing factorability of data
 
 ### Correlation matrix: only for data exploration, not used to exclude variables
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
 ```{r corrsimple-function, eval=FALSE}
 
 # From: https://towardsdatascience.com/how-to-create-a-correlation-matrix-with-too-many-variables-309cc0c0a57
@@ -589,14 +485,6 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ", tl.cex = 0.5)
 ```
 
 ### Visualisation of feature correlations
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
 ```{r heatmap}
 
 # Simple heatmap in base R (inspired by Stephanie Evert's SIGIL code)
@@ -616,14 +504,6 @@ dev.off()
 ```
 
 ### MSA, communalities and scree plot
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
 ```{r factorability-screeplot}
 
 # Eliminate highly collinear variable
@@ -657,35 +537,6 @@ nrow(data)
 
 ```
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 ```{r sessionInfo}
-=======
-# Package used in this script
-```{r package-citations}
-
-#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
-
-knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
-
->>>>>>> Stashed changes
 sessionInfo()
-
 ```
-<<<<<<< Updated upstream
-=======
-# Package used in this script
-```{r package-citations}
-
-#packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))
-
-knitr::write_bib(c(.packages(), "knitr"), "packages.bib")
-
-sessionInfo()
-
-```
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes

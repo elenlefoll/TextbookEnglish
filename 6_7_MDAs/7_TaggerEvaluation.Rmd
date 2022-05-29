@@ -41,6 +41,8 @@ These chunks import the data directly from the Excel files in which the manual t
 
 knitr::opts_chunk$set(echo = TRUE, tidy = TRUE, message=FALSE, paged.print=TRUE, fig.width = 10, warning=FALSE)
 
+#renv::restore() # Restore the project's dependencies from the lockfile to ensure that same package versions are used as in the original thesis.
+
 library(caret) # For computing confusion matrices
 library(harrypotter) # Only for colour scheme
 library(here) # For path management

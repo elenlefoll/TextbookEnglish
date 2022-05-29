@@ -34,6 +34,8 @@ Please note that the plot dimensions in this notebook have been optimised for th
 
 knitr::opts_chunk$set(echo = TRUE, paged.print=TRUE, fig.width = 10, warning=FALSE)
 
+#renv::restore() # Restore the project's dependencies from the lockfile to ensure that same package versions are used as in the original thesis.
+
 library(car) # For data wrangling
 library(caret) # For its confusion matrix function
 #library(clipr) # For quick exports to other programme
@@ -276,6 +278,10 @@ PCAtools::biplot(p,
 
 #ggsave(here("Plots", "PCA_Ref3TxB_BiplotPC3_PC4.svg"), width = 12, height = 8)
 
+```
+
+```{r PC5-PC6-registers, eval=FALSE}
+
 # Biplots to examine components more carefully
 PCAtools::biplot(p,
                  x = "PC5",
@@ -329,6 +335,11 @@ PCAtools::biplot(p,
   theme(plot.margin = unit(c(0,0,0,0.2), "cm"))
 
 #ggsave(here("Plots", "PCA_Ref3TxB_BiplotPC3_PC4_levels.svg"), width = 12, height = 8)
+
+```
+
+
+```{r PC5-PC6-levels, eval=FALSE}
 
 # Biplots to examine components more carefully
 PCAtools::biplot(p,
@@ -619,7 +630,7 @@ summary(lm(PC1 ~ Level:Register, data = res.ind))
 # with random effects (slopes + intercepts)
 md_source <- lmer(PC1 ~ 1 + (Register|Source), res.ind, REML = FALSE) 
 md_corpus <- update(md_source, .~. + Level)
-md_register <- update(md_corpus, . ~ . + Register)
+md_register <- update(md_source, . ~ . + Register)
 md_both <- update(md_corpus, .~. + Register)
 md_interaction <- update(md_both, . ~ . + Level:Register)
 
@@ -661,7 +672,7 @@ lattice::qqmath(md_interaction)
 # Note that the model with random intercepts and slopes failed to converge for PC2 which is why only slopes are modelled here
 md_source <- lmer(PC2 ~ 1 + (1|Source), res.ind, REML = FALSE) 
 md_corpus <- update(md_source, .~. + Level)
-md_register <- update(md_corpus, . ~ . + Register)
+md_register <- update(md_source, . ~ . + Register)
 md_both <- update(md_corpus, .~. + Register)
 md_interaction <- update(md_both, . ~ . + Level:Register)
 
@@ -673,7 +684,7 @@ tab_model(md_interaction, wrap.labels = 200)
 #md_source <- lmer(PC3 ~ 1 + (Register|Source), res.ind, REML = FALSE) # Fails to converge
 md_source <- lmer(PC3 ~ 1 + (1|Source), res.ind, REML = FALSE)
 md_corpus <- update(md_source, .~. + Level)
-md_register <- update(md_corpus, . ~ . + Register)
+md_register <- update(md_source, . ~ . + Register)
 md_both <- update(md_corpus, .~. + Register)
 md_interaction <- update(md_both, . ~ . + Level:Register)
 
@@ -685,7 +696,7 @@ tab_model(md_interaction, wrap.labels = 200)
 #md_source <- lmer(PC4 ~ 1 + (Register|Source), res.ind, REML = FALSE) # Singular fit
 md_source <- lmer(PC4 ~ 1 + (1|Source), res.ind, REML = FALSE)
 md_corpus <- update(md_source, .~. + Level)
-md_register <- update(md_corpus, . ~ . + Register)
+md_register <- update(md_source, . ~ . + Register)
 md_both <- update(md_corpus, .~. + Register)
 md_interaction <- update(md_both, . ~ . + Level:Register)
 
@@ -703,7 +714,7 @@ tab_model(md_interaction, wrap.labels = 200)
 #md_source <- lmer(PC5 ~ 1 + (Register|Source), res.ind, REML = FALSE) # Fails to converge
 md_source <- lmer(PC5 ~ 1 + (1|Source), res.ind, REML = FALSE) 
 md_corpus <- update(md_source, .~. + Level)
-md_register <- update(md_corpus, . ~ . + Register)
+md_register <- update(md_source, . ~ . + Register)
 md_both <- update(md_corpus, .~. + Register)
 md_interaction <- update(md_both, . ~ . + Level:Register)
 
@@ -715,7 +726,7 @@ tab_model(md_interaction, wrap.labels = 200)
 #md_source <- lmer(PC6 ~ 1 + (Register|Source), res.ind, REML = FALSE) # Fails to converge
 md_source <- lmer(PC6 ~ 1 + (1|Source), res.ind, REML = FALSE) 
 md_corpus <- update(md_source, .~. + Level)
-md_register <- update(md_corpus, . ~ . + Register)
+md_register <- update(md_source, . ~ . + Register)
 md_both <- update(md_corpus, .~. + Register)
 md_interaction <- update(md_both, . ~ . + Level:Register)
 
@@ -798,7 +809,7 @@ summary(subcorpus_results)
 ```
 
 
-# Package used in this script
+# Packages used in this script
 ```{r package-citations}
 
 #packages.bib <- sapply(1:length(loadedNamespaces()), function(i) toBibtex(citation(loadedNamespaces()[i])))

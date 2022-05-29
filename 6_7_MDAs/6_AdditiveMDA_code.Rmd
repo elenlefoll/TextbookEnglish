@@ -30,6 +30,8 @@ Please note that the plot dimensions in this notebook have been optimised for th
 ```{r setup, include=FALSE}
 options(scipen=999)
 
+#renv::restore() # Restore the project's dependencies from the lockfile to ensure that same package versions are used as in the original thesis.
+
 library(broom.mixed) # For checking singularity issues 
 library(car) # For recoding data
 library(cowplot) # For nice plots

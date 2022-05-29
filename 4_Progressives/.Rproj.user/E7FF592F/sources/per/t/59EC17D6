@@ -3,7 +3,7 @@
     "path": "~/Documents/PhD/GitHubRepo/4_Progressives/4_Prog_Conversation_Morphosyntactic_Analysis.Rmd",
     "project_path": "4_Prog_Conversation_Morphosyntactic_Analysis.Rmd",
     "type": "r_markdown",
-    "hash": "3517315505",
+    "hash": "2097461353",
     "contents": "",
     "dirty": false,
     "created": 1646651927702.0,
@@ -12,16 +12,16 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "735,89",
-        "scrollLine": "717",
+        "cursorPosition": "31,144",
+        "scrollLine": "15",
         "docOutlineVisible": "1"
     },
     "folds": "",
-    "lastKnownWriteTime": 1646836725,
+    "lastKnownWriteTime": 1653824690,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1646836725190,
+    "last_content_update": 1653824690509,
     "read_only": false,
     "read_only_alternatives": []
 }
