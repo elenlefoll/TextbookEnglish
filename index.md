@@ -98,7 +98,7 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 <a href="https://github.com/elenlefoll/MultiFeatureTaggerEnglish/blob/main/tables/ListFullMDAFeatures_3.1.pdf" target="_blank" rel="noopener noreferrer">Full list of features tagged by the MFTE</a>
 
 ### Appendix 7.2
-<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_7_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses</a>
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_7_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses included in Chapters 6 and 7</a>
 
 ### Appendix 7.3
 <a href="7_TaggerEvaluation.html" target="_blank" rel="noopener noreferrer">R notebook for the evaluation of the MFTE for the present study (HTML format)</a>
