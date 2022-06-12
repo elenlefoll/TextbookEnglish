@@ -85,7 +85,7 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 <a href="https://github.com/andreanini/multidimensionalanalysistagger" target="_blank" rel="noopener noreferrer">Link to the GitHub repository of the MAT</a>
 
 ### Appendix 6.2
-<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses in this and following chapter</a>
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_7_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses in this and following chapter</a>
 
 ### Appendix 6.3
 <a href="6_AdditiveMDA_code.html" target="_blank" rel="noopener noreferrer">R notebook for the analyses of the additive MDAs based on Biber's (1988) model of General Spoken and Written English (in HTML format)</a>
@@ -98,7 +98,7 @@ Note that, for copyright reasons, the corpus itself cannot be made available.
 <a href="https://github.com/elenlefoll/MultiFeatureTaggerEnglish/blob/main/tables/ListFullMDAFeatures_3.1.pdf" target="_blank" rel="noopener noreferrer">Full list of features tagged by the MFTE</a>
 
 ### Appendix 7.2
-<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses</a>
+<a href="https://github.com/elenlefoll/TextbookEnglish/tree/main/6_7_MDAs" target="_blank" rel="noopener noreferrer">Data, code and plots for all the analyses</a>
 
 ### Appendix 7.3
 <a href="7_TaggerEvaluation.html" target="_blank" rel="noopener noreferrer">R notebook for the evaluation of the MFTE for the present study (HTML format)</a>
