@@ -50,7 +50,6 @@ library(ggplot2)
 library(ggthemes) # For theme of factoextra plots
 library(lme4) # For linear regression modelling
 library(patchwork) # To create figures with more than one plot
-library(pca3d) # For 3-D plots
 library(PCAtools) # For nice biplots of PCA results
 #library(purrr) # For data wrangling
 library(psych) # For various useful stats function
@@ -320,9 +319,13 @@ scree(TxBdata[,7:ncol(TxBdata)], factors = FALSE, pc = TRUE) # The scree plots p
 
 ## 3-D PCA plots https://cran.r-project.org/web/packages/pca3d/vignettes/pca3d.pdf ##
 # 3-D plot
-colours <- palette[c(1:3,8,7)] # without poetry
-names(colours) <- c("Conversation", "Fiction", "Informative", "Instructional", "Personal")
-scales::show_col(colours) # Check colours
+
+library(pca3d) # For 3-D plots
+
+col <- palette[c(1:3,8,7)] # without poetry
+names(col) <- c("Conversation", "Fiction", "Informative", "Instructional", "Personal")
+scales::show_col(col) # Check colours
+
 pca3d(pca, 
       group = register,
       components = 1:3,
@@ -337,14 +340,14 @@ pca3d(pca,
 
 snapshotPCA3d(here("plots", "PCA_TxB_3Dsnapshot.png"))
 
-names(colours) <- c("C", "B", "E", "A", "D") # To colour the dots according to the profiency level of the textbooks
+names(col) <- c("C", "B", "E", "A", "D") # To colour the dots according to the profiency level of the textbooks
 pca3d(pca, 
       components = 4:6,
       group = level,
       show.ellipses=FALSE, 
       ellipse.ci=0.75,
       show.plane=FALSE,
-      col = colours,
+      col = col,
       shape = "sphere",
       radius = 0.8,
       legend = "right")

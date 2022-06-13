@@ -137,6 +137,8 @@ names(col6) <- c("Textbook Conversation", "Textbook Fiction", "Textbook Informat
 shapes6 <- c(rep("cube", 3),rep("sphere", 3))
 names(shapes6) <- c("Textbook Conversation", "Textbook Fiction", "Textbook Informative", "Spoken BNC2014 Ref.", "Youth Fiction Ref.", "Info Teens Ref.")
 
+library(pca3d)
+
 pca3d(pca, group = subcorpus, 
       components = 1:3,
       #components = 4:6,
@@ -145,6 +147,8 @@ pca3d(pca, group = subcorpus,
       shape = shapes6,
       radius = 0.7,
       legend = "right")
+
+snapshotPCA3d(here("plots", "PCA_TxB_3Ref_3Dsnapshot.png"))
 
 ## Looking at all three Textbook English registers in one colour
 
