@@ -28,7 +28,7 @@ This is a <a href="LitReviewTable.html" title="Literature review table" target="
 ## Chapter 3: Research aims and data
 
 ### Appendix 3.1
-<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/3_Data/OpenScienceStatement.pdf" target="_blank" rel="noopener noreferrer">Open Science statement</a> (as printed in Section 3.2.2 of the thesis)
+<a href="https://github.com/elenlefoll/TextbookEnglish/blob/main/3_Data/LeFoll_2022_PhD_OpenScience_Statement.pdf" target="_blank" rel="noopener noreferrer">Open Science statement</a> (as printed in Section 3.2.2 of the thesis)
 
 ### Appendix 3.2
 A detailed tabular overview of the composition of the Textbook English Corpus (TEC) together with the full bibliographic metadata is available on <a href="https://zenodo.org/record/4922819" target="_blank" rel="noopener noreferrer">doi.org/10.5281/zenodo.4922819</a>.
