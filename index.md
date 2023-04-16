@@ -2,7 +2,7 @@
 
 Welcome to the companion website to my PhD thesis:
 
-Le Foll, Elen. 2022. _Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain._ Osnabrück University PhD thesis. <a href="https://osnadocs.ub.uni-osnabrueck.de/handle/ds-202303138538" title="https://osnadocs.ub.uni-osnabrueck.de/handle/ds-202303138538" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>.
+Le Foll, Elen. 2022. _Textbook English: A Corpus-Based Analysis of the Language of EFL textbooks used in Secondary Schools in France, Germany and Spain._ Osnabrück University: PhD thesis. <a href="https://osnadocs.ub.uni-osnabrueck.de/handle/ds-202303138538" title="Link to PDF version of PhD thesis" target="_blank" rel="noopener noreferrer">https://osnadocs.ub.uni-osnabrueck.de/handle/ds-202303138538</a>.
 
 This is the Online Appendix. It includes the full code for all the analyses, tables and figures. The code itself and, copyright permitting, the data to run it are available in the associated GitHub repository. All the code published on this page and in the repository is licensed under the GPL-3.0 License. The plots and tables are all licensed under <a href="https://creativecommons.org/licenses/by/4.0/" title="CC-BY 4.0" target="_blank" rel="noopener noreferrer">CC-BY 4.0</a>
 
